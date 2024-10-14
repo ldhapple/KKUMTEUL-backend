@@ -10,4 +10,5 @@ public class KkumteulApplication {
 		SpringApplication.run(KkumteulApplication.class, args);
 	}
 
+
 }
