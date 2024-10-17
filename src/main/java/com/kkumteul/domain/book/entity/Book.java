@@ -23,7 +23,6 @@ public class Book {
 
     private String title;
     private String author;
-    private String publicationDate;
     private String publisher;
     private String price;
     private String page;
