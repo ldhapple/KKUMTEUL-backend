@@ -35,11 +35,10 @@ public class Book {
     private byte[] bookImage;
 
     @Builder
-    public Book(String title, String author, String publicationDate, String publisher, String price, String page,
-                String summary, byte[] bookImage) {
+    public Book(String title, String author, String publisher, String price, String page, String summary,
+                byte[] bookImage) {
         this.title = title;
         this.author = author;
-        this.publicationDate = publicationDate;
         this.publisher = publisher;
         this.price = price;
         this.page = page;
