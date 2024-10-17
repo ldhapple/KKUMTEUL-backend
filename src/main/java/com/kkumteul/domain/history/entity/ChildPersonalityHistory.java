@@ -28,13 +28,15 @@ public class ChildPersonalityHistory {
     private ChildProfile childProfile;
 
     private LocalDateTime createdAt;
+    private boolean isDeleted;
     private HistoryCreatedType historyCreatedType;
 
     @Builder
-    public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt,
+    public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt, boolean isDeleted,
                                    HistoryCreatedType historyCreatedType) {
         this.childProfile = childProfile;
         this.createdAt = createdAt;
+        this.isDeleted = isDeleted;
         this.historyCreatedType = historyCreatedType;
     }
 }
