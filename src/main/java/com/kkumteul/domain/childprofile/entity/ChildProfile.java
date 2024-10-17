@@ -43,18 +43,12 @@ public class ChildProfile {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mbti_score_id")
-    private MBTIScore mbtiScore;
-
     @Builder
-    public ChildProfile(String name, Gender gender, Date birthDate, byte[] profileImage, User user,
-                        MBTIScore mbtiScore) {
+    public ChildProfile(String name, Gender gender, Date birthDate, byte[] profileImage, User user) {
         this.name = name;
         this.gender = gender;
         this.birthDate = birthDate;
         this.profileImage = profileImage;
         this.user = user;
-        this.mbtiScore = mbtiScore;
     }
 }

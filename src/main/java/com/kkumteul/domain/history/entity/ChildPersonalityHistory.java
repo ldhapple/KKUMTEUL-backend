@@ -2,6 +2,7 @@ package com.kkumteul.domain.history.entity;
 
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.mbti.entity.MBTIScore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -9,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -26,6 +28,10 @@ public class ChildPersonalityHistory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_profile_id")
     private ChildProfile childProfile;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mbti_score_id")
+    private MBTIScore mbtiScore;
 
     private LocalDateTime createdAt;
     private boolean isDeleted;
