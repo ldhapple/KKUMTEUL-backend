@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,10 +36,13 @@ public class Like {
     @JoinColumn(name = "book_id")
     private Book book;
 
+    private LocalDateTime updatedAt;
+
     @Builder
-    public Like(LikeType likeType, ChildProfile childProfile, Book book) {
+    public Like(LikeType likeType, ChildProfile childProfile, Book book, LocalDateTime updatedAt) {
         this.likeType = likeType;
         this.childProfile = childProfile;
         this.book = book;
+        this.updatedAt = updatedAt;
     }
 }
