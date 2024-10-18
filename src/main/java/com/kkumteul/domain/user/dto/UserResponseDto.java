@@ -9,7 +9,7 @@ import java.util.Date;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserResponseDto {
     private Long userId;
     private String username;
     private byte[] profileImage;
@@ -17,8 +17,8 @@ public class UserDto {
     private String phoneNumber;
     private Date birthDate;
 
-    public static UserDto fromEntity(User user) {
-        return new UserDto(
+    public static UserResponseDto fromEntity(User user) {
+        return new UserResponseDto(
             user.getId(),
             user.getUsername(),
             user.getProfileImage(),

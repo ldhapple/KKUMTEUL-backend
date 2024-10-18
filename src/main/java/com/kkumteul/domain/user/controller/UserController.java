@@ -1,6 +1,6 @@
 package com.kkumteul.domain.user.controller;
 
-import com.kkumteul.domain.user.dto.UserDto;
+import com.kkumteul.domain.user.dto.UserResponseDto;
 import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.service.UserService;
 import com.kkumteul.util.ApiUtil;
@@ -24,7 +24,7 @@ public class UserController {
     public ApiSuccess<?> getUser(@PathVariable(name = "userId") Long userId) {
         //추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
 
-        UserDto userResponseDto = userService.getUser(userId);
+        UserResponseDto userResponseDto = userService.getUser(userId);
         return ApiUtil.success(userResponseDto);
 
     }
