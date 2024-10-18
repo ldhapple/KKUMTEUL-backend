@@ -1,0 +1,67 @@
+package com.kkumteul.domain.childprofile.service;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
+
+import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
+import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.childprofile.entity.Gender;
+import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
+import com.kkumteul.exception.ChildProfileNotFoundException;
+import com.kkumteul.exception.RecommendationBookNotFoundException;
+import java.util.List;
+import java.util.Optional;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class ChildProfileServiceTest {
+
+    @Mock
+    private ChildProfileRepository childProfileRepository;
+
+    @InjectMocks
+    private ChildProfileService childProfileService;
+
+    @Test
+    @DisplayName("유저 아이디의 자녀 프로필 조회 성공 테스트")
+    void testGetChildProfiles() {
+
+        Long userId = 1L;
+
+        ChildProfile childProfile = ChildProfile.builder()
+                .name("lee")
+                .gender(Gender.FEMALE)
+                .profileImage(new byte[]{})
+                .build();
+
+        List<ChildProfile> childProfiles = List.of(childProfile);
+
+        BDDMockito.given(childProfileRepository.findByUserId(userId)).willReturn(Optional.of(childProfiles));
+
+        List<ChildProfileDto> results = childProfileService.getChildProfile(userId);
+
+        assertThat(results).isNotNull();
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getChildName()).isEqualTo("lee");
+    }
+
+    @Test
+    @DisplayName("조회된 자녀 프로필이 없을 때 예외 발생 테스트")
+    void testGetChildProfilesNotFound() {
+        Long userId = 1L;
+
+        given(childProfileRepository.findByUserId(userId)).willReturn(Optional.empty());
+
+        assertThrows(ChildProfileNotFoundException.class, () ->
+                childProfileService.getChildProfile(userId)
+        );
+    }
+}
