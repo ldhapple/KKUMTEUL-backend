@@ -1,5 +1,6 @@
 package com.kkumteul.domain.user.entity;
 
+import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,5 +40,12 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
         this.profileImage = profileImage;
+    }
+
+    public void update(UserUpdateRequestDto userUpdateRequestDto) {
+        this.profileImage = userUpdateRequestDto.getProfileImage();
+        this.nickName = userUpdateRequestDto.getNickName();
+        this.password = userUpdateRequestDto.getPassword();
+        this.phoneNumber = userUpdateRequestDto.getPhoneNumber();
     }
 }
