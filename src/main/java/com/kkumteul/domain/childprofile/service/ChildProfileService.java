@@ -26,4 +26,10 @@ public class ChildProfileService {
                 .map(ChildProfileDto::fromEntity)
                 .toList();
     }
+
+    public void validateChildProfile(Long childProfileId) {
+        log.info("validate exist childProfile: {}", childProfileId);
+        childProfileRepository.findById(childProfileId).orElseThrow(
+                () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
+    }
 }
