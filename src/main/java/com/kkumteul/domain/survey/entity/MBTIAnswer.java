@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,7 @@ public class MBTIAnswer {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String option;
+    private String answerText;
     private int effectScore;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,8 +30,8 @@ public class MBTIAnswer {
     private MBTIQuestion question;
 
     @Builder
-    public MBTIAnswer(String option, int effectScore, MBTIQuestion question) {
-        this.option = option;
+    public MBTIAnswer(String answerText, int effectScore, MBTIQuestion question) {
+        this.answerText = answerText;
         this.effectScore = effectScore;
         this.question = question;
     }
