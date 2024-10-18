@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Like {
+public class BookLike {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,7 +39,7 @@ public class Like {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Like(LikeType likeType, ChildProfile childProfile, Book book, LocalDateTime updatedAt) {
+    public BookLike(LikeType likeType, ChildProfile childProfile, Book book, LocalDateTime updatedAt) {
         this.likeType = likeType;
         this.childProfile = childProfile;
         this.book = book;
