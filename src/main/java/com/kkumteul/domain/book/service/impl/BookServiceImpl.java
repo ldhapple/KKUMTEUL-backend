@@ -7,7 +7,6 @@ import com.kkumteul.domain.book.repository.BookTopicRepository;
 import com.kkumteul.domain.book.service.BookService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,7 +30,6 @@ public class BookServiceImpl implements BookService {
                             .collect(Collectors.toList());
 
                     return GetBookListResponse.builder()
-                            .bookId(book.getId())
                             .title(book.getTitle())
                             .bookImage(book.getBookImage())
                             .topics(topics)
