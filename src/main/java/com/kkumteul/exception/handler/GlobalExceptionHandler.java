@@ -1,5 +1,6 @@
 package com.kkumteul.exception.handler;
 
+import com.kkumteul.exception.ChildProfileNotFoundException;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiError;
@@ -28,7 +29,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({
             IllegalArgumentException.class,
-            RecommendationBookNotFoundException.class
+            RecommendationBookNotFoundException.class,
+            ChildProfileNotFoundException.class
     })
     protected ResponseEntity<?> handleIllegalArgumentException(Exception e) {
         log.error(e.getMessage(), e);
