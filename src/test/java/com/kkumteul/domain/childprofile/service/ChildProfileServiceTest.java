@@ -2,6 +2,7 @@ package com.kkumteul.domain.childprofile.service;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.given;
 
 import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
@@ -44,7 +45,7 @@ class ChildProfileServiceTest {
 
         List<ChildProfile> childProfiles = List.of(childProfile);
 
-        BDDMockito.given(childProfileRepository.findByUserId(userId)).willReturn(Optional.of(childProfiles));
+        given(childProfileRepository.findByUserId(userId)).willReturn(Optional.of(childProfiles));
 
         List<ChildProfileDto> results = childProfileService.getChildProfile(userId);
 
@@ -63,5 +64,26 @@ class ChildProfileServiceTest {
         assertThrows(ChildProfileNotFoundException.class, () ->
                 childProfileService.getChildProfile(userId)
         );
+    }
+
+    @Test
+    @DisplayName("자녀 프로필 검증 - 성공")
+    void testValidateChildProfileSuccess() {
+        Long validProfileId = 1L;
+
+        given(childProfileRepository.findById(validProfileId)).willReturn(Optional.of(mock(ChildProfile.class)));
+
+        assertDoesNotThrow(() -> childProfileService.validateChildProfile(validProfileId));
+    }
+
+    @Test
+    @DisplayName("자녀 프로필 검증 - 실패")
+    void testValidateChildProfileFailed() {
+        Long invalidProfileId = 999L;
+
+        given(childProfileRepository.findById(invalidProfileId)).willReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> childProfileService.validateChildProfile(invalidProfileId));
     }
 }

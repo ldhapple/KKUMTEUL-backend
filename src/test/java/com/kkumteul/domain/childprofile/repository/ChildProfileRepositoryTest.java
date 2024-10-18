@@ -78,4 +78,13 @@ class ChildProfileRepositoryTest {
 
         assertThat(findChildProfiles.get()).isEmpty();
     }
+
+    @Test
+    @DisplayName("자녀 프로필 존재 여부 확인 테스트")
+    void testFindById() {
+        Optional<ChildProfile> findChildProfile = childProfileRepository.findById(childProfile2.getId());
+
+        assertThat(findChildProfile).isPresent();
+        assertThat(findChildProfile.get().getName()).isEqualTo(childProfile2.getName());
+    }
 }
