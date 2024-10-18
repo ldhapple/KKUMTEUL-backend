@@ -1,6 +1,7 @@
 package com.kkumteul.domain.user.controller;
 
 import com.kkumteul.domain.user.dto.UserDto;
+import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.service.UserService;
 import com.kkumteul.util.ApiUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,4 +28,14 @@ public class UserController {
         return ApiUtil.success(userResponseDto);
 
     }
+
+    // 2. 유저 정보 수정
+    @PutMapping("{userId}")
+    public ApiSuccess<?> updateUser(@PathVariable(name = "userId") Long userId, @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
+        // TODO: 추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
+
+        String response = userService.updateUser(userId, userUpdateRequestDto);
+        return ApiUtil.success(response);
+    }
+
 }

@@ -2,6 +2,7 @@ package com.kkumteul.domain.user.service;
 
 
 import com.kkumteul.domain.user.dto.UserDto;
+import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.domain.user.repository.UserRepository;
 import com.kkumteul.exception.UserNotFoundException;
@@ -26,5 +27,20 @@ public class UserService {
         log.info("user information: {}", userResponseDto);
         return userResponseDto;
     }
+
+    // 2. 유저 정보 수정
+    public String updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto) {
+        log.info("user: {}" , userUpdateRequestDto);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
+
+        // TODO: 비밀번호 암호화하는 로직 추가
+
+        user.update(userUpdateRequestDto);
+        userRepository.save(user);
+
+        return "user updated successfully";
+    }
+
 }
 
