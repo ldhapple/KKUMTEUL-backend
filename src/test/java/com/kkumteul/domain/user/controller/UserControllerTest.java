@@ -1,7 +1,7 @@
 package com.kkumteul.domain.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kkumteul.domain.user.dto.UserDto;
+import com.kkumteul.domain.user.dto.UserResponseDto;
 import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.service.UserService;
 import com.kkumteul.exception.UserNotFoundException;
@@ -39,7 +39,7 @@ class UserControllerTest {
     @DisplayName("유저 정보 조회 테스트 - 조회 성공")
     void getUser_success() throws Exception {
         Long userId = 1L;
-        UserDto userDto = new UserDto(userId, "name", "image".getBytes(), "꿈틀", "01012345678", new Date());
+        UserResponseDto userDto = new UserResponseDto(userId, "name", "image".getBytes(), "꿈틀", "01012345678", new Date());
 
         given(userService.getUser(userId)).willReturn(userDto);
 
