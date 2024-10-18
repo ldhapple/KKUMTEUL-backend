@@ -1,6 +1,6 @@
 package com.kkumteul.domain.book.service.impl;
 
-import com.kkumteul.domain.book.dto.GetBookListResponse;
+import com.kkumteul.domain.book.dto.GetBookListResponseDto;
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.repository.BookRepository;
 import com.kkumteul.domain.book.repository.BookTopicRepository;
@@ -20,7 +20,7 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookTopicRepository bookTopicRepository;
 
-    public List<GetBookListResponse> getBookList() {
+    public List<GetBookListResponseDto> getBookList() {
         List<Book> books = bookRepository.findAll(); // 모든 책을 가져옴
 
         return books.stream()
@@ -29,10 +29,10 @@ public class BookServiceImpl implements BookService {
                             .map(bookTopic -> bookTopic.getTopic().getName())
                             .collect(Collectors.toList());
 
-                    return GetBookListResponse.builder()
-                            .title(book.getTitle())
+                    return GetBookListResponseDto.builder()
+                            .bookTitle(book.getTitle())
                             .bookImage(book.getBookImage())
-                            .topics(topics)
+                            .topicNames(topics)
                             .build();
                 })
                 .collect(Collectors.toList());
