@@ -22,7 +22,7 @@ public class UserService {
     // 1. 유저 정보 조회
     public UserResponseDto getUser(Long userId) {
         log.info("user id: {}", userId);
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdWithChildProfiles(userId)
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
         UserResponseDto userResponseDto = UserResponseDto.fromEntity(user);
