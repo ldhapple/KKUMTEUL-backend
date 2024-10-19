@@ -34,8 +34,8 @@ public class UserController {
     public ApiSuccess<?> updateUser(@PathVariable(name = "userId") Long userId, @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
         // TODO: 추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
 
-        String response = userService.updateUser(userId, userUpdateRequestDto);
-        return ApiUtil.success(response);
+        userService.updateUser(userId, userUpdateRequestDto);
+        return ApiUtil.success("user update successfully");
     }
 
 }

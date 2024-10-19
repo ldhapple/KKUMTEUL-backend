@@ -31,7 +31,7 @@ public class UserService {
     }
 
     // 2. 유저 정보 수정
-    public String updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto) {
+    public void updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto) {
         log.info("user: {}" , userUpdateRequestDto);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
@@ -39,8 +39,6 @@ public class UserService {
         // TODO: 비밀번호 암호화하는 로직 추가
 
         user.update(userUpdateRequestDto);
-
-        return "user updated successfully";
     }
 }
 
