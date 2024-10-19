@@ -19,6 +19,7 @@ public class ChildProfileService {
     public List<ChildProfileDto> getChildProfile(Long userId) {
         log.info("getChildProfiles - Input userId: {}", userId);
         List<ChildProfile> childProfiles = childProfileRepository.findByUserId(userId)
+                .filter(profiles -> !profiles.isEmpty())
                 .orElseThrow(() -> new ChildProfileNotFoundException(userId));
 
         log.info("found childProfiles: {}", childProfiles.size());
