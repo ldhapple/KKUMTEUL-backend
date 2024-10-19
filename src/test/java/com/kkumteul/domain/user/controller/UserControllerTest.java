@@ -17,6 +17,7 @@ import java.util.Date;
 
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -73,13 +74,13 @@ class UserControllerTest {
 
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(newImage, newNickname, newPassword, newPhoneNumber);
 
-        given(userService.updateUser(userId, userUpdateRequestDto)).willReturn("user updated successfully");
+        willDoNothing().given(userService).updateUser(userId, userUpdateRequestDto);
 
         mockMvc.perform(put("/api/users/{userId}", userId)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(userUpdateRequestDto)))
-                .andExpect(status().isOk());
-//                .andExpect(jsonPath("$.response").value("user updated successfully"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response").value("user updated successfully"));
     }
 
 }
