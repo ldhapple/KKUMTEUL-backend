@@ -1,6 +1,8 @@
 package com.kkumteul.domain.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
+import com.kkumteul.domain.childprofile.entity.Gender;
 import com.kkumteul.domain.user.dto.UserResponseDto;
 import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.service.UserService;
@@ -14,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Date;
+import java.util.List;
 
 
 import static org.mockito.BDDMockito.given;
@@ -40,15 +43,19 @@ class UserControllerTest {
     @DisplayName("유저 정보 조회 테스트 - 조회 성공")
     void getUser_success() throws Exception {
         Long userId = 1L;
-        UserResponseDto userDto = new UserResponseDto(userId, "name", "image".getBytes(), "꿈틀", "01012345678", new Date());
+        ChildProfileDto childProfile = new ChildProfileDto(1L, "childName", Gender.MALE, new Date(), "childImage".getBytes());
+        List<ChildProfileDto> childProfiles = List.of(childProfile);
+
+        UserResponseDto userDto = new UserResponseDto(userId, "name", "image".getBytes(), "nickname", "01012345678", new Date(), childProfiles);
 
         given(userService.getUser(userId)).willReturn(userDto);
 
         mockMvc.perform(get("/api/users/{userId}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.username").value("name"))
-                .andExpect(jsonPath("$.response.nickName").value("꿈틀"))
-                .andExpect(jsonPath("$.response.phoneNumber").value("01012345678"));
+                .andExpect(jsonPath("$.response.nickName").value("nickname"))
+                .andExpect(jsonPath("$.response.phoneNumber").value("01012345678"))
+                .andExpect(jsonPath("$.response.childProfileList[0].childName").value("childName"));
     }
 
     @Test
