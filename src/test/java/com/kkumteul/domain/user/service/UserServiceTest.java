@@ -3,6 +3,7 @@ package com.kkumteul.domain.user.service;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.Gender;
 import com.kkumteul.domain.user.dto.UserResponseDto;
+import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.domain.user.repository.UserRepository;
 import com.kkumteul.exception.UserNotFoundException;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -113,5 +115,57 @@ class UserServiceTest {
 
     }
 
+    @Test
+    @DisplayName("유저 정보 수정 성공 테스트")
+    void updateUser_success() {
+        //given
+        Long userId = 1L;
+
+        User user = User.builder()
+                .username("user1")
+                .profileImage("image".getBytes())
+                .password("password")
+                .nickName("nickname")
+                .phoneNumber("01012345678")
+                .birthDate(new Date())
+                .build();
+
+        String newNickname = "newNickname";
+
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(null, newNickname, null, null);
+
+        //stub
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        //when
+        userService.updateUser(userId, userUpdateRequestDto);
+
+        //then
+        Assertions.assertEquals("newNickname", user.getNickName());
+        Assertions.assertEquals("password", user.getPassword());
+        Assertions.assertEquals("user1", user.getUsername());
+
+    }
+
+    @Test
+    @DisplayName("유저 정보 수정 실패 테스트 - UserNotFound 예외 발생")
+    void updateUser_not_found_exception() {
+        //given
+        Long userId = 999L;
+        String newNickname = "newNickname";
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(null, newNickname, null, null);
+
+        //stub
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        //when
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
+            userService.updateUser(userId, userUpdateRequestDto);
+        });
+
+        //then
+        Assertions.assertEquals("user not found: " + userId, exception.getMessage());
+
+    }
 
 }
