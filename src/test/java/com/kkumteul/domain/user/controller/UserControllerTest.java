@@ -21,8 +21,9 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -87,7 +88,33 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(userUpdateRequestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response").value("user updated successfully"));
+                .andExpect(jsonPath("$.response").value("user update successfully"));
+    }
+
+    @Test
+    @DisplayName("유저 정보 삭제 테스트 - 삭제 성공")
+    void deleteUser_success() throws Exception {
+        Long userId = 1L;
+
+        doNothing().when(userService).deleteUser(userId);
+
+        mockMvc.perform(delete("/api/users/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response").value("user deleted successfully"));
+    }
+
+    @Test
+    @DisplayName("유저 정보 삭제 테스트 - 삭제 실패")
+    void deletedUser_fail_not_found_exception() throws Exception {
+        Long userId = 999L;
+
+        doThrow(new UserNotFoundException("user not found: " + userId))
+                .when(userService).deleteUser(userId);
+
+        mockMvc.perform(delete("/api/users/{userId}", userId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("user not found: " + userId));
+
     }
 
 }
