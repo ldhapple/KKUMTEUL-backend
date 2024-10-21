@@ -12,7 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponseDto {
-    private Long userId;
     private String username;
     private byte[] profileImage;
     private String nickName;
@@ -26,7 +25,6 @@ public class UserResponseDto {
                 .toList();
 
         return new UserResponseDto(
-                user.getId(),
                 user.getUsername(),
                 user.getProfileImage(),
                 user.getNickName(),

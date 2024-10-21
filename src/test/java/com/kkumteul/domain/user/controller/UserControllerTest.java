@@ -47,7 +47,7 @@ class UserControllerTest {
         ChildProfileDto childProfile = new ChildProfileDto(1L, "childName", Gender.MALE, new Date(), "childImage".getBytes());
         List<ChildProfileDto> childProfiles = List.of(childProfile);
 
-        UserResponseDto userDto = new UserResponseDto(userId, "name", "image".getBytes(), "nickname", "01012345678", new Date(), childProfiles);
+        UserResponseDto userDto = new UserResponseDto("name", "image".getBytes(), "nickname", "01012345678", new Date(), childProfiles);
 
         given(userService.getUser(userId)).willReturn(userDto);
 
