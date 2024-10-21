@@ -1,17 +1,21 @@
 package com.kkumteul.domain.book.entity;
 
+import com.kkumteul.domain.personality.entity.Genre;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import java.util.Date;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @Entity
 @Getter
@@ -33,6 +37,13 @@ public class Book {
     @Lob
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] bookImage;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Genre genre;
+
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
+    private Set<BookTopic> bookTopics = new HashSet<>();
 
     @Builder
     public Book(String title, String author, String publisher, String price, String page, String summary,

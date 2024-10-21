@@ -1,21 +1,24 @@
 package com.kkumteul.domain.history.entity;
 
 
+import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.mbti.entity.MBTIScore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @Entity
 @Getter
@@ -36,6 +39,14 @@ public class ChildPersonalityHistory {
     private LocalDateTime createdAt;
     private boolean isDeleted;
     private HistoryCreatedType historyCreatedType;
+
+    @OneToMany(mappedBy = "history", fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
+    private Set<ChildPersonalityHistoryGenre> historyGenres = new HashSet<>();
+
+    @OneToMany(mappedBy = "history", fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
+    private Set<ChildPersonalityHistoryTopic> historyTopics = new HashSet<>();
 
     @Builder
     public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt, boolean isDeleted,
