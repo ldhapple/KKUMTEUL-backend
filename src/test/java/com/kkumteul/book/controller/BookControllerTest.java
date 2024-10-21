@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -36,7 +37,8 @@ class BookControllerTest {
     @BeforeEach
     void setUp() {
         GetBookListResponseDto bookDto = new GetBookListResponseDto();
-        Page<GetBookListResponseDto> bookPage = new PageImpl<>(Collections.singletonList(bookDto));
+        GetBookListResponseDto[] bookArray = new GetBookListResponseDto[]{bookDto};
+        Page<GetBookListResponseDto> bookPage = new PageImpl<>(Arrays.asList(bookArray));
 
         Mockito.when(bookService.getBookList(any(Pageable.class))).thenReturn(bookPage);
     }
