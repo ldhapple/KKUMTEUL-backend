@@ -46,9 +46,18 @@ public class User {
     }
 
     public void update(UserUpdateRequestDto userUpdateRequestDto) {
-        this.profileImage = userUpdateRequestDto.getProfileImage();
-        this.nickName = userUpdateRequestDto.getNickName();
-        this.password = userUpdateRequestDto.getPassword();
-        this.phoneNumber = userUpdateRequestDto.getPhoneNumber();
+        if (userUpdateRequestDto.getProfileImage() != null) {
+            this.profileImage = userUpdateRequestDto.getProfileImage();
+        }
+        if (userUpdateRequestDto.getNickName() != null) {
+            this.nickName = userUpdateRequestDto.getNickName();
+        }
+        if (userUpdateRequestDto.getPassword() != null) {
+            this.password = userUpdateRequestDto.getPassword();
+        }
+        if (userUpdateRequestDto.getPhoneNumber() != null) {
+            this.phoneNumber = userUpdateRequestDto.getPhoneNumber();
+        }
     }
+
 }
