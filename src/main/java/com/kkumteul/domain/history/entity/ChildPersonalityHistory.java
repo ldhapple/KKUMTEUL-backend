@@ -3,15 +3,12 @@ package com.kkumteul.domain.history.entity;
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.mbti.entity.MBTIScore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +33,14 @@ public class ChildPersonalityHistory {
     private LocalDateTime createdAt;
     private boolean isDeleted;
     private HistoryCreatedType historyCreatedType;
+
+    // 자녀 선호 장르 히스토리 리스트
+    @OneToMany(mappedBy = "history", cascade = CascadeType.ALL)
+    List<ChildPersonalityHistoryGenre> childPersonalityHistoryGenreList = new ArrayList<>();
+
+    // 자녀 선호 주제어 히스토리 리스트
+    @OneToMany(mappedBy = "history", cascade = CascadeType.ALL)
+    List<ChildPersonalityHistoryTopic> childPersonalityHistoryTopicList = new ArrayList<>();
 
     @Builder
     public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt, boolean isDeleted,

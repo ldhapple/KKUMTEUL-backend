@@ -40,5 +40,15 @@ public class UserService {
 
         user.update(userUpdateRequestDto);
     }
+
+    // 3. 유저 탈퇴
+    public void deleteUser(Long userId) {
+        log.info("user id: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
+
+        log.info("user info: {}", user);
+        userRepository.delete(user);
+    }
 }
 

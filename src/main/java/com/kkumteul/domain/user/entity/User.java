@@ -31,7 +31,7 @@ public class User {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] profileImage;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     List<ChildProfile> childProfileList = new ArrayList<>();
 
     @Builder

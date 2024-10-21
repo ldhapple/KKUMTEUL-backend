@@ -38,4 +38,16 @@ public class UserController {
         return ApiUtil.success("user update successfully");
     }
 
+    // 3. 유저 정보 삭제
+    @DeleteMapping("{userId}")
+    public ApiSuccess<?> deleteUser(@PathVariable(name = "userId") Long userId) {
+        // TODO: 추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
+
+        userService.deleteUser(userId);
+        return ApiUtil.success("user deleted successfully");
+    }
+
+    // 4. 자녀 상세 조회
+
+
 }
