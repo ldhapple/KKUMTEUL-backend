@@ -47,7 +47,4 @@ public class UserController {
         return ApiUtil.success("user deleted successfully");
     }
 
-    // 4. 자녀 상세 조회
-
-
 }
