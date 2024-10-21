@@ -9,7 +9,8 @@ import java.util.List;
 @Getter
 @ToString
 @AllArgsConstructor
-public class AdminCreateBookRequestDto {
+public class AdminInsertBookRequestDto {
+    // book
     private String title;
     private String author;
     private String publisher;
@@ -19,7 +20,12 @@ public class AdminCreateBookRequestDto {
     private String summary;
     private byte[] bookImage;
 
+    // bookMbti
     private String bookMbti;
+
+    // bookGenre
     private List<String> bookGenreList;
+
+    // bookTopic
     private List<String> bookTopicList;
 }
