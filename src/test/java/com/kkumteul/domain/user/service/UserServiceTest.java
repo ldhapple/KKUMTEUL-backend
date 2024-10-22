@@ -135,7 +135,7 @@ class UserServiceTest {
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(null, newNickname, null, null);
 
         //stub
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         //when
         userService.updateUser(userId, userUpdateRequestDto);
