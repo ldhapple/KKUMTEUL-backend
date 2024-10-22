@@ -65,7 +65,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
 
     @Override
     public SurveyResultDto getSurveyResult(Long childProfileId) {
-        log.info("Get survey result for ChildProfile ID: {}", childProfileId);
+        log.info("Get survey result ChildProfile ID: {}", childProfileId);
 
         ChildProfile childProfile = childProfileService.getChildProfile(childProfileId);
 
@@ -114,9 +114,15 @@ public class SurveyFacadeImpl implements SurveyFacade {
                 .build();
     }
 
+    @Override
+    public void reSurvey(Long childProfileId) {
+        log.info("Resurvey - Delete DiagnosisHistory ChildProfile ID: {}", childProfileId);
+        historyService.deleteDiagnosisHistory(childProfileId);
+    }
+
     /*
-    선호 장르/주제어 관련 로직의 위치가 여기가 맞는지 고민 필요.
-     */
+        선호 장르/주제어 관련 로직의 위치가 여기가 맞는지 고민 필요.
+         */
     private void updateFavoriteGenres(ChildProfile childProfile, List<Long> favoriteGenreIds) {
         log.info("Updating GenreScores for ChildProfile ID: {}", childProfile.getId());
 

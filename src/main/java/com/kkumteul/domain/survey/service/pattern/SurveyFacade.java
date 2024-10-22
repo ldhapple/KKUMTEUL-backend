@@ -6,4 +6,5 @@ import com.kkumteul.domain.survey.dto.SurveyResultRequestDto;
 public interface SurveyFacade {
     void submitSurvey(SurveyResultRequestDto requestDto, Long childProfileId);
     SurveyResultDto getSurveyResult(Long childProfileId);
+    void reSurvey(Long childProfileId);
 }
