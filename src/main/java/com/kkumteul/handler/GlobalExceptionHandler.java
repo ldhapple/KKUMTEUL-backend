@@ -27,7 +27,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-            IllegalArgumentException.class,
             BookNotFoundException.class
     })
     protected ResponseEntity<?> handleIllegalArgumentException(Exception e) {
