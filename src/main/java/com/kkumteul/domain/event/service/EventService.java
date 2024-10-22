@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -31,6 +32,8 @@ public class EventService {
 
         Event event = eventRepository.findById(eventRequestDto.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("event not found: " + userId));
+
+        isEventInProgress(event);
 
         boolean isValidUser = isValidUser(user, eventRequestDto);
         log.info("Is valid user: {}", isValidUser);
@@ -62,4 +65,20 @@ public class EventService {
         return user.getUsername().equals(eventRequestDto.getName()) && user.getPhoneNumber().equals(eventRequestDto.getPhoneNumber());
     }
 
+    private void isEventInProgress(Event event) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (event.getStartDate().isAfter(now)) {
+            long minutesLeft = Duration.between(now, event.getStartDate()).toMinutes();
+            log.warn("Event start not yet, left time: {} minutes", minutesLeft);
+            throw new IllegalArgumentException("이벤트가 곧 시작됩니다. 조금만 기다려 주세요!");
+        }
+
+        if (event.getExpiredDate().isBefore(now)) {
+            log.warn("Event expired");
+            throw new IllegalArgumentException("종료된 이벤트입니다.");
+        }
+
+        log.info("Event in progress");
+    }
 }
