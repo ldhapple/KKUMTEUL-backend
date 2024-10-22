@@ -9,6 +9,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class BookDto {
+    private Long id;
     private String title;
     private String author;
     private String publisher;
@@ -20,6 +21,7 @@ public class BookDto {
 
     public static BookDto fromEntity(Book book) {
         return new BookDto(
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getPublisher(),

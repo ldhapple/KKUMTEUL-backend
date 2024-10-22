@@ -1,5 +1,8 @@
 package com.kkumteul.domain.book.dto;
 
+import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.personality.entity.Genre;
+import com.kkumteul.domain.personality.entity.Topic;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -21,11 +24,11 @@ public class AdminInsertBookRequestDto {
     private byte[] bookImage;
 
     // bookMbti
-    private String bookMbti;
+    private MBTI bookMbti;
 
     // bookGenre
-    private List<String> bookGenreList;
+    private List<Genre> bookGenreList;
 
     // bookTopic
-    private List<String> bookTopicList;
+    private List<Topic> bookTopicList;
 }

@@ -1,10 +1,11 @@
-package com.kkumteul.domain.book.service;
+package com.kkumteul.domain.personality.service;
 
 import com.kkumteul.domain.book.entity.BookGenre;
 import com.kkumteul.domain.book.repository.BookGenreRepository;
+import com.kkumteul.domain.personality.entity.Genre;
+import com.kkumteul.domain.personality.repository.GenreRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,12 @@ import org.springframework.stereotype.Service;
 //@RequiredArgsConstructor
 @AllArgsConstructor
 @Transactional
-public class BookGenreService {
+public class GenreService {
 
-    private BookGenreRepository bookGenreRepository;
+    private GenreRepository genreRepository;
 
     // 1. 장르 등록
-    public BookGenre insertBookGenre(BookGenre bookGenre) {
-        return bookGenreRepository.save(bookGenre);
+    public Genre insertGenre(Genre genre) {
+        return genreRepository.save(genre);
     }
 }
