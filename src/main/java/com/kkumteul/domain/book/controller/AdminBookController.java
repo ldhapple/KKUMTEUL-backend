@@ -56,9 +56,13 @@ public class AdminBookController {
         );
 
         // 1.2. 도서 등록
-        BookDto savedBook = bookService.insertBook(book);
-        // 1.3. 저장된 도서의 ID 가져오기
-        Long savedBookId = bookService.getBookById(savedBook.getId()).getId();
+        bookService.insertBook(book);
+
+        // 도서 수정할 때 필요한 코드
+//        // 1.2. 도서 등록
+//        BookDto savedBook = bookService.insertBook(book);
+//        // 1.3. 저장된 도서의 ID 가져오기
+//        Long savedBookId = bookService.getBookById(savedBook.getId()).getId();
 
         // 1.4. BookGenre 엔티티 생성 및 저장
         for (Genre genre : adminInsertBookRequestDto.getBookGenreList()) {
