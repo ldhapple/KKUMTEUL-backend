@@ -1,12 +1,13 @@
 package com.kkumteul.domain.user.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +31,9 @@ public class User {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] profileImage;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    List<ChildProfile> childProfileList = new ArrayList<>();
+
     @Builder
     public User(String username, String password, String nickName, String phoneNumber, Date birthDate,
                 byte[] profileImage) {
@@ -40,4 +44,20 @@ public class User {
         this.birthDate = birthDate;
         this.profileImage = profileImage;
     }
+
+    public void update(UserUpdateRequestDto userUpdateRequestDto) {
+        if (userUpdateRequestDto.getProfileImage() != null) {
+            this.profileImage = userUpdateRequestDto.getProfileImage();
+        }
+        if (userUpdateRequestDto.getNickName() != null) {
+            this.nickName = userUpdateRequestDto.getNickName();
+        }
+        if (userUpdateRequestDto.getPassword() != null) {
+            this.password = userUpdateRequestDto.getPassword();
+        }
+        if (userUpdateRequestDto.getPhoneNumber() != null) {
+            this.phoneNumber = userUpdateRequestDto.getPhoneNumber();
+        }
+    }
+
 }

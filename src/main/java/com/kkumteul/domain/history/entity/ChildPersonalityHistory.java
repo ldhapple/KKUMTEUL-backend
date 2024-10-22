@@ -2,6 +2,11 @@ package com.kkumteul.domain.history.entity;
 
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.mbti.entity.MBTIScore;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import com.kkumteul.domain.childprofile.entity.GenreScore;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
 import com.kkumteul.domain.childprofile.entity.TopicScore;
