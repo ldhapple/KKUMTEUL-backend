@@ -7,10 +7,24 @@ import static org.mockito.BDDMockito.given;
 
 import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
 import com.kkumteul.domain.childprofile.entity.Gender;
+import com.kkumteul.domain.childprofile.entity.GenreScore;
+import com.kkumteul.domain.childprofile.entity.TopicScore;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
+import com.kkumteul.domain.childprofile.repository.CumulativeMBTIScoreRepository;
+import com.kkumteul.domain.childprofile.repository.GenreScoreRepository;
+import com.kkumteul.domain.childprofile.repository.TopicScoreRepository;
+import com.kkumteul.domain.history.entity.MBTIScore;
+import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
+import com.kkumteul.domain.personality.entity.Genre;
+import com.kkumteul.domain.personality.entity.Topic;
+import com.kkumteul.domain.personality.repository.GenreRepository;
+import com.kkumteul.domain.personality.repository.TopicRepository;
+import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.exception.ChildProfileNotFoundException;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
@@ -28,11 +42,29 @@ class ChildProfileServiceTest {
     @Mock
     private ChildProfileRepository childProfileRepository;
 
+    @Mock
+    private CumulativeMBTIScoreRepository cumulativeMBTIScoreRepository;
+
+    @Mock
+    private GenreScoreRepository genreScoreRepository;
+
+    @Mock
+    private TopicScoreRepository topicScoreRepository;
+
+    @Mock
+    private GenreRepository genreRepository;
+
+    @Mock
+    private TopicRepository topicRepository;
+
+    @Mock
+    private ChildPersonalityHistoryRepository childPersonalityHistoryRepository;
+
     @InjectMocks
     private ChildProfileService childProfileService;
 
     @Test
-    @DisplayName("유저 아이디의 자녀 프로필 조회 성공 테스트")
+    @DisplayName("유저 아이디의 자녀 프로필 리스트 조회 성공 테스트")
     void testGetChildProfiles() {
 
         Long userId = 1L;
@@ -85,5 +117,73 @@ class ChildProfileServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> childProfileService.validateChildProfile(invalidProfileId));
+    }
+
+    @Test
+    @DisplayName("자녀 프로필 생성 테스트")
+    void testCreateChildProfileSuccess() {
+        String name = "child";
+        Gender gender = Gender.FEMALE;
+        Date birthDate = new Date();
+        byte[] profileImage = new byte[0];
+        User user = mock(User.class);
+
+        given(genreRepository.findAll()).willReturn(List.of(mock(Genre.class)));
+        given(topicRepository.findAll()).willReturn(List.of(mock(Topic.class)));
+        given(childProfileRepository.save(any(ChildProfile.class))).willReturn(ChildProfile.builder().name(name).build());
+
+        ChildProfile createdProfile = childProfileService.createChildProfile(name, gender, birthDate, profileImage, user);
+
+        assertThat(createdProfile).isNotNull();
+        assertThat(createdProfile.getName()).isEqualTo(name);
+        verify(childProfileRepository, times(1)).save(any(ChildProfile.class));
+    }
+
+    @Test
+    @DisplayName("누적 MBTI 점수 초기화 테스트")
+    void testResetCumulativeMBTIScore() {
+        Long childProfileId = 1L;
+
+        CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
+        given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
+
+        childProfileService.resetCumulativeMBTIScore(childProfileId);
+
+        verify(cumulativeScore, times(1)).resetScores();
+    }
+
+    @Test
+    @DisplayName("누적 MBTI 점수 업데이트 테스트")
+    void testUpdateCumulativeMBTIScore() {
+        Long childProfileId = 1L;
+        MBTIScore mbtiScore = mock(MBTIScore.class);
+
+        CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
+        given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
+
+        childProfileService.updateCumulativeMBTIScore(childProfileId, mbtiScore);
+
+        verify(cumulativeScore, times(1)).updateScores(mbtiScore);
+    }
+
+    @Test
+    @DisplayName("선호 장르 및 주제어 점수 초기화 테스트")
+    void testResetFavoriteScores() {
+        Long childProfileId = 1L;
+
+        List<TopicScore> topicScores = List.of(mock(TopicScore.class));
+        List<GenreScore> genreScores = List.of(mock(GenreScore.class));
+
+        given(topicScoreRepository.findByChildProfileId(childProfileId)).willReturn(topicScores);
+        given(genreScoreRepository.findByChildProfileId(childProfileId)).willReturn(genreScores);
+
+        childProfileService.resetFavoriteScores(childProfileId);
+
+        for (TopicScore topicScore : topicScores) {
+            verify(topicScore, times(1)).resetScore();
+        }
+        for (GenreScore genreScore : genreScores) {
+            verify(genreScore, times(1)).resetScore();
+        }
     }
 }
