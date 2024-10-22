@@ -17,6 +17,10 @@ import com.kkumteul.domain.personality.repository.TopicRepository;
 import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.exception.ChildProfileNotFoundException;
 import java.util.Date;
+import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
+import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
+import com.kkumteul.exception.ChildProfileNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -116,5 +120,23 @@ public class ChildProfileService {
         log.info("get ChildProfile InputId: {}", childProfileId);
         return childProfileRepository.findById(childProfileId)
                 .orElseThrow(() -> new ChildProfileNotFoundException(childProfileId));
+
+    public List<ChildProfileDto> getChildProfileList(Long userId) {
+        log.info("getChildProfiles - Input userId: {}", userId);
+        List<ChildProfile> childProfiles = childProfileRepository.findByUserId(userId)
+                .filter(profiles -> !profiles.isEmpty())
+                .orElseThrow(() -> new ChildProfileNotFoundException(userId));
+
+        log.info("found childProfiles: {}", childProfiles.size());
+        return childProfiles.stream()
+                .map(ChildProfileDto::fromEntity)
+                .toList();
+    }
+
+    public void validateChildProfile(Long childProfileId) {
+        log.info("validate exist childProfile: {}", childProfileId);
+        childProfileRepository.findById(childProfileId).orElseThrow(
+                () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
+
     }
 }
