@@ -1,14 +1,12 @@
 package com.kkumteul.domain.recommendation.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @Builder
+@ToString
 public class GenreDto {
     private Long genreId;
     private String genreName;
