@@ -1,6 +1,6 @@
 package com.kkumteul.domain.user.dto;
 
-import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
+import com.kkumteul.domain.childprofile.dto.ChildProfileDetailDto;
 import com.kkumteul.domain.user.entity.User;
 import lombok.*;
 
@@ -17,11 +17,11 @@ public class UserResponseDto {
     private String nickName;
     private String phoneNumber;
     private Date birthDate;
-    private List<ChildProfileDto> childProfileList;
+    private List<ChildProfileDetailDto> childProfileList;
 
     public static UserResponseDto fromEntity(User user) {
-        List<ChildProfileDto> childProfiles = user.getChildProfileList().stream()
-                .map(ChildProfileDto::fromEntity)
+        List<ChildProfileDetailDto> childProfiles = user.getChildProfileList().stream()
+                .map(ChildProfileDetailDto::fromEntity)
                 .toList();
 
         return new UserResponseDto(

@@ -1,7 +1,7 @@
 package com.kkumteul.domain.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
+import com.kkumteul.domain.childprofile.dto.ChildProfileDetailDto;
 import com.kkumteul.domain.childprofile.entity.Gender;
 import com.kkumteul.domain.user.dto.UserResponseDto;
 import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
@@ -44,8 +44,8 @@ class UserControllerTest {
     @DisplayName("유저 정보 조회 테스트 - 조회 성공")
     void getUser_success() throws Exception {
         Long userId = 1L;
-        ChildProfileDto childProfile = new ChildProfileDto(1L, "childName", Gender.MALE, new Date(), "childImage".getBytes());
-        List<ChildProfileDto> childProfiles = List.of(childProfile);
+        ChildProfileDetailDto childProfile = new ChildProfileDetailDto(1L, "childName", Gender.MALE, new Date(), "childImage".getBytes());
+        List<ChildProfileDetailDto> childProfiles = List.of(childProfile);
 
         UserResponseDto userDto = new UserResponseDto("name", "image".getBytes(), "nickname", "01012345678", new Date(), childProfiles);
 

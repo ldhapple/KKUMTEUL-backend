@@ -9,15 +9,15 @@ import java.util.Date;
 @Getter
 @ToString
 @AllArgsConstructor
-public class ChildProfileDto {
+public class ChildProfileDetailDto {
     private Long childProfileId;
     private String childName;
     private Gender childGender;
     private Date childBirthDate;
     private byte[] childProfileImage;
 
-    public static ChildProfileDto fromEntity(ChildProfile childProfile) {
-        return new ChildProfileDto(
+    public static ChildProfileDetailDto fromEntity(ChildProfile childProfile) {
+        return new ChildProfileDetailDto(
                 childProfile.getId(),
                 childProfile.getName(),
                 childProfile.getGender(),
