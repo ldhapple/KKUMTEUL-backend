@@ -1,6 +1,12 @@
 package com.kkumteul.exception.handler;
 
 import com.kkumteul.exception.ChildProfileNotFoundException;
+import com.kkumteul.exception.HistoryNotFoundException;
+import com.kkumteul.exception.InvalidMBTINameException;
+import com.kkumteul.exception.RecommendationBookNotFoundException;
+import com.kkumteul.util.ApiUtil;
+import com.kkumteul.util.ApiUtil.ApiError;
+import jakarta.persistence.EntityNotFoundException;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiError;
@@ -30,11 +36,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({
             IllegalArgumentException.class,
             RecommendationBookNotFoundException.class,
-            ChildProfileNotFoundException.class
+            ChildProfileNotFoundException.class,
+            EntityNotFoundException.class,
+            HistoryNotFoundException.class
     })
     protected ResponseEntity<?> handleIllegalArgumentException(Exception e) {
         log.error(e.getMessage(), e);
         ApiError<String> error = ApiUtil.error(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler({
+            InvalidMBTINameException.class
+    })
+    protected ResponseEntity<?> handleInvalidException(Exception e) {
+        log.error(e.getMessage(), e);
+        ApiError<String> error = ApiUtil.error(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(error);
     }
 }
