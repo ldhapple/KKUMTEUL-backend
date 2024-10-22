@@ -24,6 +24,7 @@ public class Book {
     private String publisher;
     private String price;
     private String page;
+    private String age_group;
 
     @Column(columnDefinition = "TEXT")
     private String summary;
@@ -37,7 +38,7 @@ public class Book {
 
 
     @Builder
-    public Book(String title, String author, String publisher, String price, String page, String summary,
+    public Book(String title, String author, String publisher, String price, String page, String summary, String age_group,
                 byte[] bookImage, List<BookTopic> bookTopics) {
         this.title = title;
         this.author = author;
@@ -45,6 +46,7 @@ public class Book {
         this.price = price;
         this.page = page;
         this.summary = summary;
+        this.age_group = age_group;
         this.bookImage = bookImage;
         this.bookTopics = bookTopics;
     }
