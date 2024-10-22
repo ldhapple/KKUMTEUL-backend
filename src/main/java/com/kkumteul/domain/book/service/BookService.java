@@ -12,11 +12,10 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-//@RequiredArgsConstructor -> 레포지토리 인식이 안됨
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class BookService {
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
 
     // 1. 도서 등록
     public BookDto insertBook(Book book) {

@@ -10,11 +10,10 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-//@RequiredArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class BookMBTIService {
-    private BookMBTIRepository bookMbtiRepository;
+    private final BookMBTIRepository bookMbtiRepository;
 
     public BookMBTI insertBookMBTI(BookMBTI bookMBTI) {
         return bookMbtiRepository.save(bookMBTI);

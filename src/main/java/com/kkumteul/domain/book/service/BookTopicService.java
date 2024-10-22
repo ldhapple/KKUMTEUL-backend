@@ -10,11 +10,10 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-//@RequiredArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class BookTopicService {
-    private BookTopicRepository bookTopicRepository;
+    private final BookTopicRepository bookTopicRepository;
 
     public BookTopic insertBookTopic(BookTopic bookTopic) {
         return bookTopicRepository.save(bookTopic);
