@@ -25,7 +25,7 @@ public class ChildProfileController {
         // 인증 인가 구현 시 @AuthenticationPrincipal 사용해서 UserID 가져오기.
         Long userId = 1L;
 
-        List<ChildProfileDto> childProfiles = childProfileService.getChildProfile(userId);
+        List<ChildProfileDto> childProfiles = childProfileService.getChildProfileList(userId);
 
         return ApiUtil.success(childProfiles);
     }

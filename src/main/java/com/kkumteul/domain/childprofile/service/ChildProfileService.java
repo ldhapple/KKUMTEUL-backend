@@ -120,6 +120,7 @@ public class ChildProfileService {
         log.info("get ChildProfile InputId: {}", childProfileId);
         return childProfileRepository.findById(childProfileId)
                 .orElseThrow(() -> new ChildProfileNotFoundException(childProfileId));
+    }
 
     public List<ChildProfileDto> getChildProfileList(Long userId) {
         log.info("getChildProfiles - Input userId: {}", userId);
