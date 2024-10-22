@@ -15,7 +15,7 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping("{userId}")
-    public ApiSuccess<?> getUser(@PathVariable(name = "userId") Long userId, @RequestBody EventRequestDto eventRequestDto) {
+    public ApiSuccess<?> joinEvent(@PathVariable(name = "userId") Long userId, @RequestBody EventRequestDto eventRequestDto) {
         // TODO: userId JWT 방식으로 변경
         eventService.insertJoinEvent(userId, eventRequestDto);
         return ApiUtil.success("joined event successfully");
