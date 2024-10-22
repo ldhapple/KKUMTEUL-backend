@@ -1,6 +1,7 @@
 package com.kkumteul.domain.event.service;
 
 import com.kkumteul.domain.event.dto.EventRequestDto;
+import com.kkumteul.domain.event.dto.EventResultResponseDto;
 import com.kkumteul.domain.event.entity.Event;
 import com.kkumteul.domain.event.entity.JoinEvent;
 import com.kkumteul.domain.event.repository.EventRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -81,4 +83,16 @@ public class EventService {
 
         log.info("Event in progress");
     }
+
+    public List<EventResultResponseDto> getJoinEventResults(Long userId) {
+        log.info("user id: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("user not found: " + userId));
+
+        List<JoinEvent> joinEventList = user.getJoinEventList();
+
+        return joinEventList.stream().map(EventResultResponseDto::fromEntity).toList();
+
+    }
+
 }
