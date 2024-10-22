@@ -47,7 +47,7 @@ class ChildProfileServiceTest {
 
         given(childProfileRepository.findByUserId(userId)).willReturn(Optional.of(childProfiles));
 
-        List<ChildProfileDto> results = childProfileService.getChildProfile(userId);
+        List<ChildProfileDto> results = childProfileService.getChildProfileList(userId);
 
         assertThat(results).isNotNull();
         assertThat(results).hasSize(1);
@@ -62,7 +62,7 @@ class ChildProfileServiceTest {
         given(childProfileRepository.findByUserId(userId)).willReturn(Optional.empty());
 
         assertThrows(ChildProfileNotFoundException.class, () ->
-                childProfileService.getChildProfile(userId)
+                childProfileService.getChildProfileList(userId)
         );
     }
 
