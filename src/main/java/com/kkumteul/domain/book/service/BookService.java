@@ -3,6 +3,7 @@ package com.kkumteul.domain.book.service;
 import com.kkumteul.domain.book.dto.BookDto;
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.repository.BookRepository;
+import com.kkumteul.exception.BookNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,8 @@ public class BookService {
 
     // 2. 도서 조회
     public BookDto getBookById(Long id) {
-        Book book = bookRepository.findById(id).orElse(null);
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
         BookDto getBookDto = BookDto.fromEntity(book);
 
         return getBookDto;
