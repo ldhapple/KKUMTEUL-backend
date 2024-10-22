@@ -7,6 +7,7 @@ import com.kkumteul.domain.event.repository.EventRepository;
 import com.kkumteul.domain.event.repository.JoinEventRepository;
 import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.domain.user.respository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EventService {
 
     private final JoinEventRepository joinEventRepository;
