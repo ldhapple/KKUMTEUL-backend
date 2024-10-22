@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPersonalityHistory, Long> {
 
-    @Query("SELECT h FROM ChildPersonalityHistory  h LEFT JOIN FETCH h.mbtiScore ms LEFT JOIN FETCH ms.mbti m WHERE h.childProfile.id = :childProfileId")
+    @Query("SELECT h FROM ChildPersonalityHistory  h JOIN FETCH h.mbtiScore ms JOIN FETCH ms.mbti m WHERE h.childProfile.id = :childProfileId")
     List<ChildPersonalityHistory> findHistoryWithMBTIByChildProfileId(@Param("childProfileId") Long childProfileId);
 
 }

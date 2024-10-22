@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
 
-    @Query("SELECT b From BookLike b LEFT JOIN FETCH b.book WHERE b.childProfile.id = :childProfileId")
+    @Query("SELECT b From BookLike b JOIN FETCH b.book WHERE b.childProfile.id = :childProfileId")
     List<BookLike> findBookLikesWithBookByChildProfileId(@Param("childProfileId") Long childProfileId);
 
 }
