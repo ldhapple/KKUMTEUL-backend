@@ -31,7 +31,7 @@ public class EventService {
                 .orElseThrow(() -> new IllegalArgumentException("user not found: " + userId));
 
         Event event = eventRepository.findById(eventRequestDto.getEventId())
-                .orElseThrow(() -> new IllegalArgumentException("event not found: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("event not found: " + eventRequestDto.getEventId()));
 
         isEventInProgress(event);
 
