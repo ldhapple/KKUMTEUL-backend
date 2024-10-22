@@ -1,5 +1,6 @@
 package com.kkumteul.domain.childprofile.entity;
 
+import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.personality.entity.Genre;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,9 +33,20 @@ public class GenreScore {
     private double score;
 
     @Builder
-    public GenreScore(Genre genre, ChildProfile childProfile, double score) {
+    public GenreScore(Genre genre, double score) {
         this.genre = genre;
-        this.childProfile = childProfile;
         this.score = score;
+    }
+
+    public void setChildProfile(ChildProfile childProfile) {
+        this.childProfile = childProfile;
+    }
+
+    public void resetScore() {
+        this.score = 0;
+    }
+
+    public void updateScore(double score) {
+        this.score += score;
     }
 }
