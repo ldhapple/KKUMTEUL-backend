@@ -36,14 +36,14 @@ public class ChildProfileService {
         // 1-1. 자녀가 좋아하는 도서 리스트
         List<BookLikeDto> likedBooks = bookLikeRepository.findBookLikesWithBookByChildProfileId(childProfileId).stream()
                 .map(BookLikeDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
         log.info("Number of books liked by child (childProfile iD: {}): {}", childProfileId, likedBooks.size());
 
 
         // 1-2. 자녀 성향 진단 및 변화 히스토리
         List<ChildPersonalityHistoryDto> childPersonalityHistories = childPersonalityHistoryRepository.findHistoryWithMBTIByChildProfileId(childProfileId).stream()
                 .map(ChildPersonalityHistoryDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
         log.info("Number of personality histories by child (childProfile iD: {}): {}", childProfileId, childPersonalityHistories.size());
 
         return new ChildProfileResponseDto(childProfile.getName(), likedBooks, childPersonalityHistories);
