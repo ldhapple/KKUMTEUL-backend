@@ -2,7 +2,6 @@ package com.kkumteul.domain.history.entity;
 
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
-import com.kkumteul.domain.mbti.entity.MBTIScore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

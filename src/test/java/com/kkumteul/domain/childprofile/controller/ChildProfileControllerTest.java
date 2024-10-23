@@ -138,7 +138,7 @@ class ChildProfileControllerTest {
         doThrow(new IllegalArgumentException("childProfile not found - childProfileId : " + invalidProfileId))
                 .when(childProfileService).validateChildProfile(invalidProfileId);
 
-        mockMvc.perform(post("/api/child-profile/switch")
+        mockMvc.perform(post("/api/childProfiles/switch")
                         .param("childProfileId", String.valueOf(invalidProfileId)))
 //                        .with(csrf()))
                 .andExpect(status().isNotFound());
