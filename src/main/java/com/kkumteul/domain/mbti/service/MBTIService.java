@@ -1,6 +1,7 @@
 package com.kkumteul.domain.mbti.service;
 
 import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.entity.MBTIName;
 import com.kkumteul.domain.mbti.repository.MBTIRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ public class MBTIService {
 
     // 1. MBTI Name으로 MBTI 객체 가져오기
     public MBTI getMBTI(String mbti) {
-        return MBTIRepository.findByMbti(mbti);
+
+        MBTIName mbtiName = MBTIName.valueOf(mbti);
+        return MBTIRepository.findByMbti(mbtiName);
     }
 }
