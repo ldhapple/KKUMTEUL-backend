@@ -17,6 +17,6 @@ public class TopicService {
 
     // 1. 주제어 이름으로 주제어 객체 가져오기
     public Topic getTopic(String topic) {
-        return topicRepository.findByTopic(topic);
+        return topicRepository.findByName(topic);
     }
 }

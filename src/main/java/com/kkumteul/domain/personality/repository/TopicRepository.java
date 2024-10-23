@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, Long> {
 
-    Topic findByTopic(String topic);
+    Topic findByName(String topic);
 }

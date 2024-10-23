@@ -17,6 +17,6 @@ public class GenreService {
 
     // 1. 장르 이름으로 장르 가져오기
     public Genre getGenre(String genre) {
-        return genreRepository.findByGenre(genre);
+        return genreRepository.findByName(genre);
     }
 }
