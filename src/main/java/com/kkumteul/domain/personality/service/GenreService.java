@@ -1,25 +1,22 @@
 package com.kkumteul.domain.personality.service;
 
-import com.kkumteul.domain.book.entity.BookGenre;
-import com.kkumteul.domain.book.repository.BookGenreRepository;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.repository.GenreRepository;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-//@RequiredArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 public class GenreService {
 
-    private GenreRepository genreRepository;
+    private final GenreRepository genreRepository;
 
-    // 1. 장르 등록
-    public Genre insertGenre(Genre genre) {
-        return genreRepository.save(genre);
+    // 1. 장르 이름으로 장르 가져오기
+    public Genre getGenre(String genre) {
+        return genreRepository.findByGenre(genre);
     }
 }
