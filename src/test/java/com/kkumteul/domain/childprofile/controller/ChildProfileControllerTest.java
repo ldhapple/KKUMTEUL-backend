@@ -87,9 +87,9 @@ class ChildProfileControllerTest {
                 new ChildProfileDto(1L, "lee")
         );
 
-        given(childProfileService.getChildProfile(userId)).willReturn(findChildProfiles);
+        given(childProfileService.getChildProfileList(userId)).willReturn(findChildProfiles);
 
-        mockMvc.perform(get("/api/child-profile"))
+        mockMvc.perform(get("/api/childProfiles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response").isArray())
                 .andExpect(jsonPath("$.response[0].childName").value("lee"));
@@ -118,7 +118,7 @@ class ChildProfileControllerTest {
         //validateChildProfile()이 아무런 동작을 하지 않아도 session에 정상적으로 담기는 지 확인할 수 있음.
         //오히려 예외를 던지면 안됨.
 
-        mockMvc.perform(post("/api/child-profile/switch")
+        mockMvc.perform(post("/api/childProfiles/switch")
                         .param("childProfileId", String.valueOf(validProfileId))
                         .session(session))
 //                        .with(csrf()))

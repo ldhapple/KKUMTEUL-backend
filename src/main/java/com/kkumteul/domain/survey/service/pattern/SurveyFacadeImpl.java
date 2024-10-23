@@ -124,7 +124,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
         선호 장르/주제어 관련 로직의 위치가 여기가 맞는지 고민 필요.
          */
     private void updateFavoriteGenres(ChildProfile childProfile, List<Long> favoriteGenreIds) {
-        log.info("Updating GenreScores for ChildProfile ID: {}", childProfile.getId());
+        log.info("Updating GenreScores ChildProfile ID: {}", childProfile.getId());
 
         // 선택한 장르에 5점 부여
         for (Long genreId : favoriteGenreIds) {
@@ -135,11 +135,11 @@ public class SurveyFacadeImpl implements SurveyFacade {
             genreScore.updateScore(5.0);
         }
 
-        log.info("GenreScores updated for ChildProfile ID: {}", childProfile.getId());
+        log.info("GenreScores updated ChildProfile ID: {}", childProfile.getId());
     }
 
     private void updateFavoriteTopics(ChildProfile childProfile, List<Long> favoriteTopicIds) {
-        log.info("Updating TopicScores for ChildProfile ID: {}", childProfile.getId());
+        log.info("Updating TopicScores ChildProfile ID: {}", childProfile.getId());
 
         // 선택한 주제어에 5점 부여
         for (Long topicId : favoriteTopicIds) {
@@ -150,7 +150,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
             topicScore.updateScore(5.0);
         }
 
-        log.info("TopicScores updated for ChildProfile ID: {}", childProfile.getId());
+        log.info("TopicScores updated ChildProfile ID: {}", childProfile.getId());
     }
 
     private List<Genre> determinePreferredGenres(List<GenreScore> genreScores) {
@@ -167,8 +167,6 @@ public class SurveyFacadeImpl implements SurveyFacade {
                 .filter(gs -> gs.getScore() > averageScore)
                 .map(GenreScore::getGenre)
                 .toList();
-
-        log.info("Preferred Genres determined: {}", preferredGenres);
 
         return preferredGenres;
     }
@@ -187,8 +185,6 @@ public class SurveyFacadeImpl implements SurveyFacade {
                 .filter(ts -> ts.getScore() > averageScore)
                 .map(TopicScore::getTopic)
                 .toList();
-
-        log.info("Preferred Topics determined: {}", preferredTopics);
 
         return preferredTopics;
     }
