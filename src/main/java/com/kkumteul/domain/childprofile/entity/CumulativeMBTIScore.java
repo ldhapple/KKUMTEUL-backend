@@ -52,6 +52,19 @@ public class CumulativeMBTIScore {
         this.childProfile = childProfile;
     }
 
+    public static CumulativeMBTIScore init() {
+        return CumulativeMBTIScore.builder()
+                .iScore(0.0)
+                .eScore(0.0)
+                .sScore(0.0)
+                .nScore(0.0)
+                .tScore(0.0)
+                .fScore(0.0)
+                .jScore(0.0)
+                .pScore(0.0)
+                .build();
+    }
+
     public CumulativeMBTIScore updateScores(MBTIScore mbtiScore) {
         this.iScore += mbtiScore.getIScore();
         this.eScore += mbtiScore.getEScore();
