@@ -23,6 +23,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -46,9 +47,11 @@ public class ChildPersonalityHistory {
     private MBTIScore mbtiScore;
 
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 10)
     private final List<FavoriteGenre> favoriteGenres = new ArrayList<>();
 
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 10)
     private final List<FavoriteTopic> favoriteTopics = new ArrayList<>();
 
     @Builder
