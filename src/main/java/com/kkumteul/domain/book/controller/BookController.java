@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,5 +27,14 @@ public class BookController {
         Page<GetBookListResponseDto> bookList = bookService.getBookList(pageable);
 
         return ApiUtil.success(bookList);
+    }
+
+    // 상세 도서 조회
+    @GetMapping("/{bookId}")
+    public ApiUtil.ApiSuccess<?> getBookDetail(@PathVariable("bookId") final Long bookId){
+
+        GetBookDetailResponseDto bookDetail = bookService.getBookDetail(bookId);
+
+        return ApiUtil.success(bookDetail);
     }
 }

@@ -1,15 +1,14 @@
 package com.kkumteul.domain.personality.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import com.kkumteul.domain.book.entity.BookGenre;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -25,9 +24,13 @@ public class Genre {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] image;
 
+    @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookGenre> bookGenres = new ArrayList<>();
+
     @Builder
-    public Genre(String name, byte[] image) {
+    public Genre(String name, byte[] image, List<BookGenre> bookGenres) {
         this.name = name;
         this.image = image;
+        this.bookGenres = bookGenres;
     }
 }

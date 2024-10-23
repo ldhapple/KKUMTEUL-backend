@@ -36,10 +36,16 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<BookTopic> bookTopics = new ArrayList<>();
 
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    private List<BookGenre> bookGenres = new ArrayList<>();
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    private List<BookMBTI> bookMBTIS = new ArrayList<>();
+
 
     @Builder
     public Book(String title, String author, String publisher, String price, String page, String summary, String age_group,
-                byte[] bookImage, List<BookTopic> bookTopics) {
+                byte[] bookImage, List<BookTopic> bookTopics, List<BookGenre> bookGenres, List<BookMBTI> bookMBTIS) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
@@ -49,5 +55,7 @@ public class Book {
         this.age_group = age_group;
         this.bookImage = bookImage;
         this.bookTopics = bookTopics;
+        this.bookGenres = bookGenres;
+        this.bookMBTIS = bookMBTIS;
     }
 }

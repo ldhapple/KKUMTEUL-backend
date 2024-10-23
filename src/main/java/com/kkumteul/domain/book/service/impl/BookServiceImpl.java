@@ -1,7 +1,9 @@
 package com.kkumteul.domain.book.service.impl;
 
+import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
 import com.kkumteul.domain.book.entity.Book;
+import com.kkumteul.domain.book.exception.BookNotFoundException;
 import com.kkumteul.domain.book.repository.BookRepository;
 import com.kkumteul.domain.book.service.BookService;
 import jakarta.transaction.Transactional;
@@ -24,6 +26,15 @@ public class BookServiceImpl implements BookService {
         final Page<Book> books = bookRepository.findAllBookInfo(pageable);
 
         return books.map(GetBookListResponseDto::from);
+    }
+
+    @Override
+    public GetBookDetailResponseDto getBookDetail(final Long bookId) {
+
+        final Book book = bookRepository.findById(bookId)
+                .orElseThrow(BookNotFoundException::new);
+
+        return GetBookDetailResponseDto.from(book);
     }
 
 }
