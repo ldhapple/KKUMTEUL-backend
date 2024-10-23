@@ -42,13 +42,13 @@ public class AdminInsertBookRequestDto {
 
     // bookMbti
     @NotNull(message = "Book MBTI is required")
-    private MBTI bookMbti;
+    private String bookMBTI;
 
     // bookGenre
     @NotNull(message = "Book genre list is required")
-    private List<Genre> bookGenreList;
+    private String bookGenre;
 
     // bookTopic
     @NotNull(message = "Book topic list is required")
-    private List<Topic> bookTopicList;
+    private List<String> bookTopicList;
 }
