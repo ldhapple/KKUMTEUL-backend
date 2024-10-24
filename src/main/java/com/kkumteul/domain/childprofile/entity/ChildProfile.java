@@ -33,6 +33,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Getter
@@ -74,7 +75,8 @@ public class ChildProfile {
     List<ChildPersonalityHistory> childPersonalityHistoryList = new ArrayList<>();
 
     // 자녀 도서 좋아요 리스트
-    @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
     List<BookLike> bookLikeList = new ArrayList<>();
   
     @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -2,6 +2,7 @@ package com.kkumteul.domain.recommendation.filter;
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.recommendation.dto.ChildDataDto;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Component
 public class SimilarityCalculator {
 
     // 유사도 계산
@@ -35,25 +37,28 @@ public class SimilarityCalculator {
         return similarity; // 최종 유사도 반환
     }
 
-    // 코사인 유사도 계산 - 활용 안함
-    public double cosineSimilarity(List<String> genres1, List<String> genres2) {
-        if (genres1.isEmpty() || genres2.isEmpty()) {
-            return 0.0;
+    // 코사인 유사도 계산 - 콘텐츠 기반 필터링(사용자의 선호 장르, 책 장르 등 비교)
+    public double cosineSimilarity(List<String> list1, List<String> list2) {
+        if (list1.isEmpty() || list2.isEmpty()) {
+            return 0.0; // 빈 리스트일 경우 유사도 0 반환
         }
 
-        Set<String> uniqueGenres = new HashSet<>(genres1);
-        uniqueGenres.addAll(genres2);
+        // 두 리스트의 고유한 요소들을 합집합으로 만듦
+        Set<String> uniqueElements = new HashSet<>(list1);
+        uniqueElements.addAll(list2);
 
-        int[] vector1 = new int[uniqueGenres.size()];
-        int[] vector2 = new int[uniqueGenres.size()];
+        // 두 리스트를 벡터로 변환
+        int[] vector1 = new int[uniqueElements.size()];
+        int[] vector2 = new int[uniqueElements.size()];
 
         int index = 0;
-        for (String genre : uniqueGenres) {
-            vector1[index] = genres1.contains(genre) ? 1 : 0;
-            vector2[index] = genres2.contains(genre) ? 1 : 0;
+        for (String element : uniqueElements) {
+            vector1[index] = list1.contains(element) ? 1 : 0;
+            vector2[index] = list2.contains(element) ? 1 : 0;
             index++;
         }
 
+        // 코사인 유사도 계산
         return dotProduct(vector1, vector2) / (magnitude(vector1) * magnitude(vector2));
     }
 

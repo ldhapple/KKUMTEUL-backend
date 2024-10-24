@@ -3,49 +3,61 @@ package com.kkumteul.domain.recommendation.filter;
 
 import com.kkumteul.domain.recommendation.dto.BookDataDto;
 import com.kkumteul.domain.recommendation.dto.ChildDataDto;
+import com.kkumteul.domain.recommendation.dto.GenreDto;
 import com.kkumteul.domain.recommendation.dto.TopicDto;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 // 콘텐츠 기반 필터링
 public class ContentBasedFilter {
 
-    public Set<BookDataDto> filterBooksByUserPreferences(ChildDataDto childData, List<BookDataDto> booksData) {
-        Set<BookDataDto> filteredBooks = new HashSet<>(); // 필터링 된 도서 리스트
+    private final SimilarityCalculator similarityCalculator;
 
-        // 각 도서 필터링
+    public Map<BookDataDto, Double> filterBooksByUserPreferences(ChildDataDto childData, List<BookDataDto> booksData) {
+        Map<BookDataDto, Double> contentScores = new HashMap<>();
+
+        // 사용자의 선호 장르 및 주제어를 리스트로 가져오기
+        List<String> userGenres = new ArrayList<>();
+        for (GenreDto genre : childData.getGenres()) {
+            userGenres.add(genre.getGenreName());
+        }
+
+        List<String> userTopics = new ArrayList<>();
+        for (TopicDto topic : childData.getTopics()) {
+            userTopics.add(topic.getTopicName());
+        }
+
+        // 각 도서에 대해 장르 및 주제어 유사도 계산
         for (BookDataDto book : booksData) {
-            double score = 0;
+            // 도서의 장르와 주제어 가져오기
+            String bookGenre = book.getGenreDto().getGenreName();
 
-            // 장르 일치 시 점수 부여
-            if (book.getGenreDto().getGenreName().equals(childData.getGenres().get(0).getGenreName())) {
-                score += 0.5;
-            }
-
-            // 주제어 일치 시 점수 부여
-            Set<String> childTopics = childData.getTopics().stream()
-                    .map(TopicDto::getTopicName)
-                    .collect(Collectors.toSet());
-
+            List<String> bookTopics = new ArrayList<>();
             for (TopicDto topic : book.getTopics()) {
-                if (childTopics.contains(topic.getTopicName())) {
-                    score += 0.3;
-                }
+                bookTopics.add(topic.getTopicName());
             }
 
-            // 점수를 BookDataDto에 추가
-            book.addScore(score);
+            // 코사인 유사도 계산(장르와 토픽)
+            double genreSimilarity = similarityCalculator.cosineSimilarity(userGenres, List.of(bookGenre));
+            double topicSimilarity = similarityCalculator.cosineSimilarity(userTopics, bookTopics);
 
-            if (score > 0) {
-                filteredBooks.add(book);
+
+            // 최종 점수 계산 (장르: 60%, 주제어: 40%)
+            double totalScore = (genreSimilarity * 0.6) + (topicSimilarity * 0.4);
+
+            // 점수가 0 이상인 도서만 결과에 추가
+            if (totalScore > 0) {
+                contentScores.put(book, totalScore);
             }
         }
 
-        return filteredBooks;
+        return contentScores;
     }
 }

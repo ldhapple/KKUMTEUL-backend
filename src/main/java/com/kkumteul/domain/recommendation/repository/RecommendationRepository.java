@@ -6,9 +6,13 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
 
     @Query("SELECT r.book FROM Recommendation r WHERE r.childProfile.id = :childProfileId")
     Optional<List<Book>> findBookByChildProfileId(Long childProfileId);
+
+    @Query("SELECT r.book FROM Recommendation r WHERE r.childProfile.id = :userId")
+    List<Long> findLikedBooksByUser(@Param(value = "userId") Long userId);
 }

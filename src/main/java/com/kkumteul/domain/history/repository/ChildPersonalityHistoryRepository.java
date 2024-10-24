@@ -26,9 +26,7 @@ public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPe
 
     @EntityGraph(attributePaths = {
             "childProfile",
-            "mbtiScore.mbti",
-            "historyTopics.topic",
-            "historyGenres.genre"
+            "mbtiScore.mbti"
     })
     @Query("""
     SELECT ch 
