@@ -24,13 +24,9 @@ public class Genre {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] image;
 
-    @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Book> books = new ArrayList<>();
-
     @Builder
-    public Genre(String name, byte[] image, List<Book> books) {
+    public Genre(String name, byte[] image) {
         this.name = name;
         this.image = image;
-        this.books = books;
     }
 }

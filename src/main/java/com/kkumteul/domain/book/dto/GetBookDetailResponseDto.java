@@ -18,7 +18,7 @@ public class GetBookDetailResponseDto {
     private byte[] bookImage;
     private String mbtiInfo;
     private String bookSummary;
-    private Genre bookGenre;
+    private String genreName;
     private List<String> topicNames;
     private String age_group;
     private String bookPage;
@@ -32,7 +32,8 @@ public class GetBookDetailResponseDto {
         bookDetailResponseDto.bookAuthor = book.getAuthor();
         bookDetailResponseDto.bookImage = book.getBookImage();
         bookDetailResponseDto.bookSummary = book.getSummary();
-        bookDetailResponseDto.bookGenre = book.getGenre();
+        Genre genre = book.getGenre();
+        bookDetailResponseDto.genreName = genre.getName();
         bookDetailResponseDto.topicNames = book.getBookTopics().stream()
                 .map(BookTopic::getTopic)
                 .map(Topic::getName)
