@@ -1,6 +1,7 @@
 package com.kkumteul.domain.book.entity;
 
 
+import com.kkumteul.domain.personality.entity.Genre;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -33,6 +34,9 @@ public class Book {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] bookImage;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Genre genre;
+
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<BookTopic> bookTopics = new ArrayList<>();
 
@@ -44,6 +48,9 @@ public class Book {
 
 
     @Builder
+    public Book(String title, String author, String publisher, String price, String page, String age_group,
+                String summary,
+                byte[] bookImage, Genre genre, List<BookTopic> bookTopics) {
     public Book(String title, String author, String publisher, String price, String page, String summary, String age_group,
                 byte[] bookImage, List<BookTopic> bookTopics, List<BookGenre> bookGenres, List<BookMBTI> bookMBTIS) {
         this.title = title;
@@ -53,7 +60,9 @@ public class Book {
         this.page = page;
         this.summary = summary;
         this.age_group = age_group;
+        this.summary = summary;
         this.bookImage = bookImage;
+        this.genre = genre;
         this.bookTopics = bookTopics;
         this.bookGenres = bookGenres;
         this.bookMBTIS = bookMBTIS;
