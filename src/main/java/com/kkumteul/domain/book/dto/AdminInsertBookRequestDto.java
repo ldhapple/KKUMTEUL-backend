@@ -35,9 +35,6 @@ public class AdminInsertBookRequestDto {
     @NotNull(message = "Summary is required")
     private String summary;
 
-    @NotNull(message = "Book image is required")
-    private byte[] bookImage;
-
     // bookMbti
     @NotNull(message = "Book MBTI is required")
     private String bookMBTI;
