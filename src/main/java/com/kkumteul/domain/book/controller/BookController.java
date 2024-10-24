@@ -3,6 +3,7 @@ package com.kkumteul.domain.book.controller;
 import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
 import com.kkumteul.domain.book.dto.PostBookLikeRequestDto;
+import com.kkumteul.domain.book.entity.LikeType;
 import com.kkumteul.domain.book.service.BookService;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
@@ -39,20 +40,13 @@ public class BookController {
 
     // 좋아요 처리
     @PostMapping("/like")
-    public ApiSuccess<?> likeBook(@RequestBody PostBookLikeRequestDto bookLikeRequestDto){
+    public ApiSuccess<?> bookLike(@RequestBody PostBookLikeRequestDto bookLikeRequestDto){
 
-        bookService.likeBook(bookLikeRequestDto.getBookId(), bookLikeRequestDto.getChildProfileId());
+        LikeType likeType = bookLikeRequestDto.getLikeType();
 
-        return ApiUtil.success("좋아요 처리를 완료했습니다.");
-    }
+        bookService.bookLike(bookLikeRequestDto.getBookId(), bookLikeRequestDto.getChildProfileId(), likeType);
 
-    // 싫어요 처리
-    @PostMapping("/dislike")
-    public ApiSuccess<?> dislikeBook(@RequestBody PostBookLikeRequestDto bookLikeRequestDto){
-
-        bookService.dislikeBook(bookLikeRequestDto.getBookId(), bookLikeRequestDto.getChildProfileId());
-
-        return ApiUtil.success("싫어요 처리를 완료했습니다.");
+        return ApiUtil.success(likeType == LikeType.LIKE ? "좋아요 처리를 완료했습니다." : "싫어요 처리를 완료했습니다.");
     }
 
 

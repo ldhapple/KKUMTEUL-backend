@@ -1,5 +1,6 @@
 package com.kkumteul.domain.book.dto;
 
+import com.kkumteul.domain.book.entity.LikeType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,5 +9,6 @@ import lombok.Getter;
 public class PostBookLikeRequestDto {
     private final Long bookId;
     private final Long childProfileId;
+    private final LikeType likeType;
 }
 

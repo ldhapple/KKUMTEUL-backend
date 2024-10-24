@@ -48,52 +48,37 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    public void likeBook(Long bookId, Long childProfileId) {
+    public void bookLike(final Long bookId, final Long childProfileId, final LikeType likeType) {
         final Book book = bookRepository.findById(bookId)
-                .orElseThrow(()-> new RuntimeException("책을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("책을 찾을 수 없습니다."));
 
-        // 1. 도서에 좋아요/싫어요 버튼 눌렀는 지 확인
+        // 1. 도서에 좋아요/싫어요 버튼 상태 확인
         Optional<BookLike> existLike = bookLikeRepository.findByChildProfileAndBook(childProfileId, bookId);
 
-        if (existLike.isPresent()){
-            throw new RuntimeException("이미 좋아요를 눌렀습니다.");
+        if (existLike.isPresent()) {
+            // 2-1. 이미 있는 상태 확인
+            BookLike bookLike = existLike.get();
+
+            if (bookLike.getLikeType() == likeType) {
+                throw new RuntimeException(likeType == LikeType.LIKE ? "이미 좋아요를 눌렀습니다." : "이미 싫어요를 눌렀습니다.");
+            } else {
+            // 2-2. 상태 변경
+                bookLike.updateLikeType(likeType);
+                bookLike.updateUpdateAt();
+
+                bookLikeRepository.save(bookLike);
+            }
+        } else {
+            // 3. 처음 누를 때
+            BookLike booklike = BookLike.builder()
+                    .book(book)
+                    .childProfile(childProfileRepository.findById(childProfileId)
+                            .orElseThrow(() -> new RuntimeException("자녀를 찾을 수 없습니다.")))
+                    .likeType(likeType)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            bookLikeRepository.save(booklike);
         }
-
-        BookLike booklike = BookLike.builder()
-                .book(book)
-                .childProfile(childProfileRepository.findById(childProfileId)
-                        .orElseThrow(()-> new RuntimeException("자녀를 찾을 수 없습니다.")))
-                .likeType(LikeType.LIKE)
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        bookLikeRepository.save(booklike);
-
     }
-
-    @Override
-    @Transactional
-    public void dislikeBook(Long bookId, Long childProfileId) {
-        final Book book = bookRepository.findById(bookId)
-                .orElseThrow(()-> new RuntimeException("책을 찾을 수 없습니다."));
-
-        // 1. 도서에 좋아요/싫어요 버튼 눌렀는 지 확인
-        Optional<BookLike> existLike = bookLikeRepository.findByChildProfileAndBook(childProfileId, bookId);
-
-        if (existLike.isPresent()){
-            throw new RuntimeException("이미 싫어요를 눌렀습니다.");
-        }
-
-        BookLike booklike = BookLike.builder()
-                .book(book)
-                .childProfile(childProfileRepository.findById(childProfileId)
-                        .orElseThrow(()-> new RuntimeException("자녀를 찾을 수 없습니다.")))
-                .likeType(LikeType.DISLIKE)
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        bookLikeRepository.save(booklike);
-
-    }
-
 }

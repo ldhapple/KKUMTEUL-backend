@@ -2,6 +2,7 @@ package com.kkumteul.domain.book.service;
 
 import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
+import com.kkumteul.domain.book.entity.LikeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,6 +15,5 @@ public interface BookService {
     GetBookDetailResponseDto getBookDetail(final Long bookId);
 
     // 좋아요, 싫어요 처리
-    void likeBook(Long bookId, Long childProfileId);
-    void dislikeBook(Long bookId, Long childProfileId);
+    void bookLike(Long bookId, Long childProfileId, LikeType likeType);
 }
