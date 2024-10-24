@@ -39,42 +39,17 @@ public class AdminBookControllerTest {
     void testAdminInsertBook() throws Exception {
         // Given: 테스트에 사용할 더미 데이터 생성
         AdminInsertBookRequestDto requestDto = new AdminInsertBookRequestDto(
-                "Sample Book Title",
-                "John Doe",
-                "Sample Publisher",
-                "25000",
+                "신데렐라",
+                "샤를 페로",
+                "꿈틀 출판사",
+                "18000",
                 "350",
                 "8세",
-                "This is a sample summary for the book.",
+                "신데렐라는 어려서..",
                 "U29tZUJhc2U2NEVuY29kZWRJbWFnZURhdGE=".getBytes(),
-
-                new MBTI(
-                        MBTIName.valueOf("INTJ"),
-                        "The Architect",
-                        "Analytical and logical, often focused on the bigger picture.",
-                        "U29tZUJhc2U2NEVuY29kZWRJbWFnZURhdGE=".getBytes()
-                ),
-                List.of(
-                        new Genre(
-                                "Fiction",
-                                "U29tZUJhc2U2NEVuY29kZWRJbWFnZURhdGE=".getBytes()
-                        ),
-
-                        new Genre(
-                                "Adventure",
-                                "U29tZUJhc2U2NEVuY29kZWRJbWFnZURhdGE=".getBytes()
-                        )
-                ),
-                List.of(
-                        new Topic(
-                                "Leadership",
-                                "U29tZUJhc2U2NEVuY29kZWRJbWFnZURhdGE=".getBytes()
-                        ),
-                        new Topic(
-                                "Self-Development",
-                                "U29tZUJhc2U2NEVuY29kZWRJbWFnZURhdGE=".getBytes()
-                        )
-                )
+                "ENFP",
+                "외국동화",
+                List.of("영웅", "인물")
         );
 
         // Mocking: bookService.insertBook 호출 시, 응답은 단순 성공 메시지로 설정
