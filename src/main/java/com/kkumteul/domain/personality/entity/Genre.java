@@ -1,6 +1,6 @@
 package com.kkumteul.domain.personality.entity;
 
-import com.kkumteul.domain.book.entity.BookGenre;
+import com.kkumteul.domain.book.entity.Book;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,12 +25,12 @@ public class Genre {
     private byte[] image;
 
     @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookGenre> bookGenres = new ArrayList<>();
+    private List<Book> books = new ArrayList<>();
 
     @Builder
-    public Genre(String name, byte[] image, List<BookGenre> bookGenres) {
+    public Genre(String name, byte[] image, List<Book> books) {
         this.name = name;
         this.image = image;
-        this.bookGenres = bookGenres;
+        this.books = books;
     }
 }

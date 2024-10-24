@@ -1,7 +1,6 @@
 package com.kkumteul.domain.book.dto;
 
 import com.kkumteul.domain.book.entity.Book;
-import com.kkumteul.domain.book.entity.BookGenre;
 import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
@@ -19,7 +18,7 @@ public class GetBookDetailResponseDto {
     private byte[] bookImage;
     private String mbtiInfo;
     private String bookSummary;
-    private String bookGenre;
+    private Genre bookGenre;
     private List<String> topicNames;
     private String age_group;
     private String bookPage;
@@ -33,7 +32,7 @@ public class GetBookDetailResponseDto {
         bookDetailResponseDto.bookAuthor = book.getAuthor();
         bookDetailResponseDto.bookImage = book.getBookImage();
         bookDetailResponseDto.bookSummary = book.getSummary();
-        bookDetailResponseDto.bookGenre = book.getBookGenres().get(0).getGenre().getName();
+        bookDetailResponseDto.bookGenre = book.getGenre();
         bookDetailResponseDto.topicNames = book.getBookTopics().stream()
                 .map(BookTopic::getTopic)
                 .map(Topic::getName)
