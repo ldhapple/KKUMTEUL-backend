@@ -6,10 +6,8 @@ import com.kkumteul.util.ApiUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.kkumteul.util.ApiUtil.ApiSuccess;
 
@@ -23,8 +21,11 @@ public class AdminBookController {
 
     // 1. 도서 등록
     @PostMapping
-    public ApiSuccess<?> insertBook(@Valid @RequestBody AdminInsertBookRequestDto adminInsertBookRequestDto) {
-        bookService.insertBook(adminInsertBookRequestDto);
+    public ApiSuccess<?> insertBook(
+            @RequestPart(value = "image") MultipartFile image,
+            @RequestPart(value = "book") AdminInsertBookRequestDto adminInsertBookRequestDto
+    ) {
+        bookService.insertBook(adminInsertBookRequestDto, image);
 
         return ApiUtil.success("book insert successfully");
     }
