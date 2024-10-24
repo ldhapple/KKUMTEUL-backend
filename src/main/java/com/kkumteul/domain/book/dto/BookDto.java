@@ -1,9 +1,18 @@
 package com.kkumteul.domain.book.dto;
 
 import com.kkumteul.domain.book.entity.Book;
+import com.kkumteul.domain.book.entity.BookTopic;
+import com.kkumteul.domain.personality.entity.Genre;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @ToString
@@ -18,6 +27,8 @@ public class BookDto {
     private String ageGroup;
     private String summary;
     private byte[] bookImage;
+    private Genre genre;
+    private List<BookTopic> bookTopics;
 
     public static BookDto fromEntity(Book book) {
         return new BookDto(
@@ -29,7 +40,9 @@ public class BookDto {
                 book.getPage(),
                 book.getAgeGroup(),
                 book.getSummary(),
-                book.getBookImage()
+                book.getBookImage(),
+                book.getGenre(),
+                book.getBookTopics()
         );
     }
 }

@@ -1,13 +1,11 @@
 package com.kkumteul.domain.book.entity;
 
+import com.kkumteul.domain.personality.entity.Genre;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,16 +33,25 @@ public class Book {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] bookImage;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Genre genre;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    private List<BookTopic> bookTopics = new ArrayList<>();
+
     @Builder
-    public Book(String title, String author, String publisher, String price, String page, String summary,
-                String ageGroup, byte[] bookImage) {
+    public Book(String title, String author, String publisher, String price, String page, String ageGroup,
+                String summary,
+                byte[] bookImage, Genre genre, List<BookTopic> bookTopics) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
         this.price = price;
         this.page = page;
-        this.summary = summary;
         this.ageGroup = ageGroup;
+        this.summary = summary;
         this.bookImage = bookImage;
+        this.genre = genre;
+        this.bookTopics = bookTopics;
     }
 }
