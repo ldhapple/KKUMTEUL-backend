@@ -2,15 +2,14 @@ package com.kkumteul.domain.book.controller;
 
 import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
+import com.kkumteul.domain.book.dto.PostBookLikeRequestDto;
 import com.kkumteul.domain.book.service.BookService;
 import com.kkumteul.util.ApiUtil;
+import com.kkumteul.util.ApiUtil.ApiSuccess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -22,7 +21,7 @@ public class BookController {
 
     // 전체 도서 목록 조회
     @GetMapping
-    public ApiUtil.ApiSuccess<?> getBookList(final Pageable pageable){
+    public ApiSuccess<?> getBookList(final Pageable pageable){
 
         Page<GetBookListResponseDto> bookList = bookService.getBookList(pageable);
 
@@ -31,10 +30,30 @@ public class BookController {
 
     // 상세 도서 조회
     @GetMapping("/{bookId}")
-    public ApiUtil.ApiSuccess<?> getBookDetail(@PathVariable("bookId") final Long bookId){
+    public ApiSuccess<?> getBookDetail(@PathVariable("bookId") final Long bookId){
 
         GetBookDetailResponseDto bookDetail = bookService.getBookDetail(bookId);
 
         return ApiUtil.success(bookDetail);
     }
+
+    // 좋아요 처리
+    @PostMapping("/like")
+    public ApiSuccess<?> likeBook(@RequestBody PostBookLikeRequestDto bookLikeRequestDto){
+
+        bookService.likeBook(bookLikeRequestDto.getBookId(), bookLikeRequestDto.getChildProfileId());
+
+        return ApiUtil.success("좋아요 처리를 완료했습니다.");
+    }
+
+    // 싫어요 처리
+    @PostMapping("/dislike")
+    public ApiSuccess<?> dislikeBook(@RequestBody PostBookLikeRequestDto bookLikeRequestDto){
+
+        bookService.dislikeBook(bookLikeRequestDto.getBookId(), bookLikeRequestDto.getChildProfileId());
+
+        return ApiUtil.success("싫어요 처리를 완료했습니다.");
+    }
+
+
 }

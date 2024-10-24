@@ -12,4 +12,8 @@ public interface BookService {
 
     // 상세 도서 조회
     GetBookDetailResponseDto getBookDetail(final Long bookId);
+
+    // 좋아요, 싫어요 처리
+    void likeBook(Long bookId, Long childProfileId);
+    void dislikeBook(Long bookId, Long childProfileId);
 }
