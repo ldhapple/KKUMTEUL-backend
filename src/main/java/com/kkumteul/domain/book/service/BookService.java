@@ -17,7 +17,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,15 +37,23 @@ public class BookService {
     private final TopicService topicService;
 
     // 1. 도서 등록
-    public BookDto insertBook(AdminInsertBookRequestDto adminInsertBookRequestDto){
+    public BookDto insertBook(AdminInsertBookRequestDto adminInsertBookRequestDto, MultipartFile image){
 
-        // 1.1. 장르 이름 >> 장르 객체 변환 (String -> Genre)
+        // 1.1. 이미지 처리 (MultipartFile -> byte[])
+        byte[] bookImage;
+        try {
+            bookImage = image.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to convert image to bytes", e);
+        }
+
+        // 1.2. 장르 이름 >> 장르 객체 변환 (String -> Genre)
         Genre genre = genreService.getGenre(adminInsertBookRequestDto.getBookGenre());
 
-        // 1.2. BookTopics 엔티티 생성
+        // 1.3. BookTopics 엔티티 생성
         List<BookTopic> bookTopics = new ArrayList<>();
 
-        // 1.3. requestDto >> Book 엔티티 생성 및 저장
+        // 1.4. requestDto >> Book 엔티티 생성 및 저장
         Book book = Book.builder()
                 .title(adminInsertBookRequestDto.getTitle())
                 .author(adminInsertBookRequestDto.getAuthor())
@@ -52,15 +62,15 @@ public class BookService {
                 .page(adminInsertBookRequestDto.getPage())
                 .ageGroup(adminInsertBookRequestDto.getAgeGroup())
                 .summary(adminInsertBookRequestDto.getSummary())
-                .bookImage(adminInsertBookRequestDto.getBookImage())
+                .bookImage(bookImage)
                 .genre(genre)
                 .bookTopics(bookTopics)
                 .build();
 
-        // 1.4. Book 등록
+        // 1.5. Book 등록
         Book savedBook = bookRepository.save(book);
 
-        // 1.5. BookTopics 에 요청한 Topic 데이터 저장
+        // 1.6. BookTopics 에 요청한 Topic 데이터 저장
         for (String topicName : adminInsertBookRequestDto.getBookTopicList()){
             // 요청한 Topic 객체 가져오기
             Topic topic = topicService.getTopic(topicName);
@@ -74,7 +84,7 @@ public class BookService {
             bookTopics.add(bookTopic);
         }
 
-        // 1.6. BookMbti 엔티티 생성 및 저장
+        // 1.7. BookMbti 엔티티 생성 및 저장
         {
             // BookMbti 등록 전, 요청한 MBTI 객체 가져오기
             MBTI mbti = mbtiService.getMBTI(adminInsertBookRequestDto.getBookMBTI());
