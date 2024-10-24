@@ -1,5 +1,18 @@
 package com.kkumteul.domain.childprofile.service;
 
+
+import com.kkumteul.domain.book.dto.BookLikeDto;
+import com.kkumteul.domain.book.repository.BookLikeRepository;
+import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
+import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
+import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
+import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.stream.Collectors;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
 import com.kkumteul.domain.childprofile.entity.Gender;
@@ -27,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,6 +53,33 @@ public class ChildProfileService {
     private final TopicScoreRepository topicScoreRepository;
     private final GenreRepository genreRepository;
     private final TopicRepository topicRepository;
+    private final ChildPersonalityHistoryRepository childPersonalityHistoryRepository;
+    private final BookLikeRepository bookLikeRepository;
+    
+    public ChildProfileResponseDto getChildProfileDetail(Long childProfileId) {
+        log.info("childProfile id: {}", childProfileId);
+
+        ChildProfile childProfile = childProfileRepository.findById(childProfileId)
+                // TODO: 전역 예외 처리로 변경하기
+                .orElseThrow(() -> new IllegalArgumentException("child profile not found"));
+        log.info("Child profile found: {}", childProfile.getName());
+
+
+        // 1-1. 자녀가 좋아하는 도서 리스트
+        List<BookLikeDto> likedBooks = bookLikeRepository.findBookLikesWithBookByChildProfileId(childProfileId).stream()
+                .map(BookLikeDto::fromEntity)
+                .toList();
+        log.info("Number of books liked by child (childProfile iD: {}): {}", childProfileId, likedBooks.size());
+
+
+        // 1-2. 자녀 성향 진단 및 변화 히스토리
+        List<ChildPersonalityHistoryDto> childPersonalityHistories = childPersonalityHistoryRepository.findHistoryWithMBTIByChildProfileId(childProfileId).stream()
+                .map(ChildPersonalityHistoryDto::fromEntity)
+                .toList();
+        log.info("Number of personality histories by child (childProfile iD: {}): {}", childProfileId, childPersonalityHistories.size());
+
+        return new ChildProfileResponseDto(childProfile.getName(), likedBooks, childPersonalityHistories);
+    }
 
     public ChildProfile createChildProfile(String name, Gender gender, Date birthDate, byte[] profileImage, User user) {
         //입력 매개변수 DTO로 수정
@@ -138,6 +179,5 @@ public class ChildProfileService {
         log.info("validate exist childProfile: {}", childProfileId);
         childProfileRepository.findById(childProfileId).orElseThrow(
                 () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
-
     }
 }

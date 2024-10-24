@@ -1,11 +1,29 @@
 package com.kkumteul.domain.childprofile.controller;
 
+import com.kkumteul.domain.book.dto.BookLikeDto;
+import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
+import com.kkumteul.domain.childprofile.service.ChildProfileService;
+import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
+import com.kkumteul.domain.history.entity.HistoryCreatedType;
+import com.kkumteul.domain.mbti.entity.MBTIName;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import java.time.LocalDateTime;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
 import com.kkumteul.domain.childprofile.service.ChildProfileService;
 import com.kkumteul.exception.ChildProfileNotFoundException;
@@ -25,6 +43,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @WebMvcTest(ChildProfileController.class)
 class ChildProfileControllerTest {
 
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -32,6 +51,34 @@ class ChildProfileControllerTest {
     private ChildProfileService childProfileService;
 
     @Test
+    @DisplayName("자녀 정보 조회 테스트 - 조회 성공")
+    void getChildProfile_success() throws Exception {
+        Long childProfileId = 1L;
+        String childName = "childName";
+
+        List<BookLikeDto> bookLikeList = List.of(
+                new BookLikeDto(1L, "title1", new byte[0]),
+                new BookLikeDto(2L, "title2", new byte[0])
+        );
+
+        List<ChildPersonalityHistoryDto> childPersonalityHistoryList = List.of(
+                new ChildPersonalityHistoryDto(MBTIName.INFJ, "멋져요", new byte[0], LocalDateTime.now(), HistoryCreatedType.DIAGNOSIS),
+                new ChildPersonalityHistoryDto(MBTIName.INFJ, "착해요", new byte[0], LocalDateTime.now(), HistoryCreatedType.DIAGNOSIS)
+        );
+
+        ChildProfileResponseDto childProfileResponseDto = new ChildProfileResponseDto(
+                childName,
+                bookLikeList,
+                childPersonalityHistoryList
+        );
+
+        given(childProfileService.getChildProfileDetail(childProfileId)).willReturn(childProfileResponseDto);
+
+        mockMvc.perform(get("/api/childProfiles/{childProfileId}", childProfileId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.childName").value("childName"));
+    }
+  
     @DisplayName("자녀 프로필 조회 API 성공 테스트")
     void testGetChildProfiles() throws Exception {
         Long userId = 1L;
@@ -40,9 +87,9 @@ class ChildProfileControllerTest {
                 new ChildProfileDto(1L, "lee")
         );
 
-        given(childProfileService.getChildProfile(userId)).willReturn(findChildProfiles);
+        given(childProfileService.getChildProfileList(userId)).willReturn(findChildProfiles);
 
-        mockMvc.perform(get("/api/child-profile"))
+        mockMvc.perform(get("/api/childProfiles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response").isArray())
                 .andExpect(jsonPath("$.response[0].childName").value("lee"));
@@ -71,7 +118,7 @@ class ChildProfileControllerTest {
         //validateChildProfile()이 아무런 동작을 하지 않아도 session에 정상적으로 담기는 지 확인할 수 있음.
         //오히려 예외를 던지면 안됨.
 
-        mockMvc.perform(post("/api/child-profile/switch")
+        mockMvc.perform(post("/api/childProfiles/switch")
                         .param("childProfileId", String.valueOf(validProfileId))
                         .session(session))
 //                        .with(csrf()))
@@ -91,7 +138,7 @@ class ChildProfileControllerTest {
         doThrow(new IllegalArgumentException("childProfile not found - childProfileId : " + invalidProfileId))
                 .when(childProfileService).validateChildProfile(invalidProfileId);
 
-        mockMvc.perform(post("/api/child-profile/switch")
+        mockMvc.perform(post("/api/childProfiles/switch")
                         .param("childProfileId", String.valueOf(invalidProfileId)))
 //                        .with(csrf()))
                 .andExpect(status().isNotFound());
