@@ -41,6 +41,7 @@ public class Book {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Genre genre;
 
+
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
     @BatchSize(size = 10)
     private Set<BookTopic> bookTopics = new HashSet<>();
