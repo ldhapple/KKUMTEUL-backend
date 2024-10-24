@@ -11,6 +11,8 @@ import com.kkumteul.domain.user.respository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -20,22 +22,25 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@EnableCaching
 public class EventService {
 
     private final JoinEventRepository joinEventRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    @Transactional
     public void insertJoinEvent(Long userId, EventRequestDto eventRequestDto) {
         log.info("user id: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("user not found: " + userId));
 
-        Event event = eventRepository.findById(eventRequestDto.getEventId())
-                .orElseThrow(() -> new IllegalArgumentException("event not found: " + eventRequestDto.getEventId()));
+        Event event = getEventById(eventRequestDto.getEventId());
+//        Event event = eventRepository.findById(eventRequestDto.getEventId())
+//                .orElseThrow(() -> new IllegalArgumentException("event not found: " + eventRequestDto.getEventId()));
 
-        isEventInProgress(event);
+        LocalDateTime now = LocalDateTime.now();
+        isEventInProgress(event, now);
 
         boolean isValidUser = isValidUser(user, eventRequestDto);
         log.info("Is valid user: {}", isValidUser);
@@ -53,31 +58,26 @@ public class EventService {
                 .user(user)
                 .name(eventRequestDto.getName())
                 .phoneNumber(eventRequestDto.getPhoneNumber())
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
                 .event(event)
                 .isWin(false)
                 .build();
 
         JoinEvent savedJoinEvent = joinEventRepository.save(joinEvent);
         log.info("Check saved join event user name: {}", savedJoinEvent.getUser().getUsername());
-
     }
 
     private boolean isValidUser(User user, EventRequestDto eventRequestDto) {
         return user.getUsername().equals(eventRequestDto.getName()) && user.getPhoneNumber().equals(eventRequestDto.getPhoneNumber());
     }
 
-    private void isEventInProgress(Event event) {
-        LocalDateTime now = LocalDateTime.now();
-
+    private void isEventInProgress(Event event, LocalDateTime now) {
         if (event.getStartDate().isAfter(now)) {
             long minutesLeft = Duration.between(now, event.getStartDate()).toMinutes();
-            log.warn("Event start not yet, left time: {} minutes", minutesLeft);
             throw new IllegalArgumentException("이벤트가 곧 시작됩니다. 조금만 기다려 주세요!");
         }
 
         if (event.getExpiredDate().isBefore(now)) {
-            log.warn("Event expired");
             throw new IllegalArgumentException("종료된 이벤트입니다.");
         }
 
@@ -92,7 +92,11 @@ public class EventService {
         List<JoinEvent> joinEventList = user.getJoinEventList();
 
         return joinEventList.stream().map(EventResultResponseDto::fromEntity).toList();
-
     }
 
+    @Cacheable(value = "event", key = "#eventId")
+    public Event getEventById(Long eventId) {
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("event not found: " + eventId));
+    }
 }
