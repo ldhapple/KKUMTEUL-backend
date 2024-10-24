@@ -33,13 +33,13 @@ public class UserController {
     }
 
     // 2. 유저 정보 수정
-    @PostMapping("{userId}")
+    @PatchMapping("{userId}")
     public ApiSuccess<?> updateUser(
             @PathVariable(name = "userId") Long userId,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-            @RequestPart(value = "nickName") String nickName,
-            @RequestPart(value = "password") String password,
-            @RequestPart(value = "phoneNumber") String phoneNumber) throws IOException {
+            @RequestPart(value = "nickName", required = false) String nickName,
+            @RequestPart(value = "password", required = false) String password,
+            @RequestPart(value = "phoneNumber", required = false) String phoneNumber) throws IOException {
         // TODO: 추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
 
         UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(nickName, password, phoneNumber);

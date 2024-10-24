@@ -42,10 +42,12 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
         // TODO: 비밀번호 암호화하는 로직 추가
-        byte[] byteProfileImage = profileImage.getBytes();
-
+        if (profileImage != null) {
+            byte[] byteProfileImage = profileImage.getBytes();
+            user.updateProfileImage(byteProfileImage);
+        }
         user.update(userUpdateRequestDto);
-        user.updateProfileImage(byteProfileImage);
+
     }
 
     // 3. 유저 탈퇴
