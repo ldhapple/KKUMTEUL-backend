@@ -45,7 +45,8 @@ public class AdminGetBookDetailResponseDto {
                         .toList(),
                 book.getBookMBTIs().get(0)
                         .getMbti()
-                        .getTitle(),
+                        .getMbti()
+                        .name(),
                 book.getSummary(),
                 book.getPage()
         );
