@@ -1,5 +1,7 @@
 package com.kkumteul.domain.book.service;
 
+import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
+import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
 import com.kkumteul.domain.book.dto.AdminInsertBookRequestDto;
 import com.kkumteul.domain.book.dto.BookDto;
 import com.kkumteul.domain.book.entity.Book;
@@ -16,12 +18,18 @@ import com.kkumteul.exception.BookNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -100,12 +108,20 @@ public class BookService {
         return BookDto.fromEntity(savedBook);
     }
 
-    // 2. 도서 조회
-    public BookDto getBookById(Long id) {
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new BookNotFoundException(id));
-        BookDto getBookDto = BookDto.fromEntity(book);
+    // 2. 관리자의 전체 도서 목록 조회
+    public Page<AdminGetBookListResponseDto> getAdminBookList(final Pageable pageable) {
 
-        return getBookDto;
+        final Page<Book> books = bookRepository.findAllBookInfo(pageable);
+
+        return books.map(AdminGetBookListResponseDto::fromEntity);
+    }
+
+    // 3. 관리자의 도서 상세 조회
+    public AdminGetBookDetailResponseDto getBookDetailById(final Long bookId) {
+
+        final Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        return AdminGetBookDetailResponseDto.fromEntity(book);
     }
 }
