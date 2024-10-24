@@ -16,22 +16,25 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChildPersonalityHistoryGenre {
+public class FavoriteGenre {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id")
-    private ChildPersonalityHistory history;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "history_id")
+    private ChildPersonalityHistory history;
+
     @Builder
-    public ChildPersonalityHistoryGenre(ChildPersonalityHistory history, Genre genre) {
-        this.history = history;
+    public FavoriteGenre(Genre genre) {
         this.genre = genre;
+    }
+
+    public void setHistory(ChildPersonalityHistory history) {
+        this.history = history;
     }
 }

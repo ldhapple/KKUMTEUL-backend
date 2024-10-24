@@ -1,10 +1,12 @@
 package com.kkumteul.domain.recommendation.filter;
 
 import com.kkumteul.domain.recommendation.dto.ChildDataDto;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class CollaborativeFilter {
 
 
