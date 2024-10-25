@@ -141,9 +141,8 @@ public class ChildProfileService {
                 () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
     }
 
-    @Cacheable(value = "childProfile", key = "#childProfileId")
     @Transactional(readOnly = true)
-    public ChildProfile getChildProfileWithCache(Long childProfileId) {
+    public ChildProfile getChildProfileWithMBTIScore(Long childProfileId) {
         log.info("get Book - bookID: {}", childProfileId);
         return childProfileRepository.findByIdWithCumulatvieMBTIScore(childProfileId)
                 .orElseThrow(() -> new EntityNotFoundException(childProfileId));

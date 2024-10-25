@@ -15,6 +15,7 @@ import com.kkumteul.domain.history.entity.MBTIScore;
 import com.kkumteul.domain.history.service.ChildPersonalityHistoryService;
 import com.kkumteul.util.redis.RedisKey;
 import com.kkumteul.util.redis.RedisUtil;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +82,7 @@ public class ChangePersonalityBatchConfig {
             Long bookId = Long.parseLong(data[1]);
             String action = data[2];
 
-            ChildProfile childProfile = childProfileService.getChildProfileWithCache(childProfileId);
+            ChildProfile childProfile = childProfileService.getChildProfileWithMBTIScore(childProfileId);
             Book book = bookService.getBookWithCache(bookId);
 
             double changedScore = action.equals("LIKE") ? 2.0 : -2.0;
