@@ -59,11 +59,10 @@ class UserRepositoryTest {
     @DisplayName("유저 조회 테스트")
     void getUser() {
         //given
-        Long userId = 5L;
-        userRepository.save(user);
+        User saveUser = userRepository.save(user);
 
         //when
-        Optional<User> user = userRepository.findByIdWithChildProfiles(userId);
+        Optional<User> user = userRepository.findByIdWithChildProfiles(saveUser.getId());
 
         //then
         assertThat(user).isNotEmpty();
