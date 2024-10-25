@@ -160,4 +160,13 @@ public class ChildPersonalityHistoryService {
                 .map(TopicScore::getTopic)
                 .toList();
     }
+  
+    public void deleteHistory(Long historyId) {
+        log.info("delete History Id: {}", historyId);
+
+        ChildPersonalityHistory history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new HistoryNotFoundException(historyId));
+
+        history.delete();
+    }
 }
