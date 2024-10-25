@@ -18,4 +18,8 @@ public class BookTopicService {
     public BookTopic insertBookTopic(BookTopic bookTopic) {
         return bookTopicRepository.save(bookTopic);
     }
+
+    public void deleteBookTopicByBookId(Long bookId) {
+        bookTopicRepository.deleteByBookId(bookId);
+    }
 }
