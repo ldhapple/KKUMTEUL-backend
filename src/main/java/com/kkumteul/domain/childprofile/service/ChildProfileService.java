@@ -8,8 +8,10 @@ import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
 import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
+import com.kkumteul.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,5 +139,13 @@ public class ChildProfileService {
         log.info("validate exist childProfile: {}", childProfileId);
         childProfileRepository.findById(childProfileId).orElseThrow(
                 () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
+    }
+
+    @Cacheable(value = "childProfile", key = "#childProfileId")
+    @Transactional(readOnly = true)
+    public ChildProfile getChildProfileWithCache(Long childProfileId) {
+        log.info("get Book - bookID: {}", childProfileId);
+        return childProfileRepository.findByIdWithCumulatvieMBTIScore(childProfileId)
+                .orElseThrow(() -> new EntityNotFoundException(childProfileId));
     }
 }
