@@ -114,8 +114,6 @@ public class ChangePersonalityBatchConfig {
         historyService.updatePreferredGenresByScore(history, genreScores);
         historyService.updatePreferredTopicsByScore(history, topicScores);
 
-        historyService.saveHistory(history);
-
         log.info("Create History - ChildProfile ID: {}", childProfile.getId());
     }
 }
