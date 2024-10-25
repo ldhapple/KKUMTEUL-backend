@@ -2,7 +2,7 @@ package com.kkumteul.domain.book.controller;
 
 import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
-import com.kkumteul.domain.book.dto.AdminInsertBookRequestDto;
+import com.kkumteul.domain.book.dto.AdminBookRequestDto;
 import com.kkumteul.domain.book.service.BookService;
 import com.kkumteul.util.ApiUtil;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 import static com.kkumteul.util.ApiUtil.ApiSuccess;
 
@@ -28,7 +26,7 @@ public class AdminBookController {
     @PostMapping
     public ApiSuccess<?> insertBook(
             @RequestPart(value = "image") MultipartFile image,
-            @RequestPart(value = "book") AdminInsertBookRequestDto adminInsertBookRequestDto) {
+            @RequestPart(value = "book") AdminBookRequestDto adminInsertBookRequestDto) {
 
         bookService.insertBook(adminInsertBookRequestDto, image);
 
@@ -51,5 +49,17 @@ public class AdminBookController {
         AdminGetBookDetailResponseDto bookDetail = bookService.getBookDetailById(bookId);
 
         return ApiUtil.success(bookDetail);
+    }
+
+    // 4. 관리자의 도서 갱신
+    @PutMapping("/{bookId}")
+    public ApiSuccess<?> updateBook(
+            @PathVariable("bookId") final Long bookId,
+            @RequestPart(value = "image") MultipartFile image,
+            @RequestPart(value = "book") AdminBookRequestDto adminUpdateBookRequestDto) {
+
+        bookService.UpdateBook(bookId, adminUpdateBookRequestDto, image);
+
+        return ApiUtil.success("book update successfully");
     }
 }
