@@ -13,6 +13,7 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Query("SELECT r.book FROM Recommendation r WHERE r.childProfile.id = :childProfileId")
     Optional<List<Book>> findBookByChildProfileId(Long childProfileId);
 
-    @Query("SELECT r.book FROM Recommendation r WHERE r.childProfile.id = :userId")
-    List<Long> findLikedBooksByUser(@Param(value = "userId") Long userId);
+
+    @Query("delete from Recommendation r where r.childProfile.id = :id")
+    void deleteAllByChildProfileId(Long id);
 }

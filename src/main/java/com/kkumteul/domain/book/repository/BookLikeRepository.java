@@ -20,5 +20,8 @@ public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
 
     @Query("SELECT b FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :ids AND l.likeType = 'LIKE'")
     Page<Book> findBookLikeByUser(@Param("ids") Set<Long> ids, Pageable pageable);
+
+    @Query("SELECT b.id FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :userId AND l.likeType = 'LIKE'")
+    List<Long> findLikedBooksByUser(@Param(value = "userId") Long userId);
 }
 

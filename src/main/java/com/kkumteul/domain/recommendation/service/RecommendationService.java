@@ -10,6 +10,7 @@ import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.history.entity.FavoriteGenre;
 import com.kkumteul.domain.history.entity.FavoriteTopic;
 import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
+import com.kkumteul.domain.recommendation.entity.Recommendation;
 import com.kkumteul.domain.recommendation.repository.RecommendationRepository;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
 
@@ -20,11 +21,11 @@ import com.kkumteul.domain.recommendation.filter.CollaborativeFilter;
 import com.kkumteul.domain.recommendation.filter.ContentBasedFilter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Optional;
 
-import com.kkumteul.domain.recommendation.repository.RecommendationRepository;
-import com.kkumteul.exception.RecommendationBookNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,19 +53,19 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     public List<RecommendBookDto> getRecommendedBooks(Long childProfileId) {
-        log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
+//        log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
         List<Book> recommendBooks = recommendationRepository.findBookByChildProfileId(childProfileId)
                 .orElseThrow(() -> new RecommendationBookNotFoundException(childProfileId));
 
-        log.info("found recommendedBooks: {}", recommendBooks.size());
+//        log.info("found recommendedBooks: {}", recommendBooks.size());
         return recommendBooks.stream()
                 .map(RecommendBookDto::fromEntity)
                 .toList();
     }
 
-//    @Scheduled(cron = "0 0 0 * * ?")
     // 추천 로직
-    public List<BookDataDto> getRecommendations(Long userId) {
+    public List<Book> getRecommendations(Long userId, List<BookDataDto> allBooks, List<ChildDataDto> childDataList) {
+
         // 1. 자녀 프로필 정보 조회
         ChildProfile childProfile = childProfileRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -74,8 +75,6 @@ public class RecommendationService {
                 .orElseThrow(() -> new IllegalArgumentException("정보 조회에 문제가 발생했습니다."));
 
         // 3. 도서 정보 가져오기
-        List<Book> books = bookRepository.findAllBooksWithTopicsAndGenre();
-        List<BookDataDto> allBooks = getAllBookInfo(books);
 
         // 4. 콘텐츠 기반 필터링 수행 - 결과를 bookId로 매핑
         Map<Long, Double> contentScores = contentBasedFilter.filterBooksByUserPreferences(childDataDto, allBooks)
@@ -86,7 +85,6 @@ public class RecommendationService {
                 ));
 
         // 5. 협업 필터링 수행 - 유사한 사용자의 좋아요 도서 가중치 점수 가져오기
-        List<ChildDataDto> childDataList = getChildrenInfo(); // 모든 자녀 데이터 조회
 
         // 유사한 프로필 찾기
         List<ChildDataDto> similarProfiles = collaborativeFilter.findSimilarProfiles(childDataDto, childDataList);
@@ -111,31 +109,58 @@ public class RecommendationService {
             book.setScore(finalScore);
             finalScores.put(book, finalScore);
 
-            log.info("책: {} | 콘텐츠 점수: {} | 협업 점수: {} | 최종 점수: {}",
-                    book.getTitle(), contentScore, collaborativeScore, finalScore);
+//            log.info("책: {} | 콘텐츠 점수: {} | 협업 점수: {} | 최종 점수: {}",
+//                    book.getTitle(), contentScore, collaborativeScore, finalScore);
         }
 
         // 7. 최종 추천 도서 필터링 (점수 상위 5개 뽑기)
-        List<BookDataDto> recommendedBooks = finalScores.entrySet().stream()
-                .peek(entry -> entry.getKey().setScore(entry.getValue())) // BookDataDto 객체에 점수 설정
-                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue())) // 점수 내림차순 정렬
-                .limit(5) // 상위 5개 추출
-                .map(Map.Entry::getKey) // BookDataDto 추출
-                .collect(Collectors.toList());
+        return finalRecommendedBooks(finalScores, childDataDto);
+    }
 
-        // 8. Fallback: 추천 도서가 5개 미만일 경우 기본 추천 목록으로 채우기
+    // 최종 추천
+    public List<Book> finalRecommendedBooks(Map<BookDataDto, Double> finalScores, ChildDataDto childDataDto) {
+        // 1. 상위 50개 추천 도서(BookDataDto)를 점수 기준으로 추출
+        List<BookDataDto> topBookDtos = new ArrayList<>(finalScores.keySet());
+
+        // 2. 점수 내림차순 정렬
+        topBookDtos.sort((dto1, dto2) -> Double.compare(finalScores.get(dto2), finalScores.get(dto1)));
+
+        // 3. 상위 50개 추출 (최대 50개만 가져오도록 조정)
+        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(50, topBookDtos.size()));
+
+        // 4. 50개 중 랜덤으로 5개 선택
+        Collections.shuffle(top50Books); // 무작위로 섞기
+        List<BookDataDto> selectedBookDtos = top50Books.subList(0, Math.min(5, top50Books.size()));
+
+        // 5. DTO를 엔티티로 변환
+        List<Book> recommendedBooks = convertToBookEntities(selectedBookDtos);
+
+        // 6. Fallback: 추천 도서가 5개 미만일 경우 기본 추천 목록으로 채우기
         if (recommendedBooks.size() < 5) {
-            List<BookDataDto> defaultRecommendations = getDefaultRecommendations(childDataDto); // 기본 추천 목록
-            recommendedBooks.addAll(
-                    defaultRecommendations.subList(0, Math.min(5 - recommendedBooks.size(), defaultRecommendations.size()))
-            );
+            List<Book> defaultRecommendations = getDefaultRecommendations(childDataDto); // 기본 추천 목록
+            int remaining = 5 - recommendedBooks.size();
+            recommendedBooks.addAll(defaultRecommendations.subList(0, Math.min(remaining, defaultRecommendations.size())));
         }
 
         return recommendedBooks;
     }
 
 
-    // 자녀 정보 한꺼번에 가져오기
+    // dto를 엔티티로
+    private List<Book> convertToBookEntities(List<BookDataDto> bookDataDtos) {
+        List<Book> books = new ArrayList<>();
+
+        for (BookDataDto dto : bookDataDtos) {
+            Book book = bookRepository.findById(dto.getBookId())
+                    .orElseThrow(() -> new IllegalArgumentException("도서를 찾을 수 없습니다: " + dto.getBookId()));
+            books.add(book);
+        }
+
+        return books;
+    }
+
+
+    // 자녀 정보 한꺼번에 가져오기(한명)
     private Optional<ChildDataDto> getChildInfo(Long profileId){
         // 자녀 추천 로직 관련 정보 한꺼번에 가져오기
         Pageable pageable = PageRequest.of(0, 1); // 상위 1개만 가져오기
@@ -170,7 +195,7 @@ public class RecommendationService {
     }
 
     // 도서 정보 한꺼번에 가져오기 위해 ( + 데이터 dto로 매핑 )
-    private List<BookDataDto> getAllBookInfo(List<Book> books) {
+    public List<BookDataDto> getAllBookInfo(List<Book> books) {
         List<BookDataDto> bookDataDtos = new ArrayList<>();
 
         // 2. 도서 목록 순회하며 BookDataDto 생성
@@ -201,7 +226,7 @@ public class RecommendationService {
     }
 
     // 협업 필터링에 사용 될 모든 자녀 정보(성별, 생년월일, mbti)
-    private List<ChildDataDto> getChildrenInfo() {
+    public List<ChildDataDto> getChildrenInfo() {
         List<ChildPersonalityHistory> histories = historyRepository.findAllChildrenData();
 
         List<ChildDataDto> childDataAll = new ArrayList<>();
@@ -274,7 +299,7 @@ public class RecommendationService {
         }
 
         // 2. 추천 평가 좋아요 받은 책에 가중치 부여
-        List<Long> likedBookIds = recommendationRepository.findLikedBooksByUser(userId);
+        List<Long> likedBookIds = likeRepository.findLikedBooksByUser(userId);
 
         for (Long bookId : updatedScores.keySet()) {
             if (likedBookIds.contains(bookId)) {
@@ -289,18 +314,63 @@ public class RecommendationService {
 
 
     // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
-    private List<BookDataDto> getDefaultRecommendations(ChildDataDto childDataDto){
+    private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
         int age = getAge(childDataDto.getBirthDate());
 
         Pageable pageable = PageRequest.of(0, 5);
-        List<Book> bookList = bookRepository.findBookListByAgeGroup(age, pageable);
+        return bookRepository.findBookListByAgeGroup(age, pageable);
 
-        return getAllBookInfo(bookList);
+//        return getAllBookInfo(bookList);
     }
 
     // 생년월일을 나이로 변환하는 메서드
     private int getAge(LocalDate birthDate) {
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
+
+    @Transactional
+    public void saveRecommendations(Long userId, List<Book> recommendations) {
+        // 1. 자녀 프로필 조회
+        ChildProfile childProfile = childProfileRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+
+        // 2. 배치 저장을 위한 chunk 크기 정의
+        int batchSize = 50;  // 한번에 50개씩 저장
+        List<Recommendation> recommendationEntities = new ArrayList<>();
+
+        recommendationRepository.deleteAllByChildProfileId(childProfile.getId());
+
+        // 3. 추천 도서 리스트를 반복하며 Recommendation 엔티티 생성
+        for (int i = 0; i < recommendations.size(); i++) {
+            Book book = recommendations.get(i);
+
+            Recommendation recommendation = Recommendation.builder()
+                    .book(book)
+                    .childProfile(childProfile)
+                    .build();
+
+            recommendationEntities.add(recommendation);
+
+            // 4. 배치 저장: 일정 batchSize마다 저장 및 초기화
+            if (recommendationEntities.size() == batchSize) {
+                recommendationRepository.saveAll(recommendationEntities);
+                recommendationEntities.clear();  // 영속성 컨텍스트 초기화
+            }
+        }
+
+//        log.info("Saving recommendations for user {}: {}", userId, recommendations.size()); // 로그 추가
+
+        // 5. 남아있는 데이터 저장
+        if (!recommendationEntities.isEmpty()) {
+            recommendationRepository.saveAll(recommendationEntities);
+        }
+    }
+
+    // 최근 7일 내 활동한 childProfile id 리턴
+    public List<Long> getActiveUserIds() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(7);
+        return childProfileRepository.findActiveUserIdsLast7Days(threshold);
+    }
+
 }
 

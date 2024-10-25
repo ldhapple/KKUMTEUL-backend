@@ -6,6 +6,8 @@ import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.recommendation.entity.Recommendation;
 import com.kkumteul.domain.user.entity.User;
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +55,9 @@ public class ChildProfile {
     @Lob
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] profileImage;
+
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime lastActivity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
