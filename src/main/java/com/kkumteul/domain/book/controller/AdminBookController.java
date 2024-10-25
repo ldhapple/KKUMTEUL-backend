@@ -70,4 +70,21 @@ public class AdminBookController {
 
         return ApiUtil.success("book delete successfully");
     }
+
+    // 6. 도서 검색어 조회
+    @GetMapping("/search")
+    public ApiSuccess<?> getSearchBookList(
+            @RequestParam(value = "search", required = false) String keyword, final Pageable pageable) {
+
+        Page<AdminGetBookListResponseDto> booksList;
+        if (keyword == null || keyword.isEmpty()) {
+            // 검색어가 없을 때는 전체 도서 목록 조회
+            booksList = bookService.getAdminBookList(pageable);
+        } else {
+            // 검색어가 있을 때는 해당 검색어로 조회
+            booksList = bookService.getSearchBookList(keyword, pageable);
+        }
+
+        return ApiUtil.success(booksList);
+    }
 }
