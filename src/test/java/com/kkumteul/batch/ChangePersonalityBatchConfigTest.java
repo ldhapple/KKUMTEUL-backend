@@ -86,7 +86,7 @@ public class ChangePersonalityBatchConfigTest {
             Book mockBook = mock(Book.class);
             CumulativeMBTIScore mockScore = mock(CumulativeMBTIScore.class);
 
-            given(childProfileService.getChildProfileWithCache(childProfileId)).willReturn(mockChildProfile);
+            given(childProfileService.getChildProfileWithMBTIScore(childProfileId)).willReturn(mockChildProfile);
             given(bookService.getBookWithCache(bookId)).willReturn(mockBook);
             given(mockChildProfile.getCumulativeMBTIScore()).willReturn(mockScore);
         }
