@@ -37,6 +37,15 @@ public class BookServiceImpl implements BookService {
         return books.map(GetBookListResponseDto::from);
     }
 
+    // 검색 키워드 추출된 도서 목록 조회
+    @Override
+    public Page<GetBookListResponseDto> getBookList(final String keyword, final Pageable pageable) {
+        final Page<Book> books = bookRepository.findBookListByKeyword(keyword, pageable);
+
+        return books.map(GetBookListResponseDto::from);
+    }
+
+    // 상세 도서 조회
     @Override
     public GetBookDetailResponseDto getBookDetail(final Long bookId) {
 
@@ -46,6 +55,7 @@ public class BookServiceImpl implements BookService {
         return GetBookDetailResponseDto.from(book);
     }
 
+    // 좋아요, 싫어요 처리
     @Override
     @Transactional
     public void bookLike(final Long bookId, final Long childProfileId, final LikeType likeType) {

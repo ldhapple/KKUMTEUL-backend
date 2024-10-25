@@ -22,10 +22,17 @@ public class BookController {
 
     // 전체 도서 목록 조회
     @GetMapping
-    public ApiSuccess<?> getBookList(final Pageable pageable){
+    public ApiSuccess<?> getBookList(
+            @RequestParam(value = "keyword", required = false) final String keyword,
+            final Pageable pageable){
 
+        // 검색 키워드 있을 경우
+        if(keyword != null && !keyword.isEmpty()){
+            Page<GetBookListResponseDto> bookList = bookService.getBookList(keyword, pageable);
+            return ApiUtil.success(bookList);
+        }
+        // 검색 키워드 없는 경우
         Page<GetBookListResponseDto> bookList = bookService.getBookList(pageable);
-
         return ApiUtil.success(bookList);
     }
 
@@ -38,7 +45,7 @@ public class BookController {
         return ApiUtil.success(bookDetail);
     }
 
-    // 좋아요 처리
+    // 좋아요, 싫어요 처리
     @PostMapping("/like")
     public ApiSuccess<?> bookLike(@RequestBody PostBookLikeRequestDto bookLikeRequestDto){
 
