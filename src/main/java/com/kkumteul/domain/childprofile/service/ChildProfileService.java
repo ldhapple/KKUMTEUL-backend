@@ -3,15 +3,22 @@ package com.kkumteul.domain.childprofile.service;
 
 import com.kkumteul.domain.book.dto.BookLikeDto;
 import com.kkumteul.domain.book.repository.BookLikeRepository;
+import com.kkumteul.domain.childprofile.dto.ChildProfileInsertRequestDto;
 import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
 import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
+import com.kkumteul.domain.user.repository.UserRepository;
+import com.kkumteul.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
@@ -39,6 +46,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Slf4j
@@ -55,6 +63,7 @@ public class ChildProfileService {
     private final TopicRepository topicRepository;
     private final ChildPersonalityHistoryRepository childPersonalityHistoryRepository;
     private final BookLikeRepository bookLikeRepository;
+    private final UserRepository userRepository;
     
     public ChildProfileResponseDto getChildProfileDetail(Long childProfileId) {
         log.info("childProfile id: {}", childProfileId);
@@ -179,5 +188,26 @@ public class ChildProfileService {
         log.info("validate exist childProfile: {}", childProfileId);
         childProfileRepository.findById(childProfileId).orElseThrow(
                 () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
+    }
+
+
+    public void insertChildProfile(Long userId, Long childProfileId, MultipartFile childProfileImage, ChildProfileInsertRequestDto childProfileInsertRequestDto) throws IOException, ParseException {
+        log.info("childprofile id: {}", childProfileId);
+
+        User user = userRepository.findById(userId).orElseThrow(() ->
+            new UserNotFoundException("user not found: " + userId)
+        );
+
+        ChildProfile childProfile = ChildProfileInsertRequestDto.toEntity(childProfileInsertRequestDto, user);
+
+        if (childProfileImage != null && !childProfileImage.isEmpty()) {
+            byte[] imageBytes = childProfileImage.getBytes();
+            childProfile.insertChildProfileImage(imageBytes);
+        }
+
+        childProfileRepository.save(childProfile);
+
+        log.info("child profile saved successfully: {}", childProfile.getId());
+
     }
 }
