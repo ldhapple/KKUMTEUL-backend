@@ -118,15 +118,15 @@ public class BookService {
         return AdminGetBookDetailResponseDto.fromEntity(book);
     }
 
-    // 4. 관리자의 도서 업데이트
+    // 4. 도서 수정
     @Transactional
-    public BookDto UpdateBook(Long bookId, AdminBookRequestDto adminBookRequestDto, MultipartFile image){
+    public BookDto updateBook(Long bookId, AdminBookRequestDto adminBookRequestDto, MultipartFile image){
 
-        // 1.1. 도서 ID로 Book 엔티티 조회 (없는 경우에는 예외 처리)
+        // 4.1. 도서 ID로 Book 엔티티 조회 (없는 경우에는 예외 처리)
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId.toString()));
 
-        // 1.2. 이미지 갱신
+        // 4.2. 이미지 갱신
         byte[] bookImage = book.getBookImage(); // 기존 이미지로 초기화
         if( image != null && !image.isEmpty()){
             try {
@@ -136,10 +136,10 @@ public class BookService {
             }
         }
 
-        // 1.3. 장르 갱신
+        // 4.3. 장르 갱신
         Genre updatedGenre = genreService.getGenre(adminBookRequestDto.getBookGenre());
 
-        // 1.4. 주제어 갱신
+        // 4.4. 주제어 갱신
         // 기존 Topics 삭제 후, 새로운 BookTopics 설정
         bookTopicService.deleteBookTopicByBookId(bookId);
 
@@ -156,7 +156,7 @@ public class BookService {
             updatedBookTopics.add(bookTopic);
         }
 
-        // 1.5. mbti 갱신
+        // 4.5. mbti 갱신
         // 기존 mbti 삭제 후, 새로운 BookMBTI 설정
         bookMBTIService.deleteBookMBTIByBookId(bookId);
         // BookMbti 등록 전, 요청한 MBTI 객체 가져오기
@@ -168,7 +168,7 @@ public class BookService {
                 .build();
         bookMBTIService.insertBookMBTI(updatedBookMbti);
 
-        // 1.6. 도서의 기본 데이터 갱신
+        // 4.6. 도서의 기본 데이터 갱신
         book.update(
                 bookImage,
                 adminBookRequestDto.getTitle(),
@@ -185,5 +185,13 @@ public class BookService {
         bookRepository.save(book);
 
         return BookDto.fromEntity(book);
+    }
+
+    // 5. 도서 삭제
+    public void deleteBook(Long bookId){
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId.toString()));
+
+        bookRepository.deleteById(bookId);
     }
 }
