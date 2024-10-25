@@ -198,6 +198,9 @@ public class ChildProfileService {
             new UserNotFoundException("user not found: " + userId)
         );
 
+        // 필수값 유효성 검사
+        validateRequiredFields(childProfileInsertRequestDto);
+
         ChildProfile childProfile = ChildProfileInsertRequestDto.toEntity(childProfileInsertRequestDto, user);
 
         if (childProfileImage != null && !childProfileImage.isEmpty()) {
@@ -218,6 +221,19 @@ public class ChildProfileService {
                 .orElseThrow(() -> new IllegalArgumentException("childProfile not found: " + childProfileId));
 
         childProfileRepository.delete(childProfile);
+
+    }
+
+    private void validateRequiredFields(ChildProfileInsertRequestDto childProfileInsertRequestDto) {
+        if (childProfileInsertRequestDto.getChildName() == null || childProfileInsertRequestDto.getChildName().isEmpty()) {
+            throw new IllegalArgumentException("자녀 이름을 입력해 주세요.");
+        }
+        if (childProfileInsertRequestDto.getChildGender() == null || childProfileInsertRequestDto.getChildGender().isEmpty()) {
+            throw new IllegalArgumentException("자녀 성별 정보를 입력해 주세요.");
+        }
+        if (childProfileInsertRequestDto.getChildBirthDate() == null || childProfileInsertRequestDto.getChildBirthDate().isEmpty()) {
+            throw new IllegalArgumentException("자녀 생년월일 정보를 입력해 주세요.");
+        }
 
     }
 }
