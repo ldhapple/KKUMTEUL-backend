@@ -186,7 +186,7 @@ class ChildProfileControllerTest {
         MockMultipartFile profileImage = new MockMultipartFile("childProfileImage", "profile.jpg", "image/jpeg", new byte[0]);
         ChildProfileInsertRequestDto childProfileInsertRequestDto = new ChildProfileInsertRequestDto(childName, childGender, childBirthDate);
 
-        willDoNothing().given(childProfileService).insertChildProfile(userId, childProfileId, profileImage, childProfileInsertRequestDto);
+        willDoNothing().given(childProfileService).insertChildProfile(userId, profileImage, childProfileInsertRequestDto);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart("/api/childProfiles/{childProfileId}", childProfileId)
                         .file(profileImage)

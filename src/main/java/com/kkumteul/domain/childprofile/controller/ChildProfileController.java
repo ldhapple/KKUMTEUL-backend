@@ -64,9 +64,8 @@ public class ChildProfileController {
     }
 
     // 자녀 등록
-    @PostMapping("{childProfileId}")
+    @PostMapping("")
     public ApiSuccess<?> insertChildProfile(
-            @PathVariable(name = "childProfileId") Long childProfileId,
             @RequestPart(value = "childName", required = false) String childName,
             @RequestPart(value = "childBirthDate", required = false) String childBirthDate,
             @RequestPart(value = "childGender", required = false) String childGender,
@@ -76,7 +75,7 @@ public class ChildProfileController {
         Long userId = 1L; // 더미
 
         ChildProfileInsertRequestDto childProfileInsertRequestDto = new ChildProfileInsertRequestDto(childName, childGender, childBirthDate);
-        childProfileService.insertChildProfile(userId, childProfileId, childProfileImage, childProfileInsertRequestDto);
+        childProfileService.insertChildProfile(userId, childProfileImage, childProfileInsertRequestDto);
 
         return ApiUtil.success("child profile inserted successfully");
 

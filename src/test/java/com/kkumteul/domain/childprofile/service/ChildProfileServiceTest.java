@@ -235,7 +235,7 @@ class ChildProfileServiceTest {
 
         //when & then
         assertThrows(IllegalArgumentException.class, () -> {
-            childProfileService.insertChildProfile(userId, null, null, dto);
+            childProfileService.insertChildProfile(userId, null,  dto);
         });
     }
 

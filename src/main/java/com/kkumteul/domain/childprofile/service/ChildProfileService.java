@@ -191,8 +191,7 @@ public class ChildProfileService {
     }
 
 
-    public void insertChildProfile(Long userId, Long childProfileId, MultipartFile childProfileImage, ChildProfileInsertRequestDto childProfileInsertRequestDto) throws IOException, ParseException {
-        log.info("childprofile id: {}", childProfileId);
+    public void insertChildProfile(Long userId, MultipartFile childProfileImage, ChildProfileInsertRequestDto childProfileInsertRequestDto) throws IOException, ParseException {
 
         User user = userRepository.findById(userId).orElseThrow(() ->
             new UserNotFoundException("user not found: " + userId)
