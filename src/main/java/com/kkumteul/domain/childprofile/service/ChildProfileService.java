@@ -210,4 +210,14 @@ public class ChildProfileService {
         log.info("child profile saved successfully: {}", childProfile.getId());
 
     }
+
+    public void deleteChildProfile(Long childProfileId) {
+        log.info("childProfile id: {}", childProfileId);
+
+        ChildProfile childProfile = childProfileRepository.findById(childProfileId)
+                .orElseThrow(() -> new IllegalArgumentException("childProfile not found: " + childProfileId));
+
+        childProfileRepository.delete(childProfile);
+
+    }
 }

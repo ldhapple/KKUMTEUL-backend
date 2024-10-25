@@ -67,9 +67,9 @@ public class ChildProfileController {
     @PostMapping("{childProfileId}")
     public ApiSuccess<?> insertChildProfile(
             @PathVariable(name = "childProfileId") Long childProfileId,
-            @RequestPart(value = "childName") String childName,
-            @RequestPart(value = "childBirthDate") String childBirthDate,
-            @RequestPart(value = "childGender") String childGender,
+            @RequestPart(value = "childName", required = false) String childName,
+            @RequestPart(value = "childBirthDate", required = false) String childBirthDate,
+            @RequestPart(value = "childGender", required = false) String childGender,
             @RequestPart(value = "childProfileImage", required = false) MultipartFile childProfileImage
     ) throws IOException, ParseException {
 
@@ -81,4 +81,14 @@ public class ChildProfileController {
         return ApiUtil.success("child profile inserted successfully");
 
     }
+
+    // 자녀 삭제
+    @DeleteMapping("{childProfileId}")
+    public ApiSuccess<?> deleteChildProfile(@PathVariable(name = "childProfileId") Long childProfileId) {
+
+        childProfileService.deleteChildProfile(childProfileId);
+        return ApiUtil.success("child profile deleted successfully");
+
+    }
+
 }
