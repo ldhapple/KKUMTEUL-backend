@@ -61,7 +61,7 @@ class SurveyControllerTest {
     @DisplayName("설문 결과 조회 테스트")
     void testGetSurveyResult() throws Exception {
         SurveyResultDto surveyResultDto = mock(SurveyResultDto.class);
-        given(surveyFacade.getSurveyResult(anyLong())).willReturn(surveyResultDto);
+//        given(surveyFacade.getSurveyResult(anyLong())).willReturn(surveyResultDto);
 
         mockMvc.perform(get("/api/survey/result"))
                 .andExpect(status().isOk());

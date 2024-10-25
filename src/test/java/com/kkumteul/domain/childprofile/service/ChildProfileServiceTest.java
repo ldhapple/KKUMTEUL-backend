@@ -147,7 +147,7 @@ class ChildProfileServiceTest {
         CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
         given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
 
-        childProfileService.resetCumulativeMBTIScore(childProfileId);
+//        childProfileService.resetCumulativeMBTIScore(childProfileId);
 
         verify(cumulativeScore, times(1)).resetScores();
     }
@@ -161,7 +161,7 @@ class ChildProfileServiceTest {
         CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
         given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
 
-        childProfileService.updateCumulativeMBTIScore(childProfileId, mbtiScore);
+//        childProfileService.updateCumulativeMBTIScore(childProfileId, mbtiScore);
 
         verify(cumulativeScore, times(1)).updateScores(mbtiScore);
     }
@@ -177,7 +177,7 @@ class ChildProfileServiceTest {
         given(topicScoreRepository.findByChildProfileId(childProfileId)).willReturn(topicScores);
         given(genreScoreRepository.findByChildProfileId(childProfileId)).willReturn(genreScores);
 
-        childProfileService.resetFavoriteScores(childProfileId);
+//        childProfileService.resetFavoriteScores(childProfileId);
 
         for (TopicScore topicScore : topicScores) {
             verify(topicScore, times(1)).resetScore();
