@@ -22,7 +22,7 @@ public class AdminBookController {
 
     private final BookService bookService;
 
-    // 1. 관리자의 도서 등록
+    // 1. 도서 등록
     @PostMapping
     public ApiSuccess<?> insertBook(
             @RequestPart(value = "image") MultipartFile image,
@@ -33,7 +33,7 @@ public class AdminBookController {
         return ApiUtil.success("book insert successfully");
     }
 
-    // 2. 관리자의 전체 도서 목록 조회
+    // 2. 전체 도서 목록 조회
     @GetMapping
     public ApiSuccess<?> getAdminBookList(final Pageable pageable) {
 
@@ -42,7 +42,7 @@ public class AdminBookController {
         return ApiUtil.success(bookList);
     }
 
-    // 3. 관리자의 도서 상세 조회
+    // 3. 도서 상세 조회
     @GetMapping("/{bookId}")
     public ApiSuccess<?> getAdminBookDetail(@PathVariable("bookId") final Long bookId) {
 
@@ -51,15 +51,23 @@ public class AdminBookController {
         return ApiUtil.success(bookDetail);
     }
 
-    // 4. 관리자의 도서 갱신
+    // 4. 도서 수정
     @PutMapping("/{bookId}")
     public ApiSuccess<?> updateBook(
             @PathVariable("bookId") final Long bookId,
             @RequestPart(value = "image") MultipartFile image,
             @RequestPart(value = "book") AdminBookRequestDto adminUpdateBookRequestDto) {
 
-        bookService.UpdateBook(bookId, adminUpdateBookRequestDto, image);
+        bookService.updateBook(bookId, adminUpdateBookRequestDto, image);
 
         return ApiUtil.success("book update successfully");
+    }
+
+    // 5. 도서 삭제
+    @DeleteMapping("/{bookId}")
+    public ApiSuccess<?> deleteBook(@PathVariable("bookId") final Long bookId) {
+        bookService.deleteBook(bookId);
+
+        return ApiUtil.success("book delete successfully");
     }
 }
