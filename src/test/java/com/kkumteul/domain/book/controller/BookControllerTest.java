@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -59,7 +58,7 @@ class BookControllerTest {
 
         // 도서 목록 조회 모킹
         GetBookListResponseDto bookDto = new GetBookListResponseDto();
-        Page<GetBookListResponseDto> bookPage = new PageImpl<>(Collections.singletonList(bookDto));
+        Page<GetBookListResponseDto> bookPage = new PageImpl<>(Arrays.asList(bookDto));
 
         // 도서 상세 조회: BookDetailResponseDto 생성
         mockBookDetailResponseDto = GetBookDetailResponseDto.from(mockBook);
