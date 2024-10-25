@@ -16,12 +16,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -147,7 +149,16 @@ public class BookService {
         bookRepository.deleteById(bookId);
     }
 
-    // 이미지 처리
+    // 6. 도서 검색어 조회 (제목, 작가)
+    public Page<AdminGetBookListResponseDto> getSearchBookList(String keyword, final Pageable pageable){
+        // 제목이나 작가 텍스트에서 키워드를 포함하는 도서를 검색
+        Page<Book> books = bookRepository.searchByTitleOrAuthor(keyword, pageable);
+
+        // Book 엔티티를 BookDto로 변환 후 반환
+        return books.map(AdminGetBookListResponseDto::fromEntity);
+    }
+
+    // 이미지 처리 메서드
     private byte[] processImage(MultipartFile image) {
         if (image != null && !image.isEmpty()) {
             try {
