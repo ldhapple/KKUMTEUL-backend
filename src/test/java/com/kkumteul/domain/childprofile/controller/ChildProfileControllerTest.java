@@ -7,6 +7,7 @@ import com.kkumteul.domain.childprofile.service.ChildProfileService;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
 import com.kkumteul.domain.history.entity.HistoryCreatedType;
 import com.kkumteul.domain.mbti.entity.MBTIName;
+import com.kkumteul.exception.UserNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,5 +195,30 @@ class ChildProfileControllerTest {
                         .param("childGender", childGender))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response").value("child profile inserted successfully"));
+    }
+
+    @Test
+    @DisplayName("자녀 삭제 테스트 - 삭제 성공")
+    void deleteChildProfile_success() throws Exception {
+        Long childProfileId = 1L;
+
+        willDoNothing().given(childProfileService).deleteChildProfile(childProfileId);
+
+        mockMvc.perform(delete("/api/childProfiles/{childProfileId}", childProfileId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response").value("child profile deleted successfully"));
+    }
+
+    @Test
+    @DisplayName("자녀 삭제 테스트 - 삭제 실패")
+    void deleteChildProfile_fail() throws Exception {
+        Long childProfileId = 999L;
+
+        doThrow(new IllegalArgumentException("childProfile not found:" + childProfileId))
+                .when(childProfileService).deleteChildProfile(childProfileId);
+
+        mockMvc.perform(delete("/api/childProfiles/{childProfileId}", childProfileId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("childProfile not found:" + childProfileId));
     }
 }
