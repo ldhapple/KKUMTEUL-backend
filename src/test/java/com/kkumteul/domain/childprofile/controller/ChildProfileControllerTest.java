@@ -1,6 +1,7 @@
 package com.kkumteul.domain.childprofile.controller;
 
 import com.kkumteul.domain.book.dto.BookLikeDto;
+import com.kkumteul.domain.childprofile.dto.ChildProfileInsertRequestDto;
 import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
 import com.kkumteul.domain.childprofile.service.ChildProfileService;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +41,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.multipart.MultipartFile;
 
 @WebMvcTest(ChildProfileController.class)
 class ChildProfileControllerTest {
@@ -142,5 +145,54 @@ class ChildProfileControllerTest {
                         .param("childProfileId", String.valueOf(invalidProfileId)))
 //                        .with(csrf()))
                 .andExpect(status().isNotFound());
+    }
+
+//    @Test
+//    @DisplayName("자녀 등록 테스트 - 등록 성공")
+//    void insert_childProfile_success() throws Exception {
+//        Long userId = 1L;
+//        Long childProfileId = 1L;
+//        String childName = "childName";
+//        String childBirthDate = "19980905";
+//        String childGender = "Male";
+//        MockMultipartFile profileImage = new MockMultipartFile("childProfileImage", "profile.jpg", "image/jpeg", new byte[0]);
+//
+//        ChildProfileInsertRequestDto childProfileInsertRequestDto = new ChildProfileInsertRequestDto(childName, childGender, childBirthDate);
+//
+//        doNothing().when(childProfileService).insertChildProfile(userId, childProfileId, profileImage, childProfileInsertRequestDto);
+//
+//        mockMvc.perform(post("/api/childProfiles/{childProfileId}", childProfileId)
+//                        .file(profileImage)
+//                        .param("childName", childName)
+//                        .param("childBirthDate", childBirthDate)
+//                        .param("childGender", childGender))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.response").value("child profile inserted successfully"));
+//
+//        // Verify that the service method was called
+//        verify(childProfileService).insertChildProfile(anyLong(), eq(childProfileId), any(MultipartFile.class), any(ChildProfileInsertRequestDto.class));
+//    }
+
+    @Test
+    @DisplayName("자녀 등록 테스트 - 등록 성공")
+    void insert_childProfile_success() throws Exception {
+        Long userId = 1L;
+        Long childProfileId = 1L;
+        String childName = "childName";
+        String childBirthDate = "19980905";
+        String childGender = "Male";
+
+        MockMultipartFile profileImage = new MockMultipartFile("childProfileImage", "profile.jpg", "image/jpeg", new byte[0]);
+        ChildProfileInsertRequestDto childProfileInsertRequestDto = new ChildProfileInsertRequestDto(childName, childGender, childBirthDate);
+
+        willDoNothing().given(childProfileService).insertChildProfile(userId, childProfileId, profileImage, childProfileInsertRequestDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/childProfiles/{childProfileId}", childProfileId)
+                        .file(profileImage)
+                        .param("childName", childName)
+                        .param("childBirthDate", childBirthDate)
+                        .param("childGender", childGender))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response").value("child profile inserted successfully"));
     }
 }
