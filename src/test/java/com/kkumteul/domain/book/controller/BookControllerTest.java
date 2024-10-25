@@ -22,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,15 +57,18 @@ class BookControllerTest {
                         new BookTopic(mockBook, Topic.builder().name("주제2").build())))
                 .build();
 
+        // 도서 목록 조회 모킹
+        GetBookListResponseDto bookDto = new GetBookListResponseDto();
+        Page<GetBookListResponseDto> bookPage = new PageImpl<>(Collections.singletonList(bookDto));
+
         // 도서 상세 조회: BookDetailResponseDto 생성
         mockBookDetailResponseDto = GetBookDetailResponseDto.from(mockBook);
 
-        // 도서 목록 조회 모킹
-        GetBookListResponseDto bookDto = new GetBookListResponseDto();
-        GetBookListResponseDto[] bookArray = new GetBookListResponseDto[]{bookDto};
-        Page<GetBookListResponseDto> bookPage = new PageImpl<>(Arrays.asList(bookArray));
-
+        // 키워드가 없는 경우와 있는 경우
         Mockito.when(bookService.getBookList(any(Pageable.class))).thenReturn(bookPage);
+        Mockito.when(bookService.getBookList(anyString(), any(Pageable.class))).thenReturn(bookPage);
+
+        // 도서 상세 조회 모킹
         Mockito.when(bookService.getBookDetail(anyLong())).thenReturn(mockBookDetailResponseDto);
     }
 
@@ -74,6 +76,16 @@ class BookControllerTest {
     @DisplayName("전체 도서 반환: 요청 시 책 목록 Page 당 12개씩 반환한다.")
     void testGetBookList() throws Exception {
         mockMvc.perform(get("/api/books?page=0&size=12")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response.content").isArray())
+                .andExpect(jsonPath("$.response.content.length()").value(1));
+    }
+
+    @Test
+    @DisplayName("키워드로 도서 목록 조회: 키워드가 포함된 책 목록을 반환한다.")
+    void testGetBookListWithKeyword() throws Exception {
+        mockMvc.perform(get("/api/books?keyword=테스트&page=0&size=12")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.content").isArray())
