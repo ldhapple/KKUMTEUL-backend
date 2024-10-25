@@ -17,4 +17,8 @@ public class BookMBTIService {
     public BookMBTI insertBookMBTI(BookMBTI bookMBTI) {
         return bookMbtiRepository.save(bookMBTI);
     }
+
+    public void deleteBookMBTIByBookId(Long bookId) {
+        bookMbtiRepository.deleteByBookId(bookId);
+    }
 }
