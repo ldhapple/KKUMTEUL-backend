@@ -1,6 +1,5 @@
 package com.kkumteul.domain.book.entity;
 
-import com.kkumteul.domain.book.dto.AdminBookRequestDto;
 import com.kkumteul.domain.personality.entity.Genre;
 import jakarta.persistence.*;
 
@@ -34,8 +33,8 @@ public class Book {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] bookImage;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Genre genre;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Genre bookGenre;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<BookTopic> bookTopics = new ArrayList<>();
@@ -54,13 +53,13 @@ public class Book {
         this.ageGroup = ageGroup;
         this.summary = summary;
         this.bookImage = bookImage;
-        this.genre = genre;
+        this.bookGenre = genre;
         this.bookTopics = bookTopics;
         this.bookMBTIs = bookMBTIs;
     }
 
     public void update(byte[] bookImage, String title, String author, String publisher, String price, String page, String ageGroup,
-                       String summary, Genre genre, List<BookTopic> bookTopics){
+                       String summary, Genre genre){
         if (bookImage != null) {
             this.bookImage = bookImage;
         }
@@ -86,10 +85,7 @@ public class Book {
             this.summary = summary;
         }
         if (genre != null) {
-            this.genre = genre;
-        }
-        if (bookTopics != null) {
-            this.bookTopics = bookTopics;
+            this.bookGenre = genre;
         }
     }
 }

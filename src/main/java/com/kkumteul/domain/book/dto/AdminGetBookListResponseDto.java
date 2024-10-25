@@ -28,7 +28,7 @@ public class AdminGetBookListResponseDto {
                 book.getTitle(),
                 book.getAuthor(),
                 book.getPublisher(),
-                book.getGenre().getName(),
+                book.getBookGenre().getName(),
                 book.getAgeGroup(),
                 book.getBookTopics().stream()
                         .map(BookTopic::getTopic)

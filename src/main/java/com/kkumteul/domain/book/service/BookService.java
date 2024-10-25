@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -40,21 +39,19 @@ public class BookService {
     // 1. 도서 등록
     public BookDto insertBook(AdminBookRequestDto adminInsertBookRequestDto, MultipartFile image){
 
+        // 1.0. requestDto 필드 값이 null인지 검증
+        validateRequestDto(adminInsertBookRequestDto);
+
         // 1.1. 이미지 처리 (MultipartFile -> byte[])
-        byte[] bookImage;
-        try {
-            bookImage = image.getBytes();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to convert image to bytes", e);
-        }
+        byte[] bookImage = processImage(image);
 
         // 1.2. 장르 이름 >> 장르 객체 변환 (String -> Genre)
         Genre genre = genreService.getGenre(adminInsertBookRequestDto.getBookGenre());
+        if( genre == null ){
+            throw new IllegalArgumentException("Genre can't be null");
+        }
 
-        // 1.3. BookTopics 엔티티 생성
-        List<BookTopic> bookTopics = new ArrayList<>();
-
-        // 1.4. requestDto >> Book 엔티티 생성 및 저장
+        // 1.3. requestDto >> Book 엔티티 생성 및 저장
         Book book = Book.builder()
                 .title(adminInsertBookRequestDto.getTitle())
                 .author(adminInsertBookRequestDto.getAuthor())
@@ -65,38 +62,16 @@ public class BookService {
                 .summary(adminInsertBookRequestDto.getSummary())
                 .bookImage(bookImage)
                 .genre(genre)
-                .bookTopics(bookTopics)
                 .build();
 
-        // 1.5. Book 등록
+        // 1.4. Book 등록
         Book savedBook = bookRepository.save(book);
 
-        // 1.6. BookTopics 에 요청한 Topic 데이터 저장
-        for (String topicName : adminInsertBookRequestDto.getBookTopicList()){
-            // 요청한 Topic 객체 가져오기
-            Topic topic = topicService.getTopic(topicName);
+        // 1.5. BookTopics 데이터 등록
+        createBookTopics(savedBook, adminInsertBookRequestDto.getBookTopicList());
 
-            BookTopic bookTopic = BookTopic.builder()
-                    .book(savedBook)
-                    .topic(topic)
-                    .build();
-
-            bookTopicService.insertBookTopic(bookTopic);
-            bookTopics.add(bookTopic);
-        }
-
-        // 1.7. BookMbti 엔티티 생성 및 저장
-        {
-            // BookMbti 등록 전, 요청한 MBTI 객체 가져오기
-            MBTI mbti = mbtiService.getMBTI(adminInsertBookRequestDto.getBookMBTI());
-
-            // BookMbti 등록
-            BookMBTI bookMbti = BookMBTI.builder()
-                    .book(savedBook)
-                    .mbti(mbti)
-                    .build();
-            bookMBTIService.insertBookMBTI(bookMbti);
-        }
+        // 1.6. BookMbti 데이터 등록
+        createBookMBTI(savedBook, adminInsertBookRequestDto.getBookMBTI());
 
         return BookDto.fromEntity(savedBook);
     }
@@ -122,51 +97,31 @@ public class BookService {
     @Transactional
     public BookDto updateBook(Long bookId, AdminBookRequestDto adminBookRequestDto, MultipartFile image){
 
+        // 4.0. requestDto 필드 값이 null인지 검증
+        validateRequestDto(adminBookRequestDto);
+
         // 4.1. 도서 ID로 Book 엔티티 조회 (없는 경우에는 예외 처리)
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId.toString()));
 
         // 4.2. 이미지 갱신
-        byte[] bookImage = book.getBookImage(); // 기존 이미지로 초기화
-        if( image != null && !image.isEmpty()){
-            try {
-                bookImage = image.getBytes();
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to convert image to bytes", e);
-            }
-        }
+        byte[] bookImage = processImage(image);
 
         // 4.3. 장르 갱신
         Genre updatedGenre = genreService.getGenre(adminBookRequestDto.getBookGenre());
-
-        // 4.4. 주제어 갱신
-        // 기존 Topics 삭제 후, 새로운 BookTopics 설정
-        bookTopicService.deleteBookTopicByBookId(bookId);
-
-        List<BookTopic> updatedBookTopics = new ArrayList<>();
-        for (String topicName : adminBookRequestDto.getBookTopicList()){
-            // 요청한 Topic 객체 가져오기
-            Topic topic = topicService.getTopic(topicName);
-
-            BookTopic bookTopic = BookTopic.builder()
-                    .book(book)
-                    .topic(topic)
-                    .build();
-            bookTopicService.insertBookTopic(bookTopic);
-            updatedBookTopics.add(bookTopic);
+        if( updatedGenre == null ){
+            throw new IllegalArgumentException("Genre can't be null");
         }
 
+        // 4.4. 주제어 갱신
+        // 기존 Topics 삭제 후, 새로운 BookTopics로 갱신
+        bookTopicService.deleteBookTopicByBookId(bookId);
+        createBookTopics(book, adminBookRequestDto.getBookTopicList());
+
         // 4.5. mbti 갱신
-        // 기존 mbti 삭제 후, 새로운 BookMBTI 설정
+        // 기존 mbti 삭제 후, 새로운 BookMBTI로 갱신
         bookMBTIService.deleteBookMBTIByBookId(bookId);
-        // BookMbti 등록 전, 요청한 MBTI 객체 가져오기
-        MBTI mbti = mbtiService.getMBTI(adminBookRequestDto.getBookMBTI());
-        // BookMbti 등록
-        BookMBTI updatedBookMbti = BookMBTI.builder()
-                .book(book)
-                .mbti(mbti)
-                .build();
-        bookMBTIService.insertBookMBTI(updatedBookMbti);
+        createBookMBTI(book, adminBookRequestDto.getBookMBTI());
 
         // 4.6. 도서의 기본 데이터 갱신
         book.update(
@@ -178,11 +133,8 @@ public class BookService {
                 adminBookRequestDto.getPage(),
                 adminBookRequestDto.getAgeGroup(),
                 adminBookRequestDto.getSummary(),
-                updatedGenre,
-                updatedBookTopics
+                updatedGenre
                 );
-
-        bookRepository.save(book);
 
         return BookDto.fromEntity(book);
     }
@@ -194,4 +146,89 @@ public class BookService {
 
         bookRepository.deleteById(bookId);
     }
+
+    // 이미지 처리
+    private byte[] processImage(MultipartFile image) {
+        if (image != null && !image.isEmpty()) {
+            try {
+                return image.getBytes();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to convert image to bytes", e);
+            }
+        }
+        return new byte[0]; // 기본값 설정 (또는 기본 이미지)
+    }
+
+    // BookTopic 생성 헬퍼 메서드
+    private void createBookTopics(Book book, List<String> topicNames) {
+        for (String topicName : topicNames) {
+            Topic topic = topicService.getTopic(topicName);
+
+            BookTopic bookTopic = BookTopic.builder()
+                    .book(book)
+                    .topic(topic)
+                    .build();
+            bookTopicService.insertBookTopic(bookTopic);
+        }
+    }
+
+    // BookMBTI 생성 헬퍼 메서드
+    private void createBookMBTI(Book book, String mbtiName) {
+        MBTI mbti = mbtiService.getMBTI(mbtiName);
+
+        // BookMbti 등록
+        BookMBTI bookMbti = BookMBTI.builder()
+                .book(book)
+                .mbti(mbti)
+                .build();
+        bookMBTIService.insertBookMBTI(bookMbti);
+    }
+
+    // requestDto가 null인지 검증
+    private void validateRequestDto(AdminBookRequestDto requestDto) {
+        if (requestDto == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+
+        if (requestDto.getTitle() == null || requestDto.getTitle().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty");
+        }
+
+        if (requestDto.getAuthor() == null || requestDto.getAuthor().isEmpty()) {
+            throw new IllegalArgumentException("Author cannot be null or empty");
+        }
+
+        if (requestDto.getPublisher() == null || requestDto.getPublisher().isEmpty()) {
+            throw new IllegalArgumentException("Publisher cannot be null or empty");
+        }
+
+        if (requestDto.getPrice() == null || requestDto.getPrice().isEmpty()) {
+            throw new IllegalArgumentException("Price cannot be null or empty");
+        }
+
+        if (requestDto.getPage() == null || requestDto.getPage().isEmpty()) {
+            throw new IllegalArgumentException("Page cannot be null or empty");
+        }
+
+        if (requestDto.getAgeGroup() == null || requestDto.getAgeGroup().isEmpty()) {
+            throw new IllegalArgumentException("Age group cannot be null or empty");
+        }
+
+        if (requestDto.getSummary() == null || requestDto.getSummary().isEmpty()) {
+            throw new IllegalArgumentException("Summary cannot be null or empty");
+        }
+
+        if (requestDto.getBookGenre() == null || requestDto.getBookGenre().isEmpty()) {
+            throw new IllegalArgumentException("Genre cannot be null or empty");
+        }
+
+        if (requestDto.getBookTopicList() == null || requestDto.getBookTopicList().isEmpty()) {
+            throw new IllegalArgumentException("Book topics cannot be null or empty");
+        }
+
+        if (requestDto.getBookMBTI() == null || requestDto.getBookMBTI().isEmpty()) {
+            throw new IllegalArgumentException("Book MBTI cannot be null or empty");
+        }
+    }
+
 }

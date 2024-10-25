@@ -1,13 +1,8 @@
 package com.kkumteul.domain.book.dto;
 
 import com.kkumteul.domain.book.entity.Book;
-import com.kkumteul.domain.book.entity.BookMBTI;
 import com.kkumteul.domain.book.entity.BookTopic;
-import com.kkumteul.domain.book.service.BookMBTIService;
-import com.kkumteul.domain.mbti.service.MBTIService;
-import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -38,7 +33,7 @@ public class AdminGetBookDetailResponseDto {
                 book.getAuthor(),
                 book.getPrice(),
                 book.getAgeGroup(),
-                book.getGenre().getName(),
+                book.getBookGenre().getName(),
                 book.getBookTopics().stream()
                         .map(BookTopic::getTopic)
                         .map(Topic::getName)

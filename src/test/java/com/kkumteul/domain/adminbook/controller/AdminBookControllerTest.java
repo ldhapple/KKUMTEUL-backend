@@ -2,27 +2,17 @@ package com.kkumteul.domain.adminbook.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kkumteul.domain.book.controller.AdminBookController;
-import com.kkumteul.domain.book.dto.AdminInsertBookRequestDto;
 import com.kkumteul.domain.book.service.BookService;
-import com.kkumteul.domain.mbti.entity.MBTI;
-import com.kkumteul.domain.mbti.entity.MBTIName;
-import com.kkumteul.domain.personality.entity.Genre;
-import com.kkumteul.domain.personality.entity.Topic;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminBookController.class)
 public class AdminBookControllerTest {
