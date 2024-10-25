@@ -1,5 +1,6 @@
 package com.kkumteul.domain.book.entity;
 
+import com.kkumteul.domain.book.dto.AdminBookRequestDto;
 import com.kkumteul.domain.personality.entity.Genre;
 import jakarta.persistence.*;
 
@@ -56,5 +57,39 @@ public class Book {
         this.genre = genre;
         this.bookTopics = bookTopics;
         this.bookMBTIs = bookMBTIs;
+    }
+
+    public void update(byte[] bookImage, String title, String author, String publisher, String price, String page, String ageGroup,
+                       String summary, Genre genre, List<BookTopic> bookTopics){
+        if (bookImage != null) {
+            this.bookImage = bookImage;
+        }
+        if (title != null) {
+            this.title = title;
+        }
+        if (author != null) {
+            this.author = author;
+        }
+        if (publisher != null) {
+            this.publisher = publisher;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (page != null) {
+            this.page = page;
+        }
+        if (ageGroup != null) {
+            this.ageGroup = ageGroup;
+        }
+        if (summary != null) {
+            this.summary = summary;
+        }
+        if (genre != null) {
+            this.genre = genre;
+        }
+        if (bookTopics != null) {
+            this.bookTopics = bookTopics;
+        }
     }
 }
