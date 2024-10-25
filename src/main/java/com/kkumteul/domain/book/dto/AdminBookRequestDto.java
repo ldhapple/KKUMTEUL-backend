@@ -1,7 +1,5 @@
 package com.kkumteul.domain.book.dto;
 
-import com.kkumteul.domain.book.entity.BookTopic;
-import com.kkumteul.domain.personality.entity.Genre;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +10,7 @@ import java.util.List;
 @Getter
 @ToString
 @AllArgsConstructor
-public class AdminInsertBookRequestDto {
+public class AdminBookRequestDto {
     // book
     @NotNull(message = "Title is required")
     private String title;
