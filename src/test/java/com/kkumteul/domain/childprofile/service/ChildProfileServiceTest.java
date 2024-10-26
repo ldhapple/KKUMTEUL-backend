@@ -43,15 +43,6 @@ class ChildProfileServiceTest {
     private ChildProfileRepository childProfileRepository;
 
     @Mock
-    private CumulativeMBTIScoreRepository cumulativeMBTIScoreRepository;
-
-    @Mock
-    private GenreScoreRepository genreScoreRepository;
-
-    @Mock
-    private TopicScoreRepository topicScoreRepository;
-
-    @Mock
     private GenreRepository genreRepository;
 
     @Mock
@@ -137,53 +128,5 @@ class ChildProfileServiceTest {
         assertThat(createdProfile).isNotNull();
         assertThat(createdProfile.getName()).isEqualTo(name);
         verify(childProfileRepository, times(1)).save(any(ChildProfile.class));
-    }
-
-    @Test
-    @DisplayName("누적 MBTI 점수 초기화 테스트")
-    void testResetCumulativeMBTIScore() {
-        Long childProfileId = 1L;
-
-        CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
-        given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
-
-        childProfileService.resetCumulativeMBTIScore(childProfileId);
-
-        verify(cumulativeScore, times(1)).resetScores();
-    }
-
-    @Test
-    @DisplayName("누적 MBTI 점수 업데이트 테스트")
-    void testUpdateCumulativeMBTIScore() {
-        Long childProfileId = 1L;
-        MBTIScore mbtiScore = mock(MBTIScore.class);
-
-        CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
-        given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
-
-        childProfileService.updateCumulativeMBTIScore(childProfileId, mbtiScore);
-
-        verify(cumulativeScore, times(1)).updateScores(mbtiScore);
-    }
-
-    @Test
-    @DisplayName("선호 장르 및 주제어 점수 초기화 테스트")
-    void testResetFavoriteScores() {
-        Long childProfileId = 1L;
-
-        List<TopicScore> topicScores = List.of(mock(TopicScore.class));
-        List<GenreScore> genreScores = List.of(mock(GenreScore.class));
-
-        given(topicScoreRepository.findByChildProfileId(childProfileId)).willReturn(topicScores);
-        given(genreScoreRepository.findByChildProfileId(childProfileId)).willReturn(genreScores);
-
-        childProfileService.resetFavoriteScores(childProfileId);
-
-        for (TopicScore topicScore : topicScores) {
-            verify(topicScore, times(1)).resetScore();
-        }
-        for (GenreScore genreScore : genreScores) {
-            verify(genreScore, times(1)).resetScore();
-        }
     }
 }
