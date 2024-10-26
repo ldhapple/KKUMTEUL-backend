@@ -13,10 +13,11 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
@@ -44,21 +45,6 @@ public class BatchConfig {
     private final RecommendationService recommendationService;
     private final BookRepository bookRepository;
 
-    // 비동기 JobLauncher 설정
-    @Bean
-    public JobLauncher asyncJobLauncher(JobRepository jobRepository, TaskExecutor taskExecutor) throws Exception {
-        TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
-        jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(taskExecutor); // 비동기 실행 설정
-        jobLauncher.afterPropertiesSet();
-        return jobLauncher;
-    }
-
-    @Bean
-    public TaskExecutor taskExecutor() {
-        return new SimpleAsyncTaskExecutor(); // 비동기 태스크 실행기
-    }
-
     @Bean
     public Job recommendationJob() {
         log.info("=============job 시작=============");
@@ -79,8 +65,9 @@ public class BatchConfig {
                 .start(recommendationStep())
                 .build();
     }
-
+//    @JobScope
     @Bean
+    @JobScope
     public Step recommendationStep() {
         log.info("=============step 시작=============");
         return new StepBuilder("recommendationStep", jobRepository)
@@ -93,6 +80,7 @@ public class BatchConfig {
     }
 
     @Bean
+    @StepScope
     public ItemReader<Long> activeUserReader() {
         log.info("=============Reader 시작=============");
         List<Long> activeUserIds = recommendationService.getActiveUserIds();
@@ -101,6 +89,7 @@ public class BatchConfig {
     }
 
     @Bean
+    @StepScope
     public ItemProcessor<Long, RecommendationResultDto> recommendationProcessor() {
         log.info("=============Processor 시작=============");
         return userId -> {
@@ -119,6 +108,7 @@ public class BatchConfig {
     }
 
     @Bean
+    @StepScope
     public ItemWriter<RecommendationResultDto> recommendationWriter() {
         log.info("=============Writer 시작==============");
         return results -> {

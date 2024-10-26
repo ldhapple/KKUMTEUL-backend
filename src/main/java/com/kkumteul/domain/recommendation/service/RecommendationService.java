@@ -338,7 +338,7 @@ public class RecommendationService {
         int batchSize = 50;  // 한번에 50개씩 저장
         List<Recommendation> recommendationEntities = new ArrayList<>();
 
-        recommendationRepository.deleteAllByChildProfileId(childProfile.getId());
+        recommendationRepository.deleteByChildProfileId(childProfile.getId());
 
         // 3. 추천 도서 리스트를 반복하며 Recommendation 엔티티 생성
         for (int i = 0; i < recommendations.size(); i++) {
