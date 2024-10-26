@@ -17,7 +17,7 @@ public class ChildPersonalityHistoryController {
 
     private final ChildPersonalityHistoryService historyService;
 
-    @GetMapping("/detail/{historyId}")
+    @GetMapping("/{historyId}")
     public ApiSuccess<?> getHistoryDetail(@PathVariable(name = "historyId") Long historyId) {
         ChildPersonalityHistoryDetailDto historyDetail = historyService.getHistoryDetail(historyId);
 

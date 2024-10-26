@@ -76,7 +76,7 @@ class ChildPersonalityHistoryControllerTest {
 
         given(historyService.getHistoryDetail(historyId)).willReturn(historyDetailDto);
 
-        mockMvc.perform(get("/api/history/detail/{historyId}", historyId)
+        mockMvc.perform(get("/api/history/{historyId}", historyId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.mbtiResult.mbtiName").value("INFJ"))
