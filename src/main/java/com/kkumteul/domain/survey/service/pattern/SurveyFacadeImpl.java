@@ -49,7 +49,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
         누적 점수를 바탕으로 선호 장르/주제어를 저장한다.
          */
         MBTIScore mbtiScore = mbtiService.calculateMBTIScore(requestDto.getAnswers());
-        personalityScoreService.resetCumulativeMBTIScore(childProfileId);
+//        personalityScoreService.resetCumulativeMBTIScore(childProfileId);
         personalityScoreService.updateCumulativeMBTIScore(childProfileId, mbtiScore);
 
         personalityScoreService.resetFavoriteScores(childProfileId);
