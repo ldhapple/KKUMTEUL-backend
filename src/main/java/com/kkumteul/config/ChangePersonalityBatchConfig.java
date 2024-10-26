@@ -16,7 +16,9 @@ import com.kkumteul.domain.history.service.ChildPersonalityHistoryService;
 import com.kkumteul.util.redis.RedisKey;
 import com.kkumteul.util.redis.RedisUtil;
 import jakarta.persistence.EntityManager;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -56,7 +58,7 @@ public class ChangePersonalityBatchConfig {
     @Bean
     public Step processLikeDislikeEventsStep() {
         return new StepBuilder("processLikeDislikeEventsStep", jobRepository)
-                .<String, String>chunk(10, transactionManager)
+                .<String, Long>chunk(100, transactionManager)
                 .reader(redisEventReader())
                 .processor(eventProcessor())
                 .writer(eventWriter())
@@ -67,6 +69,7 @@ public class ChangePersonalityBatchConfig {
     @StepScope
     public ItemReader<String> redisEventReader() {
         List<Object> eventObjects = redisUtil.getAllFromList(BOOK_LIKE_EVENT_LIST.getKey());
+        log.info(eventObjects.toString());
         List<String> events = eventObjects.stream()
                 .map(Object::toString)
                 .toList();
@@ -75,7 +78,8 @@ public class ChangePersonalityBatchConfig {
     }
 
     @Bean
-    public ItemProcessor<String, String> eventProcessor() {
+    public ItemProcessor<String, Long> eventProcessor() {
+        log.info("processor");
         return message -> {
             String[] data = message.split(":");
             Long childProfileId = Long.parseLong(data[0]);
@@ -83,22 +87,27 @@ public class ChangePersonalityBatchConfig {
             String action = data[2];
 
             ChildProfile childProfile = childProfileService.getChildProfileWithMBTIScore(childProfileId);
-            Book book = bookService.getBookWithCache(bookId);
+            Book book = bookService.getBook(bookId);
 
             double changedScore = action.equals("LIKE") ? 2.0 : -2.0;
             personalityScoreService.updateGenreAndTopicScores(childProfile, book, changedScore);
 
-            createAndUpdateHistory(childProfile);
-
-            return message;
+            return childProfileId;
         };
     }
 
     @Bean
-    public ItemWriter<String> eventWriter() {
-        return messages -> {
+    public ItemWriter<Long> eventWriter() {
+        log.info("writer");
+        return childProfileIds -> {
+            Set<Long> uniqueProfileIds = new HashSet<>(childProfileIds.getItems());
+
+            uniqueProfileIds.forEach(profileId -> {
+                ChildProfile childProfile = childProfileService.getChildProfileWithMBTIScore(profileId);
+                createAndUpdateHistory(childProfile);
+            });
+
             redisUtil.deleteList(BOOK_LIKE_EVENT_LIST.getKey());
-            log.info("Processed and removed events from Redis: {}", messages.size());
         };
     }
 
