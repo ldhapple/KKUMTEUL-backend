@@ -38,4 +38,12 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findBookByIdWithGenreAndTopic(bookId)
                 .orElseThrow(() -> new EntityNotFoundException(bookId));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Book getBook(Long bookId) {
+        log.info("get Book - bookID: {}", bookId);
+        return bookRepository.findBookByIdWithGenreAndTopic(bookId)
+                .orElseThrow(() -> new EntityNotFoundException(bookId));
+    }
 }

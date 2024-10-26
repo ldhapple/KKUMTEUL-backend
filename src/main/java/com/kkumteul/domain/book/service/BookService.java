@@ -11,4 +11,5 @@ public interface BookService {
     Page<GetBookListResponseDto> getBookList(Pageable pageable);
 
     Book getBookWithCache(Long bookId);
+    Book getBook(Long bookId);
 }
