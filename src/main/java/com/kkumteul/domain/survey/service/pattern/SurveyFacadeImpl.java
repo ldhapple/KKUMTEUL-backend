@@ -37,6 +37,8 @@ public class SurveyFacadeImpl implements SurveyFacade {
     public SurveyResultDto submitSurvey(SurveyResultRequestDto requestDto, Long childProfileId) {
         log.info("Submit survey Input childProfileId: {}", childProfileId);
 
+        historyService.deleteDiagnosisHistory(childProfileId);
+
         ChildProfile childProfile = childProfileService.getChildProfile(childProfileId);
         /*
         진단 시 누적 점수는 초기화된다.
@@ -54,7 +56,6 @@ public class SurveyFacadeImpl implements SurveyFacade {
         personalityScoreService.updateFavoriteGenresScore(childProfile, requestDto.getFavoriteGenres());
         personalityScoreService.updateFavoriteTopicsScore(childProfile, requestDto.getFavoriteTopics());
 
-        historyService.deleteDiagnosisHistory(childProfileId);
         ChildPersonalityHistory latestHistory = historyService.createHistory(childProfileId, mbtiScore,
                 HistoryCreatedType.DIAGNOSIS);
 
