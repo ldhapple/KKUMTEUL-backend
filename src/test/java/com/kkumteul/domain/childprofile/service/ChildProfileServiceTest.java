@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.given;
 
 import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
+import com.kkumteul.domain.childprofile.dto.ChildProfileInsertRequestDto;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
 import com.kkumteul.domain.childprofile.entity.Gender;
@@ -22,6 +23,7 @@ import com.kkumteul.domain.personality.entity.Topic;
 import com.kkumteul.domain.personality.repository.GenreRepository;
 import com.kkumteul.domain.personality.repository.TopicRepository;
 import com.kkumteul.domain.user.entity.User;
+import com.kkumteul.domain.user.repository.UserRepository;
 import com.kkumteul.exception.ChildProfileNotFoundException;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
 import java.util.Date;
@@ -50,6 +52,9 @@ class ChildProfileServiceTest {
 
     @Mock
     private ChildPersonalityHistoryRepository childPersonalityHistoryRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private ChildProfileService childProfileService;
@@ -128,5 +133,143 @@ class ChildProfileServiceTest {
         assertThat(createdProfile).isNotNull();
         assertThat(createdProfile.getName()).isEqualTo(name);
         verify(childProfileRepository, times(1)).save(any(ChildProfile.class));
+    }
+
+    @Test
+    @DisplayName("누적 MBTI 점수 초기화 테스트")
+    void testResetCumulativeMBTIScore() {
+        Long childProfileId = 1L;
+
+        CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
+        given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
+
+        childProfileService.resetCumulativeMBTIScore(childProfileId);
+
+        verify(cumulativeScore, times(1)).resetScores();
+    }
+
+    @Test
+    @DisplayName("누적 MBTI 점수 업데이트 테스트")
+    void testUpdateCumulativeMBTIScore() {
+        Long childProfileId = 1L;
+        MBTIScore mbtiScore = mock(MBTIScore.class);
+
+        CumulativeMBTIScore cumulativeScore = mock(CumulativeMBTIScore.class);
+        given(cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)).willReturn(Optional.of(cumulativeScore));
+
+        childProfileService.updateCumulativeMBTIScore(childProfileId, mbtiScore);
+
+        verify(cumulativeScore, times(1)).updateScores(mbtiScore);
+    }
+
+    @Test
+    @DisplayName("선호 장르 및 주제어 점수 초기화 테스트")
+    void testResetFavoriteScores() {
+        Long childProfileId = 1L;
+
+        List<TopicScore> topicScores = List.of(mock(TopicScore.class));
+        List<GenreScore> genreScores = List.of(mock(GenreScore.class));
+
+        given(topicScoreRepository.findByChildProfileId(childProfileId)).willReturn(topicScores);
+        given(genreScoreRepository.findByChildProfileId(childProfileId)).willReturn(genreScores);
+
+        childProfileService.resetFavoriteScores(childProfileId);
+
+        for (TopicScore topicScore : topicScores) {
+            verify(topicScore, times(1)).resetScore();
+        }
+        for (GenreScore genreScore : genreScores) {
+            verify(genreScore, times(1)).resetScore();
+        }
+    }
+
+    @Test
+    @DisplayName("자녀 등록 성공 테스트")
+    void insertChildProfile_success() {
+        //given
+        ChildProfile childProfile = ChildProfile.builder()
+                .name("child1")
+                .profileImage("image".getBytes())
+                .birthDate(new Date())
+                .gender(Gender.FEMALE)
+                .build();
+
+        //stub
+        given(childProfileRepository.save(childProfile)).willReturn(childProfile);
+
+        //when
+        ChildProfile savedChildProfile = childProfileRepository.save(childProfile);
+
+        //then
+        assertEquals("child1", savedChildProfile.getName());
+    }
+
+    @Test
+    @DisplayName("자녀 등록 실패 테스트 - 이름 누락")
+    void insertChildProfile_missingName_fail() {
+        //given
+        Long userId = 1L;
+        User user = User.builder()
+                .username("user1")
+                .nickName("nickname1")
+                .phoneNumber("01012345678")
+                .build();
+
+        ChildProfileInsertRequestDto dto = new ChildProfileInsertRequestDto(
+                null, // 이름 누락
+                "FEMALE",
+                "220907"
+        );
+
+        //stub
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        //when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            childProfileService.insertChildProfile(userId, null,  dto);
+        });
+    }
+
+    @Test
+    @DisplayName("자녀 삭제 성공 테스트")
+    void deleteChildProfile_success() {
+        //given
+        Long childProfileId = 1L;
+        ChildProfile childProfile = ChildProfile.builder()
+                .name("child1")
+                .profileImage("image".getBytes())
+                .birthDate(new Date())
+                .gender(Gender.FEMALE)
+                .build();
+        childProfileRepository.save(childProfile);
+
+        //stub
+        given(childProfileRepository.findById(childProfileId)).willReturn(Optional.of(childProfile));
+
+        //when
+        childProfileService.deleteChildProfile(childProfileId);
+
+        //then
+        assertFalse(childProfileRepository.findById(childProfile.getId()).isPresent(),
+                "자녀 프로필이 삭제되어야 합니다.");
+
+    }
+
+    @Test
+    @DisplayName("자녀 삭제 실패 테스트")
+    void deleteChildProfile_notFound_fail() {
+        //given
+        Long childProfileId = 1L;
+
+        //stub
+        given(childProfileRepository.findById(childProfileId)).willReturn(Optional.empty());
+
+        //when
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            childProfileService.deleteChildProfile(childProfileId);
+        });
+
+        //then
+        assertEquals("childProfile not found: " + childProfileId, exception.getMessage());
     }
 }

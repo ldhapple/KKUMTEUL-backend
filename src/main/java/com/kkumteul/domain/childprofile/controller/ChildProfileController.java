@@ -1,5 +1,6 @@
 package com.kkumteul.domain.childprofile.controller;
 
+import com.kkumteul.domain.childprofile.dto.ChildProfileInsertRequestDto;
 import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
 import com.kkumteul.domain.childprofile.service.ChildProfileService;
 import com.kkumteul.util.ApiUtil;
@@ -12,6 +13,13 @@ import com.kkumteul.domain.childprofile.service.ChildProfileService;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
 import jakarta.servlet.http.HttpSession;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+
+import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -53,4 +62,32 @@ public class ChildProfileController {
 
         return ApiUtil.success("프로필이 성공적으로 변경되었습니다.");
     }
+
+    // 자녀 등록
+    @PostMapping("")
+    public ApiSuccess<?> insertChildProfile(
+            @RequestPart(value = "childName", required = false) String childName,
+            @RequestPart(value = "childBirthDate", required = false) String childBirthDate,
+            @RequestPart(value = "childGender", required = false) String childGender,
+            @RequestPart(value = "childProfileImage", required = false) MultipartFile childProfileImage
+    ) throws IOException, ParseException {
+
+        Long userId = 1L; // 더미
+
+        ChildProfileInsertRequestDto childProfileInsertRequestDto = new ChildProfileInsertRequestDto(childName, childGender, childBirthDate);
+        childProfileService.insertChildProfile(userId, childProfileImage, childProfileInsertRequestDto);
+
+        return ApiUtil.success("child profile inserted successfully");
+
+    }
+
+    // 자녀 삭제
+    @DeleteMapping("{childProfileId}")
+    public ApiSuccess<?> deleteChildProfile(@PathVariable(name = "childProfileId") Long childProfileId) {
+
+        childProfileService.deleteChildProfile(childProfileId);
+        return ApiUtil.success("child profile deleted successfully");
+
+    }
+
 }

@@ -87,4 +87,27 @@ class ChildProfileRepositoryTest {
         assertThat(findChildProfile).isPresent();
         assertThat(findChildProfile.get().getName()).isEqualTo(childProfile2.getName());
     }
+
+    @Test
+    @DisplayName("자녀 프로필 등록 테스트")
+    void insert_childProfile() {
+        //when
+        ChildProfile savedChildProfile = childProfileRepository.save(childProfile2);
+
+        //then
+        assertThat(savedChildProfile).isNotNull();
+        assertThat(savedChildProfile.getId()).isNotNull();
+        assertThat(savedChildProfile.getName()).isEqualTo(childProfile2.getName());
+
+    }
+
+    @Test
+    @DisplayName("자녀 프로필 삭제 테스트")
+    void delete_childProfile() {
+        //when
+        childProfileRepository.delete(childProfile2);
+
+        //then
+        assertThat(childProfileRepository.findById(childProfile2.getId())).isNotPresent();
+    }
 }
