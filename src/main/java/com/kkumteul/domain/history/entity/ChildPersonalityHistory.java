@@ -2,7 +2,6 @@ package com.kkumteul.domain.history.entity;
 
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
-import com.kkumteul.domain.mbti.entity.MBTIScore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -83,6 +82,11 @@ public class ChildPersonalityHistory {
     public void addFavoriteTopic(FavoriteTopic favoriteTopic) {
         favoriteTopics.add(favoriteTopic);
         favoriteTopic.setHistory(this);
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 
     public List<FavoriteGenre> getFavoriteGenres() {

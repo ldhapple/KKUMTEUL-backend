@@ -1,6 +1,8 @@
 package com.kkumteul.domain.history.service;
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.childprofile.entity.GenreScore;
+import com.kkumteul.domain.childprofile.entity.TopicScore;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDetailDto;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
@@ -22,32 +24,38 @@ import com.kkumteul.domain.survey.dto.MbtiDto;
 import com.kkumteul.exception.ChildProfileNotFoundException;
 import com.kkumteul.exception.EntityNotFoundException;
 import com.kkumteul.exception.HistoryNotFoundException;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ChildPersonalityHistoryService {
 
     private final ChildPersonalityHistoryRepository historyRepository;
     private final ChildProfileRepository childProfileRepository;
     private final GenreRepository genreRepository;
     private final TopicRepository topicRepository;
+    private final EntityManager entityManager;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteDiagnosisHistory(Long childProfileId) {
         Optional<ChildPersonalityHistory> diagnosisHistory = historyRepository.findHistoryByChildProfileIdAndHistoryCreatedType(
                 childProfileId, HistoryCreatedType.DIAGNOSIS);
 
-        diagnosisHistory.ifPresent(historyRepository::delete);
+        diagnosisHistory.ifPresent(history -> {
+            historyRepository.delete(history);
+        });
     }
 
+    @Transactional
     public ChildPersonalityHistory createHistory(Long childProfileId, MBTIScore mbtiScore, HistoryCreatedType type) {
         log.info("Create history ChildProfile ID: {}", childProfileId);
         ChildProfile childProfile = childProfileRepository.findById(childProfileId)
@@ -99,6 +107,7 @@ public class ChildPersonalityHistoryService {
         );
     }
 
+    @Transactional
     public void addFavoriteGenre(Long historyId, Long genreId) {
         log.info("Add FavoriteGenre ID: {}, History ID: {}", genreId, historyId);
         ChildPersonalityHistory history = historyRepository.findById(historyId)
@@ -114,6 +123,7 @@ public class ChildPersonalityHistoryService {
         history.addFavoriteGenre(favoriteGenre);
     }
 
+    @Transactional
     public void addFavoriteTopic(Long historyId, Long topicId) {
         log.info("Add FavoriteTopic ID: {}, History ID: {}", topicId, historyId);
         ChildPersonalityHistory history = historyRepository.findById(historyId)
@@ -127,5 +137,74 @@ public class ChildPersonalityHistoryService {
                 .build();
 
         history.addFavoriteTopic(favoriteTopic);
+    }
+
+    @Transactional
+    public List<Genre> updatePreferredGenresByScore(ChildPersonalityHistory latestHistory, List<GenreScore> genreScores) {
+        List<Genre> preferredGenres = getPreferredGenres(genreScores);
+
+        for (Genre genre : preferredGenres) {
+            FavoriteGenre favoriteGenre = FavoriteGenre.builder()
+                    .genre(genre)
+                    .build();
+            latestHistory.addFavoriteGenre(favoriteGenre);
+        }
+
+        return preferredGenres;
+    }
+
+    @Transactional
+    public List<Topic> updatePreferredTopicsByScore(ChildPersonalityHistory latestHistory, List<TopicScore> topicScores) {
+        List<Topic> preferredTopics = getPreferredTopics(topicScores);
+
+        for (Topic topic : preferredTopics) {
+            FavoriteTopic favoriteTopic = FavoriteTopic.builder()
+                    .topic(topic)
+                    .build();
+            latestHistory.addFavoriteTopic(favoriteTopic);
+        }
+
+        return preferredTopics;
+    }
+
+    private static List<Genre> getPreferredGenres(List<GenreScore> genreScores) {
+        log.info("set preferred genres");
+
+        double averageScore = genreScores.stream()
+                .mapToDouble(GenreScore::getScore)
+                .average()
+                .orElse(0.0);
+
+        log.debug("Average GenreScore: {}", averageScore);
+
+        return genreScores.stream()
+                .filter(gs -> gs.getScore() > averageScore)
+                .map(GenreScore::getGenre)
+                .toList();
+    }
+
+    private static List<Topic> getPreferredTopics(List<TopicScore> topicScores) {
+        log.info("set preferred topics");
+
+        double averageScore = topicScores.stream()
+                .mapToDouble(TopicScore::getScore)
+                .average()
+                .orElse(0.0);
+
+        log.debug("Average TopicScore: {}", averageScore);
+
+        return topicScores.stream()
+                .filter(ts -> ts.getScore() > averageScore)
+                .map(TopicScore::getTopic)
+                .toList();
+    }
+  
+    public void deleteHistory(Long historyId) {
+        log.info("delete History Id: {}", historyId);
+
+        ChildPersonalityHistory history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new HistoryNotFoundException(historyId));
+
+        history.delete();
     }
 }

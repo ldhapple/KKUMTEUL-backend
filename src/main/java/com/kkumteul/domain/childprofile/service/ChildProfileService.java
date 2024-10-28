@@ -3,15 +3,22 @@ package com.kkumteul.domain.childprofile.service;
 
 import com.kkumteul.domain.book.dto.BookLikeDto;
 import com.kkumteul.domain.book.repository.BookLikeRepository;
+import com.kkumteul.domain.childprofile.dto.ChildProfileInsertRequestDto;
 import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
 import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
 import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
+import com.kkumteul.domain.user.repository.UserRepository;
+import com.kkumteul.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
@@ -39,23 +46,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ChildProfileService {
 
     private final ChildProfileRepository childProfileRepository;
-    private final CumulativeMBTIScoreRepository cumulativeMBTIScoreRepository;
-    private final GenreScoreRepository genreScoreRepository;
-    private final TopicScoreRepository topicScoreRepository;
     private final GenreRepository genreRepository;
     private final TopicRepository topicRepository;
     private final ChildPersonalityHistoryRepository childPersonalityHistoryRepository;
     private final BookLikeRepository bookLikeRepository;
+    private final UserRepository userRepository;
     
+
+    @Transactional(readOnly = true)
     public ChildProfileResponseDto getChildProfileDetail(Long childProfileId) {
         log.info("childProfile id: {}", childProfileId);
 
@@ -81,6 +88,7 @@ public class ChildProfileService {
         return new ChildProfileResponseDto(childProfile.getName(), likedBooks, childPersonalityHistories);
     }
 
+    @Transactional
     public ChildProfile createChildProfile(String name, Gender gender, Date birthDate, byte[] profileImage, User user) {
         //입력 매개변수 DTO로 수정
         ChildProfile childProfile = ChildProfile.builder()
@@ -91,18 +99,7 @@ public class ChildProfileService {
                 .user(user)
                 .build();
 
-        CumulativeMBTIScore cumulativeMBTIScore = CumulativeMBTIScore.builder()
-                .iScore(0.0)
-                .eScore(0.0)
-                .sScore(0.0)
-                .nScore(0.0)
-                .tScore(0.0)
-                .fScore(0.0)
-                .jScore(0.0)
-                .pScore(0.0)
-                .build();
-
-        childProfile.setCumulativeMBTIScore(cumulativeMBTIScore);
+        childProfile.setCumulativeMBTIScore(CumulativeMBTIScore.init());
 
         List<Genre> allGenres = genreRepository.findAll();
         for (Genre genre : allGenres) {
@@ -126,36 +123,6 @@ public class ChildProfileService {
         return childProfileRepository.save(childProfile);
     }
 
-    public void resetCumulativeMBTIScore(Long childProfileId) {
-        log.info("reset CumulativeMBTIScore ChildProfile ID: {}", childProfileId);
-        CumulativeMBTIScore cumulativeScore = cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)
-                .orElseThrow(() -> new IllegalArgumentException("점수가 존재하지 않습니다."));
-
-        cumulativeScore.resetScores();
-    }
-
-    public void resetFavoriteScores(Long childProfileId) {
-        log.info("reset Genre/Topic Score ChildProfile ID: {}", childProfileId);
-        List<TopicScore> topicScores = topicScoreRepository.findByChildProfileId(childProfileId);
-        List<GenreScore> genreScores = genreScoreRepository.findByChildProfileId(childProfileId);
-
-        for (TopicScore topicScore : topicScores) {
-            topicScore.resetScore();
-        }
-
-        for (GenreScore genreScore : genreScores) {
-            genreScore.resetScore();
-        }
-    }
-
-    public CumulativeMBTIScore updateCumulativeMBTIScore(Long childProfileId, MBTIScore mbtiScore) {
-        log.info("Update CumulativeMBTIScore ChildProfile ID: {}", childProfileId);
-        CumulativeMBTIScore cumulativeScore = cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)
-                .orElseThrow(() -> new IllegalArgumentException("점수가 존재하지 않습니다."));
-
-        return cumulativeScore.updateScores(mbtiScore);
-    }
-
     @Transactional(readOnly = true)
     public ChildProfile getChildProfile(Long childProfileId) {
         log.info("get ChildProfile InputId: {}", childProfileId);
@@ -163,6 +130,7 @@ public class ChildProfileService {
                 .orElseThrow(() -> new ChildProfileNotFoundException(childProfileId));
     }
 
+    @Transactional(readOnly = true)
     public List<ChildProfileDto> getChildProfileList(Long userId) {
         log.info("getChildProfiles - Input userId: {}", userId);
         List<ChildProfile> childProfiles = childProfileRepository.findByUserId(userId)
@@ -179,5 +147,51 @@ public class ChildProfileService {
         log.info("validate exist childProfile: {}", childProfileId);
         childProfileRepository.findById(childProfileId).orElseThrow(
                 () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
+    }
+
+
+    public void insertChildProfile(Long userId, MultipartFile childProfileImage, ChildProfileInsertRequestDto childProfileInsertRequestDto) throws IOException, ParseException {
+
+        User user = userRepository.findById(userId).orElseThrow(() ->
+            new UserNotFoundException("user not found: " + userId)
+        );
+
+        // 필수값 유효성 검사
+        validateRequiredFields(childProfileInsertRequestDto);
+
+        ChildProfile childProfile = ChildProfileInsertRequestDto.toEntity(childProfileInsertRequestDto, user);
+
+        if (childProfileImage != null && !childProfileImage.isEmpty()) {
+            byte[] imageBytes = childProfileImage.getBytes();
+            childProfile.insertChildProfileImage(imageBytes);
+        }
+
+        childProfileRepository.save(childProfile);
+
+        log.info("child profile saved successfully: {}", childProfile.getId());
+
+    }
+
+    public void deleteChildProfile(Long childProfileId) {
+        log.info("childProfile id: {}", childProfileId);
+
+        ChildProfile childProfile = childProfileRepository.findById(childProfileId)
+                .orElseThrow(() -> new IllegalArgumentException("childProfile not found: " + childProfileId));
+
+        childProfileRepository.delete(childProfile);
+
+    }
+
+    private void validateRequiredFields(ChildProfileInsertRequestDto childProfileInsertRequestDto) {
+        if (childProfileInsertRequestDto.getChildName() == null || childProfileInsertRequestDto.getChildName().isEmpty()) {
+            throw new IllegalArgumentException("자녀 이름을 입력해 주세요.");
+        }
+        if (childProfileInsertRequestDto.getChildGender() == null || childProfileInsertRequestDto.getChildGender().isEmpty()) {
+            throw new IllegalArgumentException("자녀 성별 정보를 입력해 주세요.");
+        }
+        if (childProfileInsertRequestDto.getChildBirthDate() == null || childProfileInsertRequestDto.getChildBirthDate().isEmpty()) {
+            throw new IllegalArgumentException("자녀 생년월일 정보를 입력해 주세요.");
+        }
+
     }
 }

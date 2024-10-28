@@ -12,6 +12,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -31,30 +32,41 @@ public class MBTIService {
         int jScore = 0;
 
         for (MBTISurveyAnswerDto answer : answers) {
+            int score = answer.getScore();
+            int adjustment = score - 4;
+
             switch (answer.getMbtiEffect()) {
                 case "I":
-                    iScore += answer.getScore();
+                    iScore += Math.max(adjustment, 0); // 5-7점: I 증가
+                    eScore += Math.max(-adjustment, 0); // 1-3점: E 증가
                     break;
                 case "E":
-                    eScore += answer.getScore();
+                    eScore += Math.max(adjustment, 0);
+                    iScore += Math.max(-adjustment, 0);
                     break;
                 case "S":
-                    sScore += answer.getScore();
+                    sScore += Math.max(adjustment, 0);
+                    nScore += Math.max(-adjustment, 0);
                     break;
                 case "N":
-                    nScore += answer.getScore();
+                    nScore += Math.max(adjustment, 0);
+                    sScore += Math.max(-adjustment, 0);
                     break;
                 case "T":
-                    tScore += answer.getScore();
+                    tScore += Math.max(adjustment, 0);
+                    fScore += Math.max(-adjustment, 0);
                     break;
                 case "F":
-                    fScore += answer.getScore();
+                    fScore += Math.max(adjustment, 0);
+                    tScore += Math.max(-adjustment, 0);
                     break;
                 case "J":
-                    jScore += answer.getScore();
+                    jScore += Math.max(adjustment, 0);
+                    pScore += Math.max(-adjustment, 0);
                     break;
                 case "P":
-                    pScore += answer.getScore();
+                    pScore += Math.max(adjustment, 0);
+                    jScore += Math.max(-adjustment, 0);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid MBTI effect: " + answer.getMbtiEffect());
@@ -95,6 +107,7 @@ public class MBTIService {
         return mbtiName.toString();
     }
 
+    @Transactional(readOnly = true)
     public MBTI getMBTI(String mbtiName) {
         return mbtiRepository.findByMbti(MBTIName.fromString(mbtiName))
                 .orElseThrow(() -> new InvalidMBTINameException(mbtiName));
