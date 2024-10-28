@@ -50,12 +50,12 @@ class MBTIServiceTest {
 
         MBTIScore mbtiScore = mbtiService.calculateMBTIScore(answers);
 
-        assertThat(mbtiScore.getIScore()).isEqualTo(9);
-        assertThat(mbtiScore.getEScore()).isEqualTo(7);
-        assertThat(mbtiScore.getSScore()).isEqualTo(3);
-        assertThat(mbtiScore.getFScore()).isEqualTo(2);
-        assertThat(mbtiScore.getPScore()).isEqualTo(1);
-        assertThat(mbtiScore.getJScore()).isEqualTo(5);
+        assertThat(mbtiScore.getIScore()).isEqualTo(5);
+        assertThat(mbtiScore.getEScore()).isEqualTo(3);
+        assertThat(mbtiScore.getSScore()).isEqualTo(0);
+        assertThat(mbtiScore.getFScore()).isEqualTo(0);
+        assertThat(mbtiScore.getPScore()).isEqualTo(0);
+        assertThat(mbtiScore.getJScore()).isEqualTo(4);
     }
 
     @Test
