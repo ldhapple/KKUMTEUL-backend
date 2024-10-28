@@ -45,15 +45,6 @@ class ChildProfileServiceTest {
     private ChildProfileRepository childProfileRepository;
 
     @Mock
-    private CumulativeMBTIScoreRepository cumulativeMBTIScoreRepository;
-
-    @Mock
-    private GenreScoreRepository genreScoreRepository;
-
-    @Mock
-    private TopicScoreRepository topicScoreRepository;
-
-    @Mock
     private GenreRepository genreRepository;
 
     @Mock
@@ -281,5 +272,4 @@ class ChildProfileServiceTest {
         //then
         assertEquals("childProfile not found: " + childProfileId, exception.getMessage());
     }
-
 }

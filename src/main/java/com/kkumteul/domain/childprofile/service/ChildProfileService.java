@@ -52,19 +52,17 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ChildProfileService {
 
     private final ChildProfileRepository childProfileRepository;
-    private final CumulativeMBTIScoreRepository cumulativeMBTIScoreRepository;
-    private final GenreScoreRepository genreScoreRepository;
-    private final TopicScoreRepository topicScoreRepository;
     private final GenreRepository genreRepository;
     private final TopicRepository topicRepository;
     private final ChildPersonalityHistoryRepository childPersonalityHistoryRepository;
     private final BookLikeRepository bookLikeRepository;
     private final UserRepository userRepository;
     
+
+    @Transactional(readOnly = true)
     public ChildProfileResponseDto getChildProfileDetail(Long childProfileId) {
         log.info("childProfile id: {}", childProfileId);
 
@@ -90,6 +88,7 @@ public class ChildProfileService {
         return new ChildProfileResponseDto(childProfile.getName(), likedBooks, childPersonalityHistories);
     }
 
+    @Transactional
     public ChildProfile createChildProfile(String name, Gender gender, Date birthDate, byte[] profileImage, User user) {
         //입력 매개변수 DTO로 수정
         ChildProfile childProfile = ChildProfile.builder()
@@ -100,18 +99,7 @@ public class ChildProfileService {
                 .user(user)
                 .build();
 
-        CumulativeMBTIScore cumulativeMBTIScore = CumulativeMBTIScore.builder()
-                .iScore(0.0)
-                .eScore(0.0)
-                .sScore(0.0)
-                .nScore(0.0)
-                .tScore(0.0)
-                .fScore(0.0)
-                .jScore(0.0)
-                .pScore(0.0)
-                .build();
-
-        childProfile.setCumulativeMBTIScore(cumulativeMBTIScore);
+        childProfile.setCumulativeMBTIScore(CumulativeMBTIScore.init());
 
         List<Genre> allGenres = genreRepository.findAll();
         for (Genre genre : allGenres) {
@@ -135,36 +123,6 @@ public class ChildProfileService {
         return childProfileRepository.save(childProfile);
     }
 
-    public void resetCumulativeMBTIScore(Long childProfileId) {
-        log.info("reset CumulativeMBTIScore ChildProfile ID: {}", childProfileId);
-        CumulativeMBTIScore cumulativeScore = cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)
-                .orElseThrow(() -> new IllegalArgumentException("점수가 존재하지 않습니다."));
-
-        cumulativeScore.resetScores();
-    }
-
-    public void resetFavoriteScores(Long childProfileId) {
-        log.info("reset Genre/Topic Score ChildProfile ID: {}", childProfileId);
-        List<TopicScore> topicScores = topicScoreRepository.findByChildProfileId(childProfileId);
-        List<GenreScore> genreScores = genreScoreRepository.findByChildProfileId(childProfileId);
-
-        for (TopicScore topicScore : topicScores) {
-            topicScore.resetScore();
-        }
-
-        for (GenreScore genreScore : genreScores) {
-            genreScore.resetScore();
-        }
-    }
-
-    public CumulativeMBTIScore updateCumulativeMBTIScore(Long childProfileId, MBTIScore mbtiScore) {
-        log.info("Update CumulativeMBTIScore ChildProfile ID: {}", childProfileId);
-        CumulativeMBTIScore cumulativeScore = cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)
-                .orElseThrow(() -> new IllegalArgumentException("점수가 존재하지 않습니다."));
-
-        return cumulativeScore.updateScores(mbtiScore);
-    }
-
     @Transactional(readOnly = true)
     public ChildProfile getChildProfile(Long childProfileId) {
         log.info("get ChildProfile InputId: {}", childProfileId);
@@ -172,6 +130,7 @@ public class ChildProfileService {
                 .orElseThrow(() -> new ChildProfileNotFoundException(childProfileId));
     }
 
+    @Transactional(readOnly = true)
     public List<ChildProfileDto> getChildProfileList(Long userId) {
         log.info("getChildProfiles - Input userId: {}", userId);
         List<ChildProfile> childProfiles = childProfileRepository.findByUserId(userId)
