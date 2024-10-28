@@ -90,6 +90,7 @@ public class PersonalityScoreService {
         CumulativeMBTIScore cumulativeScore = cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)
                 .orElseThrow(() -> new IllegalArgumentException("점수가 존재하지 않습니다."));
 
+        cumulativeScore.resetScores();
         return cumulativeScore.updateScores(mbtiScore);
     }
 

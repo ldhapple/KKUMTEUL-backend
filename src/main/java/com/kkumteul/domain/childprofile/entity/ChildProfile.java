@@ -111,6 +111,10 @@ public class ChildProfile {
         history.setChildProfile(null);
     }
 
+    public void insertChildProfileImage(byte[] childProfileImage) {
+        this.profileImage = childProfileImage;
+    }
+
     public List<GenreScore> getGenreScores() {
         return Collections.unmodifiableList(genreScores);
     }
