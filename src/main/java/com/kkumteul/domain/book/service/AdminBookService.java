@@ -14,7 +14,7 @@ import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
 import com.kkumteul.domain.personality.service.GenreService;
 import com.kkumteul.domain.personality.service.TopicService;
-import com.kkumteul.exception.BookNotFoundException;
+import com.kkumteul.exception.AdminBookNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +91,7 @@ public class AdminBookService {
     public AdminGetBookDetailResponseDto getBookDetailById(final Long bookId) {
 
         final Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId.toString()));
+                .orElseThrow(() -> new AdminBookNotFoundException(bookId.toString()));
 
         return AdminGetBookDetailResponseDto.fromEntity(book);
     }
@@ -105,7 +105,7 @@ public class AdminBookService {
 
         // 4.1. 도서 ID로 Book 엔티티 조회 (없는 경우에는 예외 처리)
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId.toString()));
+                .orElseThrow(() -> new AdminBookNotFoundException(bookId.toString()));
 
         // 4.2. 이미지 갱신
         byte[] bookImage = processImage(image);
@@ -145,7 +145,7 @@ public class AdminBookService {
     // 5. 도서 삭제
     public void deleteBook(Long bookId){
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId.toString()));
+                .orElseThrow(() -> new AdminBookNotFoundException(bookId.toString()));
 
         bookRepository.deleteById(bookId);
     }
