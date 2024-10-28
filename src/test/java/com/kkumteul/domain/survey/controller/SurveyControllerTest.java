@@ -55,6 +55,22 @@ class SurveyControllerTest {
             }
         """;
 
+        SurveyResultDto mockResultDto = SurveyResultDto.builder()
+                .IPercent(60.0)
+                .EPercent(40.0)
+                .SPercent(70.0)
+                .NPercent(30.0)
+                .TPercent(80.0)
+                .FPercent(20.0)
+                .JPercent(75.0)
+                .PPercent(25.0)
+                .mbtiResult(new MbtiDto("INTJ", "수호자", "상상력이 풍부한", new byte[0]))
+                .favoriteGenres(List.of(new FavoriteDto("그림책", new byte[0]), new FavoriteDto("옛날이야기", new byte[0])))
+                .favoriteTopics(List.of(new FavoriteDto("식물", new byte[0]), new FavoriteDto("나무", new byte[0])))
+                .build();
+
+        given(surveyFacade.submitSurvey(any(SurveyResultRequestDto.class), any(Long.class))).willReturn(mockResultDto);
+
         mockMvc.perform(post("/api/survey")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
