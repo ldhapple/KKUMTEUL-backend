@@ -5,11 +5,13 @@ import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.personality.entity.Topic;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@ToString
 public class AdminGetBookListResponseDto {
     private Long id;
     private byte[] image;
