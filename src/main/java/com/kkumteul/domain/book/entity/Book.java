@@ -34,7 +34,7 @@ public class Book {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] bookImage;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Genre genre;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
