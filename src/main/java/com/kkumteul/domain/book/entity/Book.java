@@ -44,7 +44,8 @@ public class Book {
 
     @Builder
     public Book(String title, String author, String publisher, String price, String page, String ageGroup,
-                String summary, byte[] bookImage, Genre genre, List<BookTopic> bookTopics, List<BookMBTI> bookMBTIs) {
+                String summary, byte[] bookImage, Genre genre, List<BookTopic> bookTopics, List<BookMBTI> bookMBTIS) {
+
         this.title = title;
         this.author = author;
         this.publisher = publisher;
@@ -55,7 +56,7 @@ public class Book {
         this.bookImage = bookImage;
         this.genre = genre;
         this.bookTopics = bookTopics;
-        this.bookMBTIS = bookMBTIs;
+        this.bookMBTIS = bookMBTIS;
     }
 
     public void update(byte[] bookImage, String title, String author, String publisher, String price, String page, String ageGroup,
