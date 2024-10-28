@@ -20,7 +20,7 @@ public class GetBookDetailResponseDto {
     private String bookSummary;
     private String genreName;
     private List<String> topicNames;
-    private String age_group;
+    private String ageGroup;
     private String bookPage;
     private String publisher;
 
@@ -38,7 +38,7 @@ public class GetBookDetailResponseDto {
                 .map(BookTopic::getTopic)
                 .map(Topic::getName)
                 .toList();
-        bookDetailResponseDto.age_group = book.getAge_group();
+        bookDetailResponseDto.ageGroup = book.getAgeGroup();
         bookDetailResponseDto.bookPage = book.getPage();
         bookDetailResponseDto.publisher = book.getPublisher();
         if (!book.getBookMBTIS().isEmpty()) {

@@ -54,7 +54,7 @@ public class BookLikeRepositoryTest {
                 .publisher("테스트 출판사")
                 .price("12000")
                 .page("300")
-                .age_group("7세 이상")
+                .ageGroup("7세 이상")
                 .summary("테스트 요약")
                 .build();
         bookRepository.save(book);
