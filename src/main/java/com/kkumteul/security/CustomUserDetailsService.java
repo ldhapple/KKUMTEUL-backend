@@ -5,8 +5,11 @@ import com.kkumteul.domain.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
-                .authorities("ROLE_USER")  // 기본적으로 사용자에게 ROLE_USER 권한 부여
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()))) // 권한 객체로 래핑
                 .build();
     }
 }

@@ -5,13 +5,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -22,36 +23,47 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = true)
     private String nickName;
+
+    @Column(nullable = true)
     private String phoneNumber;
-    private Date birthDate;
+
+    @Column(nullable = true)
+    private LocalDate birthDate;
 
     @Lob
-    @Column(columnDefinition = "MEDIUMBLOB")
+    @Column(columnDefinition = "MEDIUMBLOB", nullable = true)
     private byte[] profileImage;
 
-    // 역할(Role) 필드 추가
     @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = true)
     private Role role;
 
+    @Setter
+    private String refreshToken;
+
     @Builder
-    public User(String username, String password, String nickName, String phoneNumber, Date birthDate,
-                byte[] profileImage, Role role) {
+    public User(String username, String password, String nickName, String phoneNumber, LocalDate birthDate,
+                byte[] profileImage, Role role, String refreshToken) {
         this.username = username;
         this.password = password;
         this.nickName = nickName;
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
         this.profileImage = profileImage;
-        this.role = role;  // 역할 설정
+        this.role = role;
+        this.refreshToken = refreshToken;
     }
 
-    // UserDetails 인터페이스 구현
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 사용자의 역할을 기반으로 권한 부여
         return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
     }
 

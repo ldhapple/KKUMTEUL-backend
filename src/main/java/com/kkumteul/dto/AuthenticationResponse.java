@@ -1,10 +1,16 @@
 package com.kkumteul.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class AuthenticationResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
+
+    public AuthenticationResponse(String message) {
+        this.accessToken = message;
+        this.refreshToken = null;
+    }
 }

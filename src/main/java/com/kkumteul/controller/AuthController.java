@@ -2,15 +2,19 @@ package com.kkumteul.controller;
 
 import com.kkumteul.dto.AuthenticationRequest;
 import com.kkumteul.dto.AuthenticationResponse;
-import com.kkumteul.domain.user.entity.User; // User 엔티티 import 추가
 import com.kkumteul.security.JwtTokenProvider;
 import com.kkumteul.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,36 +30,49 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // 회원가입 엔드포인트
     @PostMapping("/signup")
     public ResponseEntity<String> register(@RequestBody AuthenticationRequest request) {
-        // UserService의 registerUser 메서드를 호출하고, 반환된 User 객체를 사용
-        User user = userService.registerUser(request.getUsername(), request.getPassword(), request.getUsername(), request.getPhoneNumber());
-
-        return ResponseEntity.ok("User registered successfully with username: " + user.getUsername());
+        userService.registerUser(
+                request.getUsername(), request.getPassword(), request.getUsername(), request.getPhoneNumber());
+        return ResponseEntity.ok("User registered successfully with username: " + request.getUsername());
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
         try {
-            // 사용자 인증
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-            // JWT 토큰 발급
-            String token = jwtTokenProvider.createToken(authentication.getName());
+            String userId = request.getUsername(); // 로그인한 사용자의 ID를 직접 사용
+            String accessToken = jwtTokenProvider.createAccessToken(userId, "ROLE_USER");
+            String refreshToken = jwtTokenProvider.createRefreshToken(userId);
 
-            // 응답 DTO로 감싸서 반환
-            return ResponseEntity.ok(new AuthenticationResponse(token));
+            userService.updateRefreshToken(userId, refreshToken);
+
+            return ResponseEntity.ok(new AuthenticationResponse(accessToken, refreshToken));
         } catch (AuthenticationException e) {
-            // 로그인 실패 시 401 상태 코드와 에러 메시지 반환
-            return ResponseEntity.status(401).body(new AuthenticationResponse("Invalid login credentials"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid login credentials"));
         }
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthenticationResponse> refreshAccessToken(@RequestBody Map<String, String> tokenRequest) {
+        String refreshToken = tokenRequest.get("refreshToken");
+        try {
+            if (jwtTokenProvider.validateRefreshToken(refreshToken)) {
+                String userId = jwtTokenProvider.getUserIdFromToken(refreshToken, jwtTokenProvider.getRefreshSigningKey());
+                String newAccessToken = jwtTokenProvider.createAccessToken(userId, "ROLE_USER");
+                return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
+            }
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Refresh token expired. Please log in again."));
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid refresh token"));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout() {
-        // 클라이언트 측에서 JWT 토큰을 제거하도록 안내
         return ResponseEntity.ok("Logout successful. Please remove your token on client side.");
     }
 }

@@ -1,58 +1,100 @@
 package com.kkumteul.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import jakarta.servlet.http.HttpServletRequest;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
 
-    // 비밀 키는 필드로 선언하여 한 번만 생성
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor("secret-key-secret-key-secret-key-secret-key".getBytes());
+    private final Key accessSecretKey;
+    private final Key refreshSecretKey;
+    private final long accessTokenValidity;
+    private final long refreshTokenValidity;
 
-    // JWT 토큰 생성
-    public String createToken(String username) {
-        long VALIDITY_IN_MILLISECONDS = 3600000;  // 1시간 유효 기간
-        Claims claims = Jwts.claims().setSubject(username);
+    public JwtTokenProvider(
+            @Value("${jwt.access.secret}") String accessSecret,
+            @Value("${jwt.refresh.secret}") String refreshSecret,
+            @Value("${jwt.access.validity}") long accessTokenValidity,
+            @Value("${jwt.refresh.validity}") long refreshTokenValidity) {
+        this.accessSecretKey = new SecretKeySpec(accessSecret.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
+        this.refreshSecretKey = new SecretKeySpec(refreshSecret.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
+        this.accessTokenValidity = accessTokenValidity;
+        this.refreshTokenValidity = refreshTokenValidity;
+    }
+
+    public String createAccessToken(String userId, String role) {
+        return createToken(userId, role, accessSecretKey, accessTokenValidity);
+    }
+
+    public String createRefreshToken(String userId) {
+        return createToken(userId, null, refreshSecretKey, refreshTokenValidity);
+    }
+
+    private String createToken(String userId, String role, Key secretKey, long validity) {
+        Claims claims = Jwts.claims().setSubject(userId);
+        if (role != null) {
+            claims.put("role", role);
+        }
+
         Date now = new Date();
-        Date validity = new Date(now.getTime() + VALIDITY_IN_MILLISECONDS);
-
+        Date validityDate = new Date(now.getTime() + validity);
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .setExpiration(validityDate)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // 토큰에서 사용자명 추출
-    public String getUsernameFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    public boolean validateToken(String token, Key secretKey) {
+        try {
+            Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            System.out.println("Token expired: " + e.getMessage());
+            return false;
+        } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("Invalid JWT token: " + e.getMessage());
+            return false;
+        }
     }
 
-    // 토큰 유효성 검증
-    public boolean validateToken(String token) {
+    public boolean validateRefreshToken(String token) {
+        return validateToken(token, refreshSecretKey);
+    }
+
+    public String getUserIdFromToken(String token, Key secretKey) {
         try {
-            Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token);
-            return true;
+            return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody().getSubject();
         } catch (ExpiredJwtException e) {
-            throw new RuntimeException("Expired JWT token");
-        } catch (UnsupportedJwtException e) {
-            throw new RuntimeException("Unsupported JWT token");
-        } catch (MalformedJwtException e) {
-            throw new RuntimeException("Invalid JWT token");
-        } catch (SignatureException e) {
-            throw new RuntimeException("Invalid JWT signature");
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("JWT token is empty");
+            System.out.println("Token expired: " + e.getMessage());
+            throw e;
+        } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("Invalid JWT token: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid JWT token");
         }
+    }
+
+    public Key getAccessSigningKey() {
+        return accessSecretKey;
+    }
+
+    public Key getRefreshSigningKey() {
+        return refreshSecretKey;
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
