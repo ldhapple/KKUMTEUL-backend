@@ -71,7 +71,7 @@ public class ChildPersonalityHistory {
 
     @Builder
     public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt, boolean isDeleted,
-                                   HistoryCreatedType historyCreatedType) {
+                                   HistoryCreatedType historyCreatedType, MBTIScore mbtiScore) {
         this.childProfile = childProfile;
         this.createdAt = createdAt;
         this.isDeleted = isDeleted;

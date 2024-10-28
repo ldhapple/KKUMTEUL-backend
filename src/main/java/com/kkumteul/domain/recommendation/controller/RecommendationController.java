@@ -4,7 +4,11 @@ import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
 import com.kkumteul.domain.recommendation.service.RecommendationService;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +27,12 @@ public class RecommendationController {
         //추후 JWT 토큰 구현되면, profileId를 가져오는 방식 변경 (PathVariable 사용 X)
 
         List<RecommendBookDto> recommendedBooks = recommendationService.getRecommendedBooks(childProfileId);
+        List<RecommendBookDto> popularBooks = recommendationService.getPopularRecommendations(); // 좋아요 순 인기도서 5
 
-        return ApiUtil.success(recommendedBooks);
+        Map<String, List<RecommendBookDto>> finalBooks = new HashMap<>();
+        finalBooks.put("recommendedBooks", recommendedBooks);
+        finalBooks.put("popularBooks", popularBooks);
+
+        return ApiUtil.success(finalBooks);
     }
 }

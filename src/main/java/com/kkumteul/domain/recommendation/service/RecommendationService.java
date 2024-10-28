@@ -53,17 +53,33 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     public List<RecommendBookDto> getRecommendedBooks(Long childProfileId) {
-//        log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
+        log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
         List<Book> recommendBooks = recommendationRepository.findBookByChildProfileId(childProfileId)
                 .orElseThrow(() -> new RecommendationBookNotFoundException(childProfileId));
 
-//        log.info("found recommendedBooks: {}", recommendBooks.size());
+        log.info("found recommendedBooks: {}", recommendBooks.size());
         return recommendBooks.stream()
                 .map(RecommendBookDto::fromEntity)
                 .toList();
     }
 
-    // 추천 로직
+    // 좋아요 순 인기 도서 추천
+    public List<RecommendBookDto> getPopularRecommendations() {
+        // 1. 좋아요 수 기준 상위 5개 도서 조회
+        Pageable pageable = PageRequest.of(0, 5); // 상위 5개 도서만 가져오기
+        List<Book> popularBooks = likeRepository.findTopBooksByLikes(pageable);
+
+        // 2. 조회된 도서를 RecommendBookDto로 매핑
+        List<RecommendBookDto> recommendBookDtos = popularBooks.stream()
+                .map(RecommendBookDto::fromEntity)
+                .collect(Collectors.toList());
+
+        // 3. 매핑된 추천 도서 목록 반환
+        return recommendBookDtos;
+    }
+
+
+    // 사용자 맞춤 추천 로직
     public List<Book> getRecommendations(Long userId, List<BookDataDto> allBooks, List<ChildDataDto> childDataList) {
 
         // 1. 자녀 프로필 정보 조회
@@ -71,23 +87,31 @@ public class RecommendationService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 2. 자녀 정보 가져오기
-        ChildDataDto childDataDto = getChildInfo(childProfile.getId())
-                .orElseThrow(() -> new IllegalArgumentException("정보 조회에 문제가 발생했습니다."));
+        Optional<ChildDataDto> childDataDto = getChildInfo(childProfile.getId());
+        if(childDataDto.isEmpty()){
+            // 신규 사용자거나 자녀 히스토리가 없는 경우
+            List<Book> bookList = getDefaultRecommendations(null);
+            Collections.shuffle(bookList);
 
-        // 3. 도서 정보 가져오기
+            bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
 
+            // db에 저장
+            saveRecommendations(childProfile.getId(), bookList);
+        }
+
+//        log.info("============사용자 ID " + userId + "의 추천 책 뽑기==============");
         // 4. 콘텐츠 기반 필터링 수행 - 결과를 bookId로 매핑
-        Map<Long, Double> contentScores = contentBasedFilter.filterBooksByUserPreferences(childDataDto, allBooks)
+        Map<Long, Double> contentScores = contentBasedFilter.filterBooksByUserPreferences(childDataDto.get(), allBooks)
                 .entrySet().stream()
                 .collect(Collectors.toMap(
                         e -> e.getKey().getBookId(), // key는 bookId로 설정
                         Map.Entry::getValue // value는 점수
                 ));
 
-        // 5. 협업 필터링 수행 - 유사한 사용자의 좋아요 도서 가중치 점수 가져오기
 
+        // 5. 협업 필터링 수행
         // 유사한 프로필 찾기
-        List<ChildDataDto> similarProfiles = collaborativeFilter.findSimilarProfiles(childDataDto, childDataList);
+        List<ChildDataDto> similarProfiles = collaborativeFilter.findSimilarProfiles(childDataDto.get(), childDataList);
 
         // 협업 필터링 점수 계산 (bookId를 key로 사용)
         Map<Long, Double> collaborativeScores = getCollaborativeScores(similarProfiles, contentScores, userId);
@@ -102,19 +126,23 @@ public class RecommendationService {
             double contentScore = contentScores.getOrDefault(bookId, 0.0);
             double collaborativeScore = collaborativeScores.getOrDefault(bookId, 0.0);
 
-            // 최종 점수 계산: 콘텐츠와 협업 필터링 가중치 반영
-            double finalScore = (contentScore * 0.5) + (collaborativeScore * 0.5);
+            // 최종 점수 계산: 콘텐츠와 협업 필터링 가중치 반영(콘텐츠 기반 0.55, 협업 필터링 0.45)
+            double finalScore = (contentScore * 0.60) + (collaborativeScore * 0.40);
 
             // 최종 점수 설정 및 저장
             book.setScore(finalScore);
-            finalScores.put(book, finalScore);
 
-//            log.info("책: {} | 콘텐츠 점수: {} | 협업 점수: {} | 최종 점수: {}",
-//                    book.getTitle(), contentScore, collaborativeScore, finalScore);
+            // 최종 점수가 0 이상일 경우 - 콘텐츠 기반, 협업 필터링에서 한번도 가중치를 못받았으면 리스트 포함 x
+            if(finalScore > 0) {
+                finalScores.put(book, finalScore);
+//                log.info("책: {} | 콘텐츠 점수: {} | 협업 점수: {} | 최종 점수: {}", book.getTitle(), contentScore, collaborativeScore, finalScore);
+
+            }
+
         }
 
         // 7. 최종 추천 도서 필터링 (점수 상위 5개 뽑기)
-        return finalRecommendedBooks(finalScores, childDataDto);
+        return finalRecommendedBooks(finalScores, childDataDto.get());
     }
 
     // 최종 추천
@@ -126,7 +154,7 @@ public class RecommendationService {
         topBookDtos.sort((dto1, dto2) -> Double.compare(finalScores.get(dto2), finalScores.get(dto1)));
 
         // 3. 상위 50개 추출 (최대 50개만 가져오도록 조정)
-        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(50, topBookDtos.size()));
+        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(5, topBookDtos.size()));
 
         // 4. 50개 중 랜덤으로 5개 선택
         Collections.shuffle(top50Books); // 무작위로 섞기
@@ -189,6 +217,14 @@ public class RecommendationService {
                 .mbti(history.getMbtiScore().getMbti().getMbti())
                 .topics(topics)
                 .genres(genres)
+                .IScore(history.getMbtiScore().getIScore())
+                .EScore(history.getMbtiScore().getEScore())
+                .SScore(history.getMbtiScore().getSScore())
+                .NScore(history.getMbtiScore().getNScore())
+                .FScore(history.getMbtiScore().getFScore())
+                .TScore(history.getMbtiScore().getTScore())
+                .JScore(history.getMbtiScore().getJScore())
+                .PScore(history.getMbtiScore().getPScore())
                 .build();
 
         return Optional.of(childDataDto);
@@ -225,7 +261,7 @@ public class RecommendationService {
         return bookDataDtos;
     }
 
-    // 협업 필터링에 사용 될 모든 자녀 정보(성별, 생년월일, mbti)
+    // 모든 자녀 정보(성별, 생년월일, mbti) - 협업 필터링에 사용됨
     public List<ChildDataDto> getChildrenInfo() {
         List<ChildPersonalityHistory> histories = historyRepository.findAllChildrenData();
 
@@ -237,6 +273,14 @@ public class RecommendationService {
                     .gender(history.getChildProfile().getGender())
                     .birthDate(history.getChildProfile().getBirthDate())
                     .mbti(history.getMbtiScore().getMbti().getMbti())
+                    .IScore(history.getMbtiScore().getIScore())
+                    .EScore(history.getMbtiScore().getEScore())
+                    .SScore(history.getMbtiScore().getSScore())
+                    .NScore(history.getMbtiScore().getNScore())
+                    .FScore(history.getMbtiScore().getFScore())
+                    .TScore(history.getMbtiScore().getTScore())
+                    .JScore(history.getMbtiScore().getJScore())
+                    .PScore(history.getMbtiScore().getPScore())
                     .build();
             childDataAll.add(dto);
         }
@@ -281,6 +325,8 @@ public class RecommendationService {
         Pageable pageable = PageRequest.of(0, 20);
         Map<Long, Double> updatedScores = new HashMap<>(initialScores);
 
+//        log.info("===========유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적=========");
+
         // 1. 유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적
         for (ChildDataDto profile : similarProfiles) {
             double similarityScore = profile.getScore(); // 프로필의 유사도 점수 가져오기
@@ -288,30 +334,36 @@ public class RecommendationService {
             // 유사한 사용자가 좋아한 도서 목록 조회
             Set<BookDataDto> likedBooks = getBooksList(Set.of(profile.getId()), pageable);
 
+//            log.info("유사 프로필 ID: {} | 유사도 점수: {}", profile.getId(), similarityScore);
+
             // 도서별로 점수를 누적
             for (BookDataDto book : likedBooks) {
                 long bookId = book.getBookId();
-                double previousScore = updatedScores.getOrDefault(bookId, 0.0);
-                double newScore = previousScore + similarityScore;
+                double previousScore = updatedScores.getOrDefault(bookId, 0.0); // 기존 점수 가져오기
+
+                // 가중 평균 계산 (기존 점수가 0이라도 유사도 반영) 유사도에 따라 비율 조정
+                double weight = similarityScore / (similarityScore + 1); // 가중치 계산
+                double newScore = previousScore * (1 - weight) + similarityScore * weight;
 
                 updatedScores.put(bookId, newScore);
+//                log.info("도서 ID: {} | 이전 점수: {} | 새 점수: {}", bookId, previousScore, newScore);
             }
         }
 
-        // 2. 추천 평가 좋아요 받은 책에 가중치 부여
-        List<Long> likedBookIds = likeRepository.findLikedBooksByUser(userId);
-
-        for (Long bookId : updatedScores.keySet()) {
-            if (likedBookIds.contains(bookId)) {
-                updatedScores.merge(bookId, 2.0, Double::sum); // 좋아요 받은 책에 가중치 부여
-            }
-        }
-
-        return updatedScores;
+        return normalizeScores(updatedScores);
     }
 
 
+    // 모든 점수를 [0, 1]로 정규화
+    private Map<Long, Double> normalizeScores(Map<Long, Double> scores) {
+        double maxScore = scores.values().stream().max(Double::compare).orElse(1.0);
 
+        return scores.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue() / maxScore
+                ));
+    }
 
     // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
     private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
@@ -319,8 +371,6 @@ public class RecommendationService {
 
         Pageable pageable = PageRequest.of(0, 5);
         return bookRepository.findBookListByAgeGroup(age, pageable);
-
-//        return getAllBookInfo(bookList);
     }
 
     // 생년월일을 나이로 변환하는 메서드
@@ -328,6 +378,7 @@ public class RecommendationService {
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
 
+    // 사용자별 맞춤 추천 도서 저장
     @Transactional
     public void saveRecommendations(Long userId, List<Book> recommendations) {
         // 1. 자녀 프로필 조회
@@ -358,13 +409,14 @@ public class RecommendationService {
             }
         }
 
-//        log.info("Saving recommendations for user {}: {}", userId, recommendations.size()); // 로그 추가
-
         // 5. 남아있는 데이터 저장
         if (!recommendationEntities.isEmpty()) {
             recommendationRepository.saveAll(recommendationEntities);
         }
     }
+
+
+
 
     // 최근 7일 내 활동한 childProfile id 리턴
     public List<Long> getActiveUserIds() {

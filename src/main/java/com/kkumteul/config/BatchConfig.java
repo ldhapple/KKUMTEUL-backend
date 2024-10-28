@@ -47,17 +47,17 @@ public class BatchConfig {
 
     @Bean
     public Job recommendationJob() {
-        log.info("=============job 시작=============");
+//        log.info("=============job 시작=============");
         return new JobBuilder("recommendationJob", jobRepository)
                 .listener(new JobExecutionListener() {
                     @Override
                     public void beforeJob(JobExecution jobExecution) {
-                        log.info("===== Job 시작함 =====");
+//                        log.info("===== Job 시작함 =====");
                     }
 
                     @Override
                     public void afterJob(JobExecution jobExecution) {
-                        log.info("===== Job 종료. 상태: {} =====", jobExecution.getStatus());
+//                        log.info("===== Job 종료. 상태: {} =====", jobExecution.getStatus());
                     }
                 })
                 .incrementer(new RunIdIncrementer()) // 매 실행마다 새로운 ID 생성
@@ -69,7 +69,7 @@ public class BatchConfig {
     @Bean
     @JobScope
     public Step recommendationStep() {
-        log.info("=============step 시작=============");
+//        log.info("=============step 시작=============");
         return new StepBuilder("recommendationStep", jobRepository)
                 .<Long, RecommendationResultDto>chunk(50, transactionManager)
                 .reader(activeUserReader())
@@ -82,18 +82,18 @@ public class BatchConfig {
     @Bean
     @StepScope
     public ItemReader<Long> activeUserReader() {
-        log.info("=============Reader 시작=============");
+//        log.info("=============Reader 시작=============");
         List<Long> activeUserIds = recommendationService.getActiveUserIds();
-        log.info("Fetched active user IDs: {}", activeUserIds);
+//        log.info("Fetched active user IDs: {}", activeUserIds);
         return new IteratorItemReader<>(activeUserIds);
     }
 
     @Bean
     @StepScope
     public ItemProcessor<Long, RecommendationResultDto> recommendationProcessor() {
-        log.info("=============Processor 시작=============");
+//        log.info("=============Processor 시작=============");
         return userId -> {
-            log.info("Processing userId: {}", userId);
+//            log.info("Processing userId: {}", userId);
 
             List<BookDataDto> allBooks = recommendationService.getAllBookInfo(
                     bookRepository.findAllBooksWithTopicsAndGenre()
@@ -101,7 +101,7 @@ public class BatchConfig {
             List<ChildDataDto> childProfiles = recommendationService.getChildrenInfo();
 
             List<Book> recommendedBooks = recommendationService.getRecommendations(userId, allBooks, childProfiles);
-            log.info("Recommended books for user {}: {}", userId, recommendedBooks.size());
+//            log.info("Recommended books for user {}: {}", userId, recommendedBooks.size());
 
             return new RecommendationResultDto(userId, recommendedBooks);
         };
@@ -110,7 +110,7 @@ public class BatchConfig {
     @Bean
     @StepScope
     public ItemWriter<RecommendationResultDto> recommendationWriter() {
-        log.info("=============Writer 시작==============");
+//        log.info("=============Writer 시작==============");
         return results -> {
             for (RecommendationResultDto result : results) {
                 log.info("Saving recommendations for user {}: {}", result.getUserId(), result.getBooks().size());

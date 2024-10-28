@@ -2,6 +2,7 @@ package com.kkumteul.domain.book.repository;
 
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookLike;
+import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +22,18 @@ public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
     @Query("SELECT b FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :ids AND l.likeType = 'LIKE'")
     Page<Book> findBookLikeByUser(@Param("ids") Set<Long> ids, Pageable pageable);
 
-    @Query("SELECT b.id FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :userId AND l.likeType = 'LIKE'")
-    List<Long> findLikedBooksByUser(@Param(value = "userId") Long userId);
+//    @Query("SELECT b.id FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :userId AND l.likeType = 'LIKE'")
+//    List<Long> findLikedBooksByUser(@Param(value = "userId") Long userId);
+
+    @Query("SELECT b FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :userId AND l.likeType = 'LIKE'")
+    List<Book> findLikedBooksByUser(@Param(value = "userId") Long userId);
+
+
+    @Query("SELECT b FROM Book b JOIN BookLike bl ON b.id = bl.book.id " +
+            "WHERE bl.likeType = 'LIKE' " +
+            "GROUP BY b.id " +
+            "ORDER BY COUNT(bl.id) DESC")
+    List<Book> findTopBooksByLikes(Pageable pageable);
+
 }
 

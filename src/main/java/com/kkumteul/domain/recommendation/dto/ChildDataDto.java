@@ -22,17 +22,39 @@ public class ChildDataDto {
     private LocalDate birthDate;
     private List<TopicDto> topics = new ArrayList<>();
     private List<GenreDto> genres = new ArrayList<>();
+
+    // 총 MBTI 정보(ENFJ 등)
     private MBTIName mbti;
+
+    // 세부 MBTI 점수
+    private double IScore;
+    private double EScore;
+    private double NScore;
+    private double SScore;
+    private double FScore;
+    private double TScore;
+    private double PScore;
+    private double JScore;
+
+    // 가중치 점수
     private double score;
 
     @Builder
-    public ChildDataDto(Long id, Gender gender, Date birthDate, MBTIName mbti, List<TopicDto> topics, List<GenreDto> genres) {
+    public ChildDataDto(Long id, Gender gender, Date birthDate, List<TopicDto> topics, List<GenreDto> genres, MBTIName mbti, double IScore, double EScore, double NScore, double SScore, double FScore, double TScore, double PScore, double JScore) {
         this.id = id;
         this.gender = gender;
-        this.birthDate = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();  // Date를 LocalDate로 변환
-        this.mbti = mbti;
+        this.birthDate = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();  // Date를 LocalDate로 변환;
         this.topics = topics;
         this.genres = genres;
+        this.mbti = mbti;
+        this.IScore = IScore;
+        this.EScore = EScore;
+        this.NScore = NScore;
+        this.SScore = SScore;
+        this.FScore = FScore;
+        this.TScore = TScore;
+        this.PScore = PScore;
+        this.JScore = JScore;
     }
 
     public void addScore(double newScore) {
