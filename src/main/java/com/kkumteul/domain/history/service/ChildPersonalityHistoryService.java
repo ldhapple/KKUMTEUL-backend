@@ -18,12 +18,14 @@ import com.kkumteul.domain.personality.repository.TopicRepository;
 import com.kkumteul.exception.ChildProfileNotFoundException;
 import com.kkumteul.exception.EntityNotFoundException;
 import com.kkumteul.exception.HistoryNotFoundException;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -35,14 +37,17 @@ public class ChildPersonalityHistoryService {
     private final ChildProfileRepository childProfileRepository;
     private final GenreRepository genreRepository;
     private final TopicRepository topicRepository;
+    private final EntityManager entityManager;
 
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteDiagnosisHistory(Long childProfileId) {
         Optional<ChildPersonalityHistory> diagnosisHistory = historyRepository.findHistoryByChildProfileIdAndHistoryCreatedType(
                 childProfileId, HistoryCreatedType.DIAGNOSIS);
 
-        diagnosisHistory.ifPresent(historyRepository::delete);
+        diagnosisHistory.ifPresent(history -> {
+            historyRepository.delete(history);
+        });
     }
 
     @Transactional
