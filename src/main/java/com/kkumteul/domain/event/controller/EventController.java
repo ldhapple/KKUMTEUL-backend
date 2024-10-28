@@ -20,15 +20,17 @@ public class EventController {
     @PostMapping("{userId}")
     public ApiSuccess<?> joinEvent(@PathVariable(name = "userId") Long userId, @RequestBody EventRequestDto eventRequestDto) {
         // TODO: userId JWT 방식으로 변경
+//        Long userId = 1L;
         eventService.insertJoinEvent(userId, eventRequestDto);
         return ApiUtil.success("joined event successfully");
     }
 
     // 특정 유저의 이벤트 참여 결과 리스트
-    @GetMapping("{userId}")
-    public ApiSuccess<?> getJoinEventResults(@PathVariable(name = "userId") Long userId) {
-        // TODO: userId JWT 방식으로 변경
-        List<EventResultResponseDto> joinEventResult = eventService.getJoinEventResults(userId);
-        return ApiUtil.success(joinEventResult);
-    }
+//    @GetMapping("{userId}")
+//    public ApiSuccess<?> getJoinEventResults(@PathVariable(name = "userId") Long userId) {
+//        // TODO: userId JWT 방식으로 변경
+//        List<EventResultResponseDto> joinEventResult = eventService.getJoinEventResults(userId);
+//        return ApiUtil.success(joinEventResult);
+//    }
+
 }

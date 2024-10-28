@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JoinEventRepository extends JpaRepository<JoinEvent, Long> {
-    boolean existsByUserAndEvent(User user, Event event);
+//    boolean existsByUserAndEvent(User user, Event event);
 }

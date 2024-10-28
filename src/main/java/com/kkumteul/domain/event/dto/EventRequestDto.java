@@ -9,6 +9,6 @@ import lombok.Getter;
 public class EventRequestDto {
     private Long eventId;
     private String phoneNumber;
-    private String name;
+    private String username;
 
 }
