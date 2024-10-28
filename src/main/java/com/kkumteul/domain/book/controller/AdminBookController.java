@@ -74,7 +74,7 @@ public class AdminBookController {
     // 6. 도서 검색어 조회
     @GetMapping("/search")
     public ApiSuccess<?> getSearchBookList(
-            @RequestParam(value = "search", required = false) String keyword, final Pageable pageable) {
+            @RequestParam(name = "search", required = false) String keyword, final Pageable pageable) {
 
         Page<AdminGetBookListResponseDto> booksList;
         if (keyword == null || keyword.isEmpty()) {
