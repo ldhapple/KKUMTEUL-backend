@@ -29,7 +29,6 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
         UserResponseDto userResponseDto = UserResponseDto.fromEntity(user);
-        userResponseDto.setProfileImageBase64(userResponseDto.getProfileImageBase64());
 
         log.info("user information: {}", userResponseDto);
         return userResponseDto;
