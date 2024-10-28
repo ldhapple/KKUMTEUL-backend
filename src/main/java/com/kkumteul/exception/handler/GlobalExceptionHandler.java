@@ -41,7 +41,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ChildProfileNotFoundException.class,
             EntityNotFoundException.class,
             HistoryNotFoundException.class,
-            UserNotFoundException.class
+            UserNotFoundException.class,
+            AdminBookNotFoundException.class
     })
     protected ResponseEntity<?> handleIllegalArgumentException(Exception e) {
         log.error(e.getMessage(), e);
