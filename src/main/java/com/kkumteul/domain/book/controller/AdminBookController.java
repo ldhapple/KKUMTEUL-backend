@@ -3,7 +3,7 @@ package com.kkumteul.domain.book.controller;
 import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
 import com.kkumteul.domain.book.dto.AdminBookRequestDto;
-import com.kkumteul.domain.book.service.BookService;
+import com.kkumteul.domain.book.service.AdminBookService;
 import com.kkumteul.util.ApiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import static com.kkumteul.util.ApiUtil.ApiSuccess;
 @RequestMapping("/api/admin/books")
 public class AdminBookController {
 
-    private final BookService bookService;
+    private final AdminBookService bookService;
 
     // 1. 도서 등록
     @PostMapping

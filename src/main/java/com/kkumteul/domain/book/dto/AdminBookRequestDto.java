@@ -39,7 +39,7 @@ public class AdminBookRequestDto {
 
     // bookGenre
     @NotNull(message = "Book genre list is required")
-    private String bookGenre;
+    private String genre;
 
     // bookTopic
     @NotNull(message = "Book topic list is required")

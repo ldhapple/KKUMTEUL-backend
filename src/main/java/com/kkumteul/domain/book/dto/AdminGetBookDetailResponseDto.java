@@ -35,12 +35,12 @@ public class AdminGetBookDetailResponseDto {
                 book.getAuthor(),
                 book.getPrice(),
                 book.getAgeGroup(),
-                book.getBookGenre().getName(),
+                book.getGenre().getName(),
                 book.getBookTopics().stream()
                         .map(BookTopic::getTopic)
                         .map(Topic::getName)
                         .toList(),
-                book.getBookMBTIs().get(0)
+                book.getBookMBTIS().get(0)
                         .getMbti()
                         .getMbti()
                         .name(),

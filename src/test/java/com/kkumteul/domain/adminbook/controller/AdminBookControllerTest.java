@@ -5,7 +5,7 @@ import com.kkumteul.domain.book.controller.AdminBookController;
 import com.kkumteul.domain.book.dto.AdminBookRequestDto;
 import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
-import com.kkumteul.domain.book.service.BookService;
+import com.kkumteul.domain.book.service.AdminBookService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ public class AdminBookControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private BookService bookService;
+    private AdminBookService bookService;
 
     @Autowired
     private ObjectMapper objectMapper; // JSON 변환에 사용

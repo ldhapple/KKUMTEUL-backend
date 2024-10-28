@@ -36,7 +36,7 @@ public class BookDto {
                 book.getAgeGroup(),
                 book.getSummary(),
                 book.getBookImage(),
-                book.getBookGenre(),
+                book.getGenre(),
                 book.getBookTopics()
         );
     }

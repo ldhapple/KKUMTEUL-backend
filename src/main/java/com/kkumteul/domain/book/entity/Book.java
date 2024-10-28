@@ -34,13 +34,13 @@ public class Book {
     private byte[] bookImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Genre bookGenre;
+    private Genre genre;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<BookTopic> bookTopics = new ArrayList<>();
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-    private List<BookMBTI> bookMBTIs = new ArrayList<>();
+    private List<BookMBTI> bookMBTIS = new ArrayList<>();
 
     @Builder
     public Book(String title, String author, String publisher, String price, String page, String ageGroup,
@@ -53,9 +53,9 @@ public class Book {
         this.ageGroup = ageGroup;
         this.summary = summary;
         this.bookImage = bookImage;
-        this.bookGenre = genre;
+        this.genre = genre;
         this.bookTopics = bookTopics;
-        this.bookMBTIs = bookMBTIs;
+        this.bookMBTIS = bookMBTIs;
     }
 
     public void update(byte[] bookImage, String title, String author, String publisher, String price, String page, String ageGroup,
@@ -85,7 +85,7 @@ public class Book {
             this.summary = summary;
         }
         if (genre != null) {
-            this.bookGenre = genre;
+            this.genre = genre;
         }
     }
 }

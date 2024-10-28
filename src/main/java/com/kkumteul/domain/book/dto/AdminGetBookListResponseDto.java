@@ -30,13 +30,13 @@ public class AdminGetBookListResponseDto {
                 book.getTitle(),
                 book.getAuthor(),
                 book.getPublisher(),
-                book.getBookGenre().getName(),
+                book.getGenre().getName(),
                 book.getAgeGroup(),
                 book.getBookTopics().stream()
                         .map(BookTopic::getTopic)
                         .map(Topic::getName)
                         .toList(),
-                book.getBookMBTIs().get(0)
+                book.getBookMBTIS().get(0)
                         .getMbti()
                         .getMbti()
                         .name()

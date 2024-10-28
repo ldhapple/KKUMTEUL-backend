@@ -1,6 +1,9 @@
 package com.kkumteul.domain.book.service;
 
-import com.kkumteul.domain.book.dto.*;
+import com.kkumteul.domain.book.dto.AdminBookRequestDto;
+import com.kkumteul.domain.book.dto.BookDto;
+import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
+import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookMBTI;
 import com.kkumteul.domain.book.entity.BookTopic;
@@ -27,7 +30,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class BookService {
+public class AdminBookService {
     private final BookRepository bookRepository;
     private final BookMBTIService bookMBTIService;
     private final BookTopicService bookTopicService;
@@ -46,7 +49,7 @@ public class BookService {
         byte[] bookImage = processImage(image);
 
         // 1.2. 장르 이름 >> 장르 객체 변환 (String -> Genre)
-        Genre genre = genreService.getGenre(adminInsertBookRequestDto.getBookGenre());
+        Genre genre = genreService.getGenre(adminInsertBookRequestDto.getGenre());
         if( genre == null ){
             throw new IllegalArgumentException("Genre can't be null");
         }
@@ -108,7 +111,7 @@ public class BookService {
         byte[] bookImage = processImage(image);
 
         // 4.3. 장르 갱신
-        Genre updatedGenre = genreService.getGenre(adminBookRequestDto.getBookGenre());
+        Genre updatedGenre = genreService.getGenre(adminBookRequestDto.getGenre());
         if( updatedGenre == null ){
             throw new IllegalArgumentException("Genre can't be null");
         }
@@ -227,7 +230,7 @@ public class BookService {
             throw new IllegalArgumentException("Summary cannot be null or empty");
         }
 
-        if (requestDto.getBookGenre() == null || requestDto.getBookGenre().isEmpty()) {
+        if (requestDto.getGenre() == null || requestDto.getGenre().isEmpty()) {
             throw new IllegalArgumentException("Genre cannot be null or empty");
         }
 
