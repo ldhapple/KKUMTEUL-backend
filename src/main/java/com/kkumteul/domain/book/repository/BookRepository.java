@@ -1,6 +1,7 @@
 package com.kkumteul.domain.book.repository;
 
 import com.kkumteul.domain.book.entity.Book;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                  ORDER BY b.id ASC
             """)
     Page<Book> findAllBookInfo(final Pageable pageable);
+
+    @Query("SELECT b FROM Book b JOIN FETCH b.genre JOIN FETCH b.bookTopics WHERE b.id = :bookId")
+    Optional<Book> findBookByIdWithGenreAndTopic(@Param("bookId") Long bookId);
 
     @Query(value = """
         SELECT DISTINCT b

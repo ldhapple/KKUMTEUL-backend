@@ -1,5 +1,7 @@
 package com.kkumteul.domain.childprofile.service;
 
+import com.kkumteul.domain.book.entity.Book;
+import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
 import com.kkumteul.domain.childprofile.entity.GenreScore;
@@ -8,6 +10,8 @@ import com.kkumteul.domain.childprofile.repository.CumulativeMBTIScoreRepository
 import com.kkumteul.domain.childprofile.repository.GenreScoreRepository;
 import com.kkumteul.domain.childprofile.repository.TopicScoreRepository;
 import com.kkumteul.domain.history.entity.MBTIScore;
+import com.kkumteul.domain.personality.entity.Genre;
+import com.kkumteul.domain.personality.entity.Topic;
 import com.kkumteul.exception.EntityNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -88,5 +92,24 @@ public class PersonalityScoreService {
 
         cumulativeScore.resetScores();
         return cumulativeScore.updateScores(mbtiScore);
+    }
+
+    @Transactional
+    public void updateGenreAndTopicScores(ChildProfile childProfile, Book book, double changedScore) {
+        Genre genre = book.getGenre();
+        List<BookTopic> bookTopics = book.getBookTopics();
+
+        GenreScore genreScore = genreScoreRepository.findByChildProfileAndGenre(childProfile.getId(), genre.getId())
+                .orElseThrow(() -> new EntityNotFoundException(childProfile.getId()));
+        genreScore.updateScore(changedScore);
+
+        for (BookTopic bookTopic : bookTopics) {
+            TopicScore topicScore = topicScoreRepository.findByChildProfileAndTopic(childProfile.getId(),
+                            bookTopic.getTopic().getId())
+                    .orElseThrow(() -> new EntityNotFoundException(childProfile.getId()));
+            topicScore.updateScore(changedScore);
+        }
+
+        log.info("Update Genre and Topic scores - ChildProfile ID: {}", childProfile.getId());
     }
 }

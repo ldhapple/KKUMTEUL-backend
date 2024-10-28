@@ -11,8 +11,10 @@ import com.kkumteul.domain.history.dto.ChildPersonalityHistoryDto;
 import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
 import com.kkumteul.domain.user.repository.UserRepository;
 import com.kkumteul.exception.UserNotFoundException;
+import com.kkumteul.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -147,6 +149,13 @@ public class ChildProfileService {
         log.info("validate exist childProfile: {}", childProfileId);
         childProfileRepository.findById(childProfileId).orElseThrow(
                 () -> new IllegalArgumentException("childProfile not found - childProfileId : " + childProfileId));
+    }
+
+    @Transactional(readOnly = true)
+    public ChildProfile getChildProfileWithMBTIScore(Long childProfileId) {
+        log.info("get Book - bookID: {}", childProfileId);
+        return childProfileRepository.findByIdWithCumulatvieMBTIScore(childProfileId)
+                .orElseThrow(() -> new EntityNotFoundException(childProfileId));
     }
 
 

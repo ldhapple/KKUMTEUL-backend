@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Bean;
 public class DeleteHistoryBatchTestConfig {
 
     @Bean
-    public JobLauncherTestUtils jobLauncherTestUtils(Job deleteHistoryJob) {
-        JobLauncherTestUtils jobLauncherTestUtils = new JobLauncherTestUtils();
-        jobLauncherTestUtils.setJob(deleteHistoryJob);
-        return jobLauncherTestUtils;
+    public JobLauncherTestUtils jobLauncherTestUtils() {
+        return new JobLauncherTestUtils();
     }
 }

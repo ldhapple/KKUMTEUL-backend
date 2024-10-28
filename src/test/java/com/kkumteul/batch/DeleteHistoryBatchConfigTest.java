@@ -10,11 +10,13 @@ import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -40,6 +42,14 @@ public class DeleteHistoryBatchConfigTest {
 
     @Autowired
     private DeleteHistoryScheduler deleteHistoryScheduler;
+
+    @Autowired
+    private Job deleteHistoryJob;
+
+    @BeforeEach
+    public void setUp() {
+        jobLauncherTestUtils.setJob(deleteHistoryJob);
+    }
 
     @Test
     @DisplayName("배치 작업 테스트")

@@ -2,6 +2,7 @@ package com.kkumteul.domain.book.service;
 
 import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
+import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.LikeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ public interface BookService {
     Page<GetBookListResponseDto> getBookList(final Pageable pageable);
     Page<GetBookListResponseDto> getBookList(final String keyword, final Pageable pageable);
 
+    Book getBookWithCache(Long bookId);
+    Book getBook(Long bookId);
     // 상세 도서 조회
     GetBookDetailResponseDto getBookDetail(final Long bookId);
 

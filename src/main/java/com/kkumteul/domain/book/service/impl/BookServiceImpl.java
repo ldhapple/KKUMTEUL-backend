@@ -9,19 +9,22 @@ import com.kkumteul.domain.book.exception.BookNotFoundException;
 import com.kkumteul.domain.book.repository.BookLikeRepository;
 import com.kkumteul.domain.book.repository.BookRepository;
 import com.kkumteul.domain.book.service.BookService;
+import com.kkumteul.exception.EntityNotFoundException;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 
+@Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
@@ -31,12 +34,29 @@ public class BookServiceImpl implements BookService {
 
     // 전체 도서 목록 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<GetBookListResponseDto> getBookList(final Pageable pageable) {
         final Page<Book> books = bookRepository.findAllBookInfo(pageable);
 
         return books.map(GetBookListResponseDto::from);
     }
 
+    @Override
+    @Cacheable(value = "book", key = "#bookId")
+    @Transactional(readOnly = true)
+    public Book getBookWithCache(Long bookId) {
+        log.info("get Book - bookID: {}", bookId);
+        return bookRepository.findBookByIdWithGenreAndTopic(bookId)
+                .orElseThrow(() -> new EntityNotFoundException(bookId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Book getBook(Long bookId) {
+        log.info("get Book - bookID: {}", bookId);
+        return bookRepository.findBookByIdWithGenreAndTopic(bookId)
+                .orElseThrow(() -> new EntityNotFoundException(bookId));
+    }
     // 검색 키워드 추출된 도서 목록 조회
     @Override
     public Page<GetBookListResponseDto> getBookList(final String keyword, final Pageable pageable) {
