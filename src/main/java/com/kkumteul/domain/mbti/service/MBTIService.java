@@ -3,7 +3,7 @@ package com.kkumteul.domain.mbti.service;
 import com.kkumteul.domain.mbti.entity.MBTI;
 import com.kkumteul.domain.mbti.entity.MBTIName;
 import com.kkumteul.domain.mbti.repository.MBTIRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;//
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +19,7 @@ public class MBTIService {
     public MBTI getMBTI(String mbti) {
 
         MBTIName mbtiName = MBTIName.valueOf(mbti);
-        return MBTIRepository.findByMbti(mbtiName);
+        return MBTIRepository.findByMbti(mbtiName)
+                .orElseThrow(() -> new IllegalArgumentException("mbti not found"));
     }
 }
