@@ -29,11 +29,11 @@ public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPe
             "mbtiScore.mbti"
     })
     @Query("""
-    SELECT ch 
-    FROM ChildPersonalityHistory ch
-    WHERE ch.childProfile.id = :profileId
-    ORDER BY ch.createdAt DESC
-""")
+        SELECT ch 
+        FROM ChildPersonalityHistory ch
+        WHERE ch.childProfile.id = :profileId AND ch.isDeleted = false
+        ORDER BY ch.createdAt DESC
+    """)
     Page<ChildPersonalityHistory> findChildData(@Param("profileId") Long profileId, Pageable pageable);
 
     @EntityGraph(attributePaths = {
@@ -43,11 +43,12 @@ public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPe
     @Query("""
         SELECT ch 
         FROM ChildPersonalityHistory ch
-        WHERE ch.createdAt IN (
+        WHERE ch.isDeleted = false 
+          AND ch.createdAt = (
             SELECT MAX(ch2.createdAt) 
             FROM ChildPersonalityHistory ch2 
-            GROUP BY ch2.childProfile.id
-        )
+            WHERE ch2.childProfile.id = ch.childProfile.id
+          )
         ORDER BY ch.createdAt DESC
     """)
     List<ChildPersonalityHistory> findAllChildrenData();
