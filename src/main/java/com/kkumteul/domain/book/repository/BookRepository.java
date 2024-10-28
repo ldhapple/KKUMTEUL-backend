@@ -7,8 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
+@Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
+    // 민아님 코드와 동일
+
     @Query(value = """
                 SELECT b
                   FROM Book b
@@ -17,6 +22,14 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                  ORDER BY b.id ASC
             """)
     Page<Book> findAllBookInfo(final Pageable pageable);
+
+    @Query(value = """
+            SELECT b
+              FROM Book b
+             WHERE b.title LIKE %:keyword%
+                OR b.author LIKE %:keyword%
+            """)
+    Page<Book> searchByTitleOrAuthor(@Param("keyword") String keyword, final Pageable pageable);
 
     @Query("SELECT b FROM Book b JOIN FETCH b.genre JOIN FETCH b.bookTopics WHERE b.id = :bookId")
     Optional<Book> findBookByIdWithGenreAndTopic(@Param("bookId") Long bookId);
@@ -43,4 +56,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findBookListByKeyword(
             @Param("keyword") final String keyword,
             final Pageable pageable);
+
 }
