@@ -178,7 +178,6 @@ class ChildProfileControllerTest {
     @DisplayName("자녀 등록 테스트 - 등록 성공")
     void insert_childProfile_success() throws Exception {
         Long userId = 1L;
-        Long childProfileId = 1L;
         String childName = "childName";
         String childBirthDate = "19980905";
         String childGender = "Male";
@@ -188,7 +187,7 @@ class ChildProfileControllerTest {
 
         willDoNothing().given(childProfileService).insertChildProfile(userId, profileImage, childProfileInsertRequestDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/childProfiles/{childProfileId}", childProfileId)
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/childProfiles")
                         .file(profileImage)
                         .param("childName", childName)
                         .param("childBirthDate", childBirthDate)
