@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Getter
@@ -46,9 +47,6 @@ public class User {
     }
 
     public void update(UserUpdateRequestDto userUpdateRequestDto) {
-        if (userUpdateRequestDto.getProfileImage() != null) {
-            this.profileImage = userUpdateRequestDto.getProfileImage();
-        }
         if (userUpdateRequestDto.getNickName() != null) {
             this.nickName = userUpdateRequestDto.getNickName();
         }
@@ -58,6 +56,12 @@ public class User {
         if (userUpdateRequestDto.getPhoneNumber() != null) {
             this.phoneNumber = userUpdateRequestDto.getPhoneNumber();
         }
+    }
+
+    // profileImage를 byte[]로 변환하여 저장하는 메소드
+    public void updateProfileImage(byte[] multipartFile) {
+        if(multipartFile != null) this.profileImage = multipartFile;
+
     }
 
 }
