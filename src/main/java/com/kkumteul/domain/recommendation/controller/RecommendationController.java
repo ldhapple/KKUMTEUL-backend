@@ -29,6 +29,8 @@ public class RecommendationController {
         List<RecommendBookDto> recommendedBooks = recommendationService.getRecommendationsWithCache(childProfileId); // Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
         List<RecommendBookDto> popularBooks = recommendationService.getPopularRecommendations(); // 좋아요 순 인기도서 5
 
+        recommendationService.updateLastActivity(childProfileId);
+
         Map<String, List<RecommendBookDto>> finalBooks = new HashMap<>();
         finalBooks.put("recommendedBooks", recommendedBooks);
         finalBooks.put("popularBooks", popularBooks);

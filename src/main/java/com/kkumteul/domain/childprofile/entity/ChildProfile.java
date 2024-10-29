@@ -130,6 +130,10 @@ public class ChildProfile {
         history.setChildProfile(null);
     }
 
+    public void updateLastActivity() {
+        this.lastActivity = LocalDateTime.now();
+    }
+
     public List<GenreScore> getGenreScores() {
         return Collections.unmodifiableList(genreScores);
     }
