@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
@@ -61,57 +62,10 @@ public class RecommendationService {
     private final CollaborativeFilter collaborativeFilter;
     private final RecommendationRepository recommendationRepository;
 
-    @Qualifier("recommendationRedisTemplate")
-    private final RedisTemplate<String, Object> redisTemplate;
-
-
-    // Redis에 사용할 Key와 TTL(1일)
-    private static final String RECOMMENDATION_CACHE_KEY = "recommendations";
-
     //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
+    @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
     public List<RecommendBookDto> getRecommendationsWithCache(Long childProfileId) {
-        // 1. Redis의 ValueOperations 객체를 가져옴
-        ValueOperations<String, Object> valueOps = redisTemplate.opsForValue();
-        String cacheKey = RECOMMENDATION_CACHE_KEY + ":" + childProfileId; // 사용자별 캐시 키
-
-        // 2. Redis에서 추천 도서 조회
-        Object cachedData = valueOps.get(cacheKey);
-
-        // 3. Redis에 데이터가 있으면 반환
-        if (cachedData instanceof String jsonData) {
-            try {
-                List<RecommendBookDto> cachedRecommendations = new ObjectMapper()
-                        .readValue(jsonData, new TypeReference<List<RecommendBookDto>>() {});
-                return cachedRecommendations;
-            } catch (JsonProcessingException e) {
-                log.error("Redis 데이터 역직렬화 실패: {}", e.getMessage());
-
-                throw new RuntimeException("캐시된 데이터 역직렬화 실패", e);
-            }
-        }
-
-        // 4. Redis에 데이터가 없을 경우 DB에서 조회
-        List<RecommendBookDto> recommendBooks = getRecommendedBooks(childProfileId);
-
-        long ttl = getSecondsUntilMidnight(); // 자정까지 남은 시간 계산
-
-        // 5. 가져온 데이터를 JSON 문자열로 변환하여 Redis에 저장 (TTL 설정)
-        try {
-            String jsonValue = new ObjectMapper().writeValueAsString(recommendBooks); // JSON으로 직렬화
-            valueOps.set(cacheKey, jsonValue, ttl, TimeUnit.SECONDS);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("추천 도서 직렬화 실패", e);
-        }
-
-        // 6. DB에서 가져온 데이터 반환
-        return recommendBooks;
-    }
-
-    // 자정까지 남은 초 계산
-    private long getSecondsUntilMidnight() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime midnight = now.toLocalDate().atTime(LocalTime.MIDNIGHT).plusDays(1); // 다음 자정 시간
-        return Duration.between(now, midnight).getSeconds(); // 남은 초 반환
+        return getRecommendedBooks(childProfileId); // 캐시가 없으면 DB 조회
     }
 
     // 추천 도서 db 조회
@@ -494,5 +448,15 @@ public class RecommendationService {
         return childProfileRepository.findActiveUserIdsLast7Days(threshold);
     }
 
+    // 사용자 활동 기록 업데이트
+    @Transactional
+    public void updateLastActivity(Long childProfileId) {
+        ChildProfile childProfile = childProfileRepository.findById(childProfileId)
+                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        childProfile.updateLastActivity();
+
+        childProfileRepository.save(childProfile);
+    }
 }
 

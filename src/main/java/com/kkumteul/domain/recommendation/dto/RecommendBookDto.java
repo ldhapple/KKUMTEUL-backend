@@ -8,10 +8,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Getter
 @NoArgsConstructor
 @ToString
-public class RecommendBookDto {
+public class RecommendBookDto implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Long bookId;
     private String bookTitle;
