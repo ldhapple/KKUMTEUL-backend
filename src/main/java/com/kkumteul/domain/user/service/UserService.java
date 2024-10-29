@@ -10,6 +10,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 
 @Slf4j
@@ -26,19 +29,24 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
         UserResponseDto userResponseDto = UserResponseDto.fromEntity(user);
+
         log.info("user information: {}", userResponseDto);
         return userResponseDto;
     }
 
     // 2. 유저 정보 수정
-    public void updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto) {
+    public void updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) throws IOException {
         log.info("user: {}" , userUpdateRequestDto);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
         // TODO: 비밀번호 암호화하는 로직 추가
-
+        if (profileImage != null) {
+            byte[] byteProfileImage = profileImage.getBytes();
+            user.updateProfileImage(byteProfileImage);
+        }
         user.update(userUpdateRequestDto);
+
     }
 
     // 3. 유저 탈퇴

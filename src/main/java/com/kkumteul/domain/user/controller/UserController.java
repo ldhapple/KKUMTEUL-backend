@@ -7,7 +7,10 @@ import com.kkumteul.util.ApiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+
+import java.io.IOException;
 
 import static com.kkumteul.util.ApiUtil.ApiSuccess;
 
@@ -30,11 +33,18 @@ public class UserController {
     }
 
     // 2. 유저 정보 수정
-    @PutMapping("{userId}")
-    public ApiSuccess<?> updateUser(@PathVariable(name = "userId") Long userId, @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
+    @PatchMapping("{userId}")
+    public ApiSuccess<?> updateUser(
+            @PathVariable(name = "userId") Long userId,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+            @RequestPart(value = "nickName", required = false) String nickName,
+            @RequestPart(value = "password", required = false) String password,
+            @RequestPart(value = "phoneNumber", required = false) String phoneNumber) throws IOException {
         // TODO: 추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
 
-        userService.updateUser(userId, userUpdateRequestDto);
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(nickName, password, phoneNumber);
+
+        userService.updateUser(userId, userUpdateRequestDto, profileImage);
         return ApiUtil.success("user update successfully");
     }
 

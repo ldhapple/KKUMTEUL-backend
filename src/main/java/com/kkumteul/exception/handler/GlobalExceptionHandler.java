@@ -1,9 +1,11 @@
 package com.kkumteul.exception.handler;
 
+import com.kkumteul.exception.*;
 import com.kkumteul.exception.ChildProfileNotFoundException;
 import com.kkumteul.exception.HistoryNotFoundException;
 import com.kkumteul.exception.InvalidMBTINameException;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
+import com.kkumteul.exception.UserNotFoundException;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiError;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,7 +40,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             RecommendationBookNotFoundException.class,
             ChildProfileNotFoundException.class,
             EntityNotFoundException.class,
-            HistoryNotFoundException.class
+            HistoryNotFoundException.class,
+            UserNotFoundException.class,
+            AdminBookNotFoundException.class
     })
     protected ResponseEntity<?> handleIllegalArgumentException(Exception e) {
         log.error(e.getMessage(), e);

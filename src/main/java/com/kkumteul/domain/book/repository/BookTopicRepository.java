@@ -1,11 +1,12 @@
 package com.kkumteul.domain.book.repository;
 
-import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookTopic;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
-public interface BookTopicRepository extends JpaRepository<BookTopic, Long > {
-    List<BookTopic> findByBook(Book book);
+@Repository
+public interface BookTopicRepository extends JpaRepository<BookTopic, Long> {
+    @Transactional
+    void deleteByBookId(Long bookId);
 }

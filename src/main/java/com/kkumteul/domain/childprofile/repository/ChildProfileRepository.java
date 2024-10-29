@@ -1,6 +1,7 @@
 package com.kkumteul.domain.childprofile.repository;
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +18,7 @@ public interface ChildProfileRepository extends JpaRepository<ChildProfile, Long
 
     @Query("SELECT c.id FROM ChildProfile c WHERE c.lastActivity >= :threshold")
     List<Long> findActiveUserIdsLast7Days(@Param("threshold") LocalDateTime threshold);
+
+    @Query("SELECT p FROM ChildProfile p JOIN FETCH p.cumulativeMBTIScore WHERE p.id = :childProfileId")
+    Optional<ChildProfile> findByIdWithCumulatvieMBTIScore(@Param("childProfileId") Long childProfileId);
 }

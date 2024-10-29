@@ -67,18 +67,6 @@ public class ChildProfile {
     @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL)
     List<Recommendation> recommendationList = new ArrayList<>();
 
-    // 자녀 선호 장르 리스트
-    @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL)
-    List<GenreScore> genreScoreList = new ArrayList<>();
-
-    // 자녀 선호 주제어 리스트
-    @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL)
-    List<TopicScore> topicScoreList = new ArrayList<>();
-
-    // 자녀 성향 히스토리 리스트
-    @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL)
-    List<ChildPersonalityHistory> childPersonalityHistoryList = new ArrayList<>();
-
     // 자녀 도서 좋아요 리스트
     @OneToMany(mappedBy = "childProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @BatchSize(size = 10)
@@ -132,6 +120,9 @@ public class ChildProfile {
 
     public void updateLastActivity() {
         this.lastActivity = LocalDateTime.now();
+      
+    public void insertChildProfileImage(byte[] childProfileImage) {
+        this.profileImage = childProfileImage;
     }
 
     public List<GenreScore> getGenreScores() {

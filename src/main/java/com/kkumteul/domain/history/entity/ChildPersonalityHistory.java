@@ -93,6 +93,11 @@ public class ChildPersonalityHistory {
         favoriteTopic.setHistory(this);
     }
 
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
     public List<FavoriteGenre> getFavoriteGenres() {
         return Collections.unmodifiableList(favoriteGenres);
     }

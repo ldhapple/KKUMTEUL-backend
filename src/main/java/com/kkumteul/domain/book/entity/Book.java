@@ -38,7 +38,7 @@ public class Book {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] bookImage;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Genre genre;
 
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -51,21 +51,8 @@ public class Book {
     private List<BookMBTI> bookMBTIS = new ArrayList<>();
 
     @Builder
-    public Book(String title, String author, String publisher, String price, String page, String summary,
-                byte[] bookImage) {
-        this.title = title;
-        this.author = author;
-        this.publisher = publisher;
-        this.price = price;
-        this.page = page;
-        this.summary = summary;
-        this.bookImage = bookImage;
-    }
-
-    @Builder
     public Book(String title, String author, String publisher, String price, String page, String ageGroup,
-                String summary,
-                byte[] bookImage, Genre genre, List<BookTopic> bookTopics) {
+                String summary, byte[] bookImage, Genre genre, List<BookTopic> bookTopics, List<BookMBTI> bookMBTIS) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
@@ -76,5 +63,37 @@ public class Book {
         this.bookImage = bookImage;
         this.genre = genre;
         this.bookTopics = bookTopics;
+        this.bookMBTIS = bookMBTIS;
+    }
+
+    public void update(byte[] bookImage, String title, String author, String publisher, String price, String page, String ageGroup,
+                       String summary, Genre genre){
+        if (bookImage != null) {
+            this.bookImage = bookImage;
+        }
+        if (title != null) {
+            this.title = title;
+        }
+        if (author != null) {
+            this.author = author;
+        }
+        if (publisher != null) {
+            this.publisher = publisher;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (page != null) {
+            this.page = page;
+        }
+        if (ageGroup != null) {
+            this.ageGroup = ageGroup;
+        }
+        if (summary != null) {
+            this.summary = summary;
+        }
+        if (genre != null) {
+            this.genre = genre;
+        }
     }
 }

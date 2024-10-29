@@ -5,6 +5,7 @@ import com.kkumteul.domain.book.entity.BookLike;
 import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
 
 @Repository
 public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
@@ -35,5 +37,14 @@ public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
             "ORDER BY COUNT(bl.id) DESC")
     List<Book> findTopBooksByLikes(Pageable pageable);
 
+    @Query(value = """
+        SELECT bl
+          FROM BookLike bl
+         WHERE bl.childProfile.id = :childProfileId AND bl.book.id = :bookId
+       """)
+    Optional<BookLike> findByChildProfileAndBook(
+            @Param("childProfileId") Long childProfileId,
+            @Param("bookId") Long bookId
+    );
 }
 

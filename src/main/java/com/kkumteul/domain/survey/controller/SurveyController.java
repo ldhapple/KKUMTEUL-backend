@@ -28,21 +28,12 @@ public class SurveyController {
         //childProfileId 가져오는 방식 구현 필요.
         Long childProfileId = 1L;
 
-        surveyFacade.submitSurvey(surveyResultRequestDto, childProfileId);
-
-        return ApiUtil.success("설문 결과가 성공적으로 저장되었습니다.");
-    }
-
-    @GetMapping("/result")
-    public ApiSuccess<SurveyResultDto> getSurveyResult() {
-        Long childProfileId = 1L;
-
-        SurveyResultDto resultDto = surveyFacade.getSurveyResult(childProfileId);
+        SurveyResultDto resultDto = surveyFacade.submitSurvey(surveyResultRequestDto, childProfileId);
 
         return ApiUtil.success(resultDto);
     }
 
-    @DeleteMapping("/result")
+    @DeleteMapping
     public ApiSuccess<?> deleteAndResurvey() {
         Long childProfileId = 1L;
 
