@@ -120,7 +120,8 @@ public class ChildProfile {
 
     public void updateLastActivity() {
         this.lastActivity = LocalDateTime.now();
-      
+    }
+
     public void insertChildProfileImage(byte[] childProfileImage) {
         this.profileImage = childProfileImage;
     }

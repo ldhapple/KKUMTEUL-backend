@@ -64,11 +64,7 @@ public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPe
     ChildPersonalityHistory findTopByChildProfileIdOrderByCreatedAtDesc(Long childProfileId);
 
     @Query("SELECT h FROM ChildPersonalityHistory h WHERE h.childProfile.id = :childProfileId AND h.historyCreatedType = :historyCreatedType")
-    Optional<ChildPersonalityHistory> findHistoryByChildProfileIdAndHistoryCreatedType(Long childProfileId,
-                                                                                       HistoryCreatedType historyCreatedType);
-
-    @Query("SELECT h FROM ChildPersonalityHistory  h JOIN FETCH h.mbtiScore ms JOIN FETCH ms.mbti m WHERE h.childProfile.id = :childProfileId")
-    List<ChildPersonalityHistory> findHistoryWithMBTIByChildProfileId(@Param("childProfileId") Long childProfileId);
+    Optional<ChildPersonalityHistory> findHistoryByChildProfileIdAndHistoryCreatedType(Long childProfileId, HistoryCreatedType historyCreatedType);
 
     @Query("SELECT h FROM ChildPersonalityHistory h JOIN FETCH h.mbtiScore WHERE h.id = :historyId")
     Optional<ChildPersonalityHistory> findByIdWithMbtiScore(Long historyId);
