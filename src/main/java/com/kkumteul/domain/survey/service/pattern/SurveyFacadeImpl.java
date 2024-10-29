@@ -16,6 +16,8 @@ import com.kkumteul.domain.survey.dto.FavoriteDto;
 import com.kkumteul.domain.survey.dto.MbtiDto;
 import com.kkumteul.domain.survey.dto.SurveyResultDto;
 import com.kkumteul.domain.survey.dto.SurveyResultRequestDto;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +64,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
         List<Genre> preferredGenres = historyService.updatePreferredGenresByScore(latestHistory, childProfile.getGenreScores());
         List<Topic> preferredTopics = historyService.updatePreferredTopicsByScore(latestHistory, childProfile.getTopicScores());
 
-        return getSurveyResult(mbtiScore, mbtiScore.getMbti(), preferredGenres, preferredTopics);
+        return getSurveyResult(childProfile, mbtiScore, mbtiScore.getMbti(), preferredGenres, preferredTopics);
     }
 
     @Override
@@ -72,7 +74,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
         historyService.deleteDiagnosisHistory(childProfileId); //필요
     }
 
-    private SurveyResultDto getSurveyResult(MBTIScore mbtiScore, MBTI mbti, List<Genre> preferredGenres, List<Topic> preferredTopics) {
+    private SurveyResultDto getSurveyResult(ChildProfile childProfile, MBTIScore mbtiScore, MBTI mbti, List<Genre> preferredGenres, List<Topic> preferredTopics) {
         MBTIPercentageDto mbtiResult = mbtiService.calculatePercentages(mbtiScore);
 
         List<FavoriteDto> favoriteGenresDto = preferredGenres.stream()
@@ -95,6 +97,9 @@ public class SurveyFacadeImpl implements SurveyFacade {
                 .mbtiResult(MbtiDto.fromEntity(mbti))
                 .favoriteGenres(favoriteGenresDto)
                 .favoriteTopics(favoriteTopicsDto)
-                .build(); //필요 X
+                .childName(childProfile.getName())
+                .childBirthDate(childProfile.getBirthDate())
+                .diagnosisDate(LocalDateTime.now())
+                .build();
     }
 }

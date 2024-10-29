@@ -1,8 +1,7 @@
 package com.kkumteul.domain.survey.dto;
 
-import com.kkumteul.domain.mbti.entity.MBTI;
-import com.kkumteul.domain.personality.entity.Genre;
-import com.kkumteul.domain.personality.entity.Topic;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +23,7 @@ public class SurveyResultDto {
     private MbtiDto mbtiResult;
     private List<FavoriteDto> favoriteGenres;
     private List<FavoriteDto> favoriteTopics;
+    private String childName;
+    private Date childBirthDate;
+    private LocalDateTime diagnosisDate;
 }
