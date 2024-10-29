@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
+
 
 
 @Slf4j
@@ -58,5 +60,16 @@ public class UserService {
         log.info("user info: {}", user);
         userRepository.delete(user);
     }
+
+    public void hasChildProfile(Long userId, Long childProfileId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
+        boolean exists = user.getChildProfileList().stream()
+                .anyMatch(childProfile -> Objects.equals(childProfile.getId(), childProfileId));
+
+        if (!exists) {
+            throw new IllegalArgumentException("잘못된 접근입니다. child profile Id:" + childProfileId);
+        }
+    }
+
 }
 
