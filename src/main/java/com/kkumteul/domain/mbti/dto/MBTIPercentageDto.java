@@ -32,6 +32,12 @@ public class MBTIPercentageDto {
     }
 
     private static double calculateMBTIField(double scoreA, double scoreB) {
-        return scoreA / (scoreA + scoreB) * 100;
+        double total = scoreA + scoreB;
+
+        if (total == 0) {
+            return 50.0;
+        }
+
+        return scoreA / total * 100;
     }
 }

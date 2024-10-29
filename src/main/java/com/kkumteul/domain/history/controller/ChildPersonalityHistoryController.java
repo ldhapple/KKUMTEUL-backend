@@ -20,7 +20,8 @@ public class ChildPersonalityHistoryController {
 
     @GetMapping("/{historyId}")
     public ApiSuccess<?> getHistoryDetail(@PathVariable(name = "historyId") Long historyId) {
-        ChildPersonalityHistoryDetailDto historyDetail = historyService.getHistoryDetail(historyId);
+        Long profileId = 1L;
+        ChildPersonalityHistoryDetailDto historyDetail = historyService.getHistoryDetail(profileId, historyId);
 
         return ApiUtil.success(historyDetail);
     }

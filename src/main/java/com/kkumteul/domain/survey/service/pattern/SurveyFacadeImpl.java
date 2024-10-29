@@ -97,6 +97,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
                 .mbtiResult(MbtiDto.fromEntity(mbti))
                 .favoriteGenres(favoriteGenresDto)
                 .favoriteTopics(favoriteTopicsDto)
+                .profileImage(childProfile.getProfileImage())
                 .childName(childProfile.getName())
                 .childBirthDate(childProfile.getBirthDate())
                 .diagnosisDate(LocalDateTime.now())

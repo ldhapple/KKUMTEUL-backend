@@ -23,6 +23,7 @@ public class SurveyResultDto {
     private MbtiDto mbtiResult;
     private List<FavoriteDto> favoriteGenres;
     private List<FavoriteDto> favoriteTopics;
+    private byte[] profileImage;
     private String childName;
     private Date childBirthDate;
     private LocalDateTime diagnosisDate;
