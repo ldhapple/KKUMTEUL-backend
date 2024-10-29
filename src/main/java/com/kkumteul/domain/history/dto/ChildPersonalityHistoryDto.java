@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class ChildPersonalityHistoryDto {
+    private Long historyId;
     private MBTIName mbti;
     private String mbtiTitle;
     private byte[] mbtiImage;
@@ -20,6 +21,7 @@ public class ChildPersonalityHistoryDto {
 
     public static ChildPersonalityHistoryDto fromEntity(ChildPersonalityHistory history) {
         return new ChildPersonalityHistoryDto(
+                history.getId(),
                 history.getMbtiScore().getMbti().getMbti(),
                 history.getMbtiScore().getMbti().getTitle(),
                 history.getMbtiScore().getMbti().getMbtiImage(),
