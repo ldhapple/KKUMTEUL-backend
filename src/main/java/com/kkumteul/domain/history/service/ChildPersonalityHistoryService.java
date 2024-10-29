@@ -80,10 +80,13 @@ public class ChildPersonalityHistoryService {
     }
 
     @Transactional(readOnly = true)
-    public ChildPersonalityHistoryDetailDto getHistoryDetail(Long historyId) {
+    public ChildPersonalityHistoryDetailDto getHistoryDetail(Long profileId, Long historyId) {
         log.info("get historyDetail historyId: {}", historyId);
         ChildPersonalityHistory childPersonalityHistory = historyRepository.findByIdWithMbtiScore(historyId)
                 .orElseThrow(() -> new HistoryNotFoundException(historyId));
+
+        ChildProfile childProfile = childProfileRepository.findById(profileId)
+                .orElseThrow(() -> new ChildProfileNotFoundException(profileId));
 
         List<FavoriteDto> favoriteGenresDto = childPersonalityHistory.getFavoriteGenres().stream()
                 .map(favoriteGenre -> new FavoriteDto(
@@ -103,7 +106,11 @@ public class ChildPersonalityHistoryService {
                 MBTIPercentageDto.calculatePercentage(childPersonalityHistory.getMbtiScore()),
                 MbtiDto.fromEntity(childPersonalityHistory.getMbtiScore().getMbti()),
                 favoriteGenresDto,
-                favoriteTopicsDto
+                favoriteTopicsDto,
+                childProfile.getProfileImage(),
+                childProfile.getName(),
+                childProfile.getBirthDate(),
+                childPersonalityHistory.getCreatedAt()
         );
     }
 
@@ -167,11 +174,22 @@ public class ChildPersonalityHistoryService {
         return preferredTopics;
     }
 
+    @Transactional
+    public void deleteHistory(Long historyId) {
+        log.info("delete History Id: {}", historyId);
+
+        ChildPersonalityHistory history = historyRepository.findById(historyId)
+                .orElseThrow(() -> new HistoryNotFoundException(historyId));
+
+        history.delete();
+    }
+
     private static List<Genre> getPreferredGenres(List<GenreScore> genreScores) {
         log.info("set preferred genres");
 
         double averageScore = genreScores.stream()
                 .mapToDouble(GenreScore::getScore)
+                .filter(score -> score > 0)
                 .average()
                 .orElse(0.0);
 
@@ -188,6 +206,7 @@ public class ChildPersonalityHistoryService {
 
         double averageScore = topicScores.stream()
                 .mapToDouble(TopicScore::getScore)
+                .filter(score -> score > 0)
                 .average()
                 .orElse(0.0);
 
@@ -197,14 +216,5 @@ public class ChildPersonalityHistoryService {
                 .filter(ts -> ts.getScore() > averageScore)
                 .map(TopicScore::getTopic)
                 .toList();
-    }
-  
-    public void deleteHistory(Long historyId) {
-        log.info("delete History Id: {}", historyId);
-
-        ChildPersonalityHistory history = historyRepository.findById(historyId)
-                .orElseThrow(() -> new HistoryNotFoundException(historyId));
-
-        history.delete();
     }
 }
