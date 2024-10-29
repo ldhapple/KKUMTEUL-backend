@@ -1,51 +1,53 @@
 package com.kkumteul.domain.book.repository;
 
-
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookLike;
 import com.kkumteul.domain.book.entity.LikeType;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.Gender;
-import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
+import com.kkumteul.domain.user.entity.User;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class BookLikeRepositoryTest {
-
-    @Autowired
-    private ChildProfileRepository childProfileRepository;
-
-    @Autowired
-    private BookRepository bookRepository;
 
     @Autowired
     private BookLikeRepository bookLikeRepository;
 
+    @Autowired
+    private EntityManager em;
+
+    private User user;
     private ChildProfile childProfile;
     private Book book;
-    private BookLike bookLike;
 
     @BeforeEach
     void setUp() {
+        // Mock User 생성
+        user = User.builder()
+                .username("user")
+                .password("1234")
+                .build();
+        em.persist(user);
+
         // Mock ChildProfile 생성
         childProfile = ChildProfile.builder()
-                .name("테스트 아동 프로필")
+                .name("lee")
                 .gender(Gender.FEMALE)
-                .birthDate(java.sql.Date.valueOf("2010-01-01"))
+                .user(user)
                 .build();
-        childProfileRepository.save(childProfile);
+        em.persist(childProfile);
 
         // Mock Book 생성
         book = Book.builder()
@@ -57,16 +59,16 @@ public class BookLikeRepositoryTest {
                 .age_group("7세 이상")
                 .summary("테스트 요약")
                 .build();
-        bookRepository.save(book);
+        em.persist(book);
 
         // Mock BookLike 생성
-        bookLike = BookLike.builder()
+        BookLike bookLike = BookLike.builder()
                 .likeType(LikeType.LIKE)
                 .childProfile(childProfile)
                 .book(book)
                 .updatedAt(LocalDateTime.now())
                 .build();
-        bookLikeRepository.save(bookLike);
+        em.persist(bookLike);
     }
 
     @Test
@@ -80,23 +82,23 @@ public class BookLikeRepositoryTest {
         assertThat(bookLikes.get(0).getBook()).isEqualTo(book);
     }
 
-
     @Test
     @DisplayName("책 좋아요 조회: 아동 프로필 ID와 도서 ID로 특정 좋아요 정보를 반환한다.")
     void testFindByChildProfileAndBook() {
         // when
-        Optional<BookLike> result = bookLikeRepository.findByChildProfileAndBook(childProfile.getId(), book.getId());
+        Optional<BookLike> foundBookLike = bookLikeRepository.findByChildProfileAndBook(childProfile.getId(), book.getId());
 
         // then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(bookLike);
+        assertThat(foundBookLike).isPresent();
+        assertThat(foundBookLike.get().getChildProfile().getId()).isEqualTo(childProfile.getId());
+        assertThat(foundBookLike.get().getBook().getId()).isEqualTo(book.getId());
     }
 
     @Test
     @DisplayName("책 좋아요 조회: 존재하지 않는 도서 ID로 좋아요를 조회하면 결과가 없음을 반환한다.")
     void testFindByChildProfileAndBook_NonExistentBookLike() {
         // when
-        Optional<BookLike> result = bookLikeRepository.findByChildProfileAndBook(childProfile.getId(), 999L);
+        Optional<BookLike> result = bookLikeRepository.findByChildProfileAndBook(childProfile.getId(), 999L); // 999는 존재하지 않는 ID
 
         // then
         assertThat(result).isNotPresent();
