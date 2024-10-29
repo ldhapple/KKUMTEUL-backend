@@ -37,7 +37,7 @@ public class EventService {
         // 1. phoneNumber + username 조합으로 redis 에서 중복 확인을 한다.
         // 1-1 고유키 생성
         Long eventId = eventRequestDto.getEventId();
-        String eventKey = "event"+eventId; // 이벤트 참여 요청 key
+        String eventKey = "event" + eventId; // 이벤트 참여 요청 key
         String uniqueKey = eventRequestDto.getPhoneNumber() + eventRequestDto.getUsername(); // 전화번호 + 이름 key
 
         // 1-2 대기열 크기 확인 (불필요한 로직 개선)
@@ -49,16 +49,16 @@ public class EventService {
             return;
         }
 
-        // 1-2 중복 확인 (phoneNumber + username)
+        // 1-3 중복 확인 (phoneNumber + username)
         if (Boolean.TRUE.equals(template.opsForSet().isMember(eventKey + ":duplicates", uniqueKey))) {
-            log.info("이미 발급 요청이 있습니다 (phoneNumber & username): {}", uniqueKey);
+//            log.info("이미 발급 요청이 있습니다 (phoneNumber & username): {}", uniqueKey);
             template.opsForValue().decrement("issuedJoinEvent");
             return;
         }
 
-        // 1-3 중복 확인 userId
+        // 1-4 중복 확인 userId
         if (template.opsForZSet().score(eventKey, String.valueOf(userId)) != null){
-            log.info("이미 발급 요청이 있습니다 (userId): {}", userId);
+//            log.info("이미 발급 요청이 있습니다 (userId): {}", userId);
             template.opsForValue().decrement("issuedJoinEvent");
             return;
         }
@@ -70,47 +70,36 @@ public class EventService {
             template.opsForSet().add(eventKey + ":duplicates", uniqueKey);
             log.info("요청이 접수되었습니다. userId: {}", userId);
         }
-    }
 
-    @Scheduled(fixedDelay = 10000) // 10초
-    public void processQueue() {
-        Set<Long> eventIds = eventRepository.findAllEventIds();
-
-        for (Long eventId : eventIds) {
-            String eventKey = "event"+eventId;
-            System.out.println(eventKey);
-            Set<String> usersId = template.opsForZSet().range(eventKey, 0, ISSUE_BATCH_SIZE - 1); // 상위 10명
-
-            if (usersId != null && !usersId.isEmpty()) {
-                for (String userIdStr : usersId) {
-                    Long userId = Long.valueOf(userIdStr);
-                    Double score = template.opsForZSet().score(eventKey, userIdStr); // score 가져오기
-
-                    // INCR 재고 관리
-                    Long issuedWinEventCount = template.opsForValue().increment("issuedWinEvent", 1);
-                    log.info("현재 발급된 쿠폰 수: {}", issuedWinEventCount);
-
-                    // redis winners key 에 당첨자 저장
-                    if (issuedWinEventCount <= 100) {
-                        if (score != null) {
-                            template.opsForZSet().add("winners", String.valueOf(userId), score); // Set 으로 해도됨
-                            log.info("쿠폰이 성공적으로 발급되었습니다. userId: {}", userId);
-                        }
-                    } else {
-                        log.info("최대 쿠폰 수에 도달했습니다. 발급을 중지합니다.");
-                        return;
-                    }
-                }
-                // 발급된 쿠폰을 Redis 에서 제거
-                template.opsForZSet().remove(eventKey, usersId.toArray());
-            }
+        // 3. 대기열이 가득 차면 처리 (100명)
+        if (issuedJoinEventCount == QUEUE_LIMIT) {
+            processQueue(eventId);
         }
     }
 
-    // 앞에 0 꼭 붙이기
+    public void processQueue(Long eventId) {
+        String eventKey = "event"+eventId;
+        Set<String> usersId = template.opsForZSet().range(eventKey, 0, QUEUE_LIMIT - 1);
+
+        if (usersId != null && !usersId.isEmpty()) {
+            for (String userIdStr : usersId) {
+                Long userId = Long.valueOf(userIdStr);
+
+                template.opsForSet().add("winners", String.valueOf(userId)); // Set 으로 해도됨
+                log.info("쿠폰이 성공적으로 발급되었습니다. userId: {}", userId);
+
+            }
+            // 발급된 쿠폰을 Redis 에서 제거
+            template.opsForZSet().remove(eventKey, usersId.toArray());
+        }
+
+    }
+
+    // 데이터베이스에 당첨자 저장
     @Scheduled(cron = "0 23 10 * * ?")
     public void saveWinnersToDatabase() {
-        Set<String> winners = template.opsForZSet().range("winners", 0, -1); // 모든 당첨자 가져오기
+        Set<String> winners = template.opsForSet().members("winners");
+//        Set<String> winners = template.opsForZSet().range("winners", 0, -1); // 모든 당첨자 가져오기
         System.out.println(winners);
         if (winners != null) {
             for (String winnerIdStr : winners) {

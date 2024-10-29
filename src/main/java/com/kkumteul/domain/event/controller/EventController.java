@@ -6,6 +6,7 @@ import com.kkumteul.domain.event.dto.EventResultResponseDto;
 import com.kkumteul.domain.event.service.EventService;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,5 +33,12 @@ public class EventController {
 //        List<EventResultResponseDto> joinEventResult = eventService.getJoinEventResults(userId);
 //        return ApiUtil.success(joinEventResult);
 //    }
+
+    @GetMapping("/test")
+    public ApiSuccess<?> joinEventResult() {
+
+        eventService.saveWinnersToDatabase();
+        return ApiUtil.success("joined event successfully");
+    }
 
 }
