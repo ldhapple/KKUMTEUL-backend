@@ -114,6 +114,8 @@ public class RecommendationService {
 
             // db에 저장
             saveRecommendations(childProfile.getId(), bookList);
+
+            return bookList;
         }
 
 //        log.info("============사용자 ID " + userId + "의 추천 책 뽑기==============");
@@ -393,7 +395,7 @@ public class RecommendationService {
     private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
         int age = getAge(childDataDto.getBirthDate());
 
-        Pageable pageable = PageRequest.of(0, 5);
+        Pageable pageable = PageRequest.of(0, 50);
         return bookRepository.findBookListByAgeGroup(age, pageable);
     }
 
