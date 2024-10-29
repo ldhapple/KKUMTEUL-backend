@@ -1,7 +1,11 @@
 package com.kkumteul.domain.history.entity;
 
 
+import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.history.entity.MBTIScore;
+import jakarta.persistence.*;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,11 +27,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @Entity
 @Getter
@@ -60,12 +71,10 @@ public class ChildPersonalityHistory {
 
     @Builder
     public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt, boolean isDeleted,
-                                   LocalDateTime deletedAt, HistoryCreatedType historyCreatedType,
-                                   MBTIScore mbtiScore) {
+                                   HistoryCreatedType historyCreatedType, MBTIScore mbtiScore) {
         this.childProfile = childProfile;
         this.createdAt = createdAt;
         this.isDeleted = isDeleted;
-        this.deletedAt = deletedAt;
         this.historyCreatedType = historyCreatedType;
         this.mbtiScore = mbtiScore;
     }
@@ -95,5 +104,17 @@ public class ChildPersonalityHistory {
 
     public List<FavoriteTopic> getFavoriteTopics() {
         return Collections.unmodifiableList(favoriteTopics);
+    }
+
+    @Builder
+    public ChildPersonalityHistory(ChildProfile childProfile, LocalDateTime createdAt, boolean isDeleted,
+                                   LocalDateTime deletedAt, HistoryCreatedType historyCreatedType,
+                                   MBTIScore mbtiScore) {
+        this.childProfile = childProfile;
+        this.createdAt = createdAt;
+        this.isDeleted = isDeleted;
+        this.deletedAt = deletedAt;
+        this.historyCreatedType = historyCreatedType;
+        this.mbtiScore = mbtiScore;
     }
 }

@@ -4,9 +4,11 @@ import com.kkumteul.domain.book.entity.Book;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -22,6 +24,21 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                  ORDER BY b.id ASC
             """)
     Page<Book> findAllBookInfo(final Pageable pageable);
+
+    @EntityGraph(attributePaths = {"genre", "bookTopics.topic"})
+    @Query("SELECT b FROM Book b")
+    List<Book> findAllBooksWithTopicsAndGenre();
+
+    @Query("""
+        SELECT DISTINCT b
+        FROM Book b
+        LEFT JOIN FETCH b.genre g
+        LEFT JOIN FETCH b.bookTopics bt
+        LEFT JOIN FETCH bt.topic t
+        WHERE CAST(SUBSTRING(b.ageGroup, 1, LOCATE('세', b.ageGroup)-1) AS integer) < :age
+        ORDER BY :age - CAST(SUBSTRING(b.ageGroup, 1, LOCATE('세', b.ageGroup)-1) AS integer) ASC
+    """)
+    List<Book> findBookListByAgeGroup(@Param("age") int age, Pageable pageable);
 
     @Query(value = """
             SELECT b

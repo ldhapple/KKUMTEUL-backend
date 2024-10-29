@@ -1,15 +1,20 @@
 package com.kkumteul.domain.book.entity;
 
 import com.kkumteul.domain.personality.entity.Genre;
+
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @Entity
 @Getter
@@ -36,16 +41,18 @@ public class Book {
     @ManyToOne(fetch = FetchType.LAZY)
     private Genre genre;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @BatchSize(size = 10)
     private List<BookTopic> bookTopics = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Fetch(FetchMode.SUBSELECT)
+    @BatchSize(size = 10)
     private List<BookMBTI> bookMBTIS = new ArrayList<>();
 
     @Builder
     public Book(String title, String author, String publisher, String price, String page, String ageGroup,
                 String summary, byte[] bookImage, Genre genre, List<BookTopic> bookTopics, List<BookMBTI> bookMBTIS) {
-
         this.title = title;
         this.author = author;
         this.publisher = publisher;
