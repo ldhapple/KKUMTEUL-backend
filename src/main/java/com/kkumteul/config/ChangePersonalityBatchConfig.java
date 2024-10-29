@@ -3,6 +3,7 @@ package com.kkumteul.config;
 import static com.kkumteul.util.redis.RedisKey.*;
 
 import com.kkumteul.domain.book.entity.Book;
+import com.kkumteul.domain.book.entity.BookMBTI;
 import com.kkumteul.domain.book.service.BookService;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.GenreScore;
@@ -88,9 +89,11 @@ public class ChangePersonalityBatchConfig {
 
             ChildProfile childProfile = childProfileService.getChildProfileWithMBTIScore(childProfileId);
             Book book = bookService.getBook(bookId);
+            List<BookMBTI> bookMBTIS = book.getBookMBTIS();
 
             double changedScore = action.equals("LIKE") ? 2.0 : -2.0;
             personalityScoreService.updateGenreAndTopicScores(childProfile, book, changedScore);
+            personalityScoreService.updateCumulativeMBTIScore(childProfileId, bookMBTIS, changedScore);
 
             return childProfileId;
         };

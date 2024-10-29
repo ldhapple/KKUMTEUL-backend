@@ -1,5 +1,8 @@
 package com.kkumteul.domain.book.service.impl;
 
+import static com.kkumteul.util.kafka.KafkaTopic.BOOK_DISLIKE;
+import static com.kkumteul.util.kafka.KafkaTopic.BOOK_LIKE;
+
 import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
 import com.kkumteul.domain.book.entity.Book;
@@ -11,6 +14,7 @@ import com.kkumteul.domain.book.repository.BookRepository;
 import com.kkumteul.domain.book.service.BookService;
 import com.kkumteul.exception.EntityNotFoundException;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
+import com.kkumteul.util.kafka.KafkaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -31,6 +35,7 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookLikeRepository bookLikeRepository;
     private final ChildProfileRepository childProfileRepository;
+    private final KafkaUtil kafkaUtil;
 
     // 전체 도서 목록 조회
     @Override
@@ -82,6 +87,8 @@ public class BookServiceImpl implements BookService {
         final Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("책을 찾을 수 없습니다."));
 
+        String message = childProfileId + ":" + bookId + ":" + likeType.name();
+
         // 1. 도서에 좋아요/싫어요 버튼 상태 확인
         Optional<BookLike> existLike = bookLikeRepository.findByChildProfileAndBook(childProfileId, bookId);
 
@@ -97,6 +104,9 @@ public class BookServiceImpl implements BookService {
                 bookLike.updateUpdateAt();
 
                 bookLikeRepository.save(bookLike);
+
+                kafkaUtil.sendMessage(likeType == LikeType.LIKE ? BOOK_LIKE.getTopicName() : BOOK_DISLIKE.getTopicName(), message);
+                log.info("Kafka message sent - childProfileId: {}, bookId: {}, likeType: {}", childProfileId, bookId, likeType);
             }
         } else {
             // 3. 처음 누를 때
@@ -109,6 +119,9 @@ public class BookServiceImpl implements BookService {
                     .build();
 
             bookLikeRepository.save(booklike);
+
+            kafkaUtil.sendMessage(likeType == LikeType.LIKE ? BOOK_LIKE.getTopicName() : BOOK_DISLIKE.getTopicName(), message);
+            log.info("Kafka message sent - childProfileId: {}, bookId: {}, likeType: {}", childProfileId, bookId, likeType);
         }
     }
 }
