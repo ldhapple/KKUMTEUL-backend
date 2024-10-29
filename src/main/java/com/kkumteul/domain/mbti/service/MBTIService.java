@@ -109,6 +109,17 @@ public class MBTIService {
         return mbtiName.toString();
     }
 
+    public String checkMBTIType(MBTIScore mbtiScore) {
+        StringBuilder mbtiName = new StringBuilder();
+
+        mbtiName.append(mbtiScore.getIScore() >= mbtiScore.getEScore() ? "I" : "E");
+        mbtiName.append(mbtiScore.getNScore() >= mbtiScore.getSScore() ? "N" : "S");
+        mbtiName.append(mbtiScore.getTScore() >= mbtiScore.getFScore() ? "T" : "F");
+        mbtiName.append(mbtiScore.getJScore() >= mbtiScore.getPScore() ? "J" : "P");
+
+        return mbtiName.toString();
+    }
+
     @Transactional(readOnly = true)
     public MBTI getMBTI(String mbtiName) {
         return mbtiRepository.findByMbti(MBTIName.fromString(mbtiName))

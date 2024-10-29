@@ -14,6 +14,8 @@ import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.history.entity.HistoryCreatedType;
 import com.kkumteul.domain.history.entity.MBTIScore;
 import com.kkumteul.domain.history.service.ChildPersonalityHistoryService;
+import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.service.MBTIService;
 import com.kkumteul.util.redis.RedisKey;
 import com.kkumteul.util.redis.RedisUtil;
 import jakarta.persistence.EntityManager;
@@ -48,6 +50,7 @@ public class ChangePersonalityBatchConfig {
     private final PersonalityScoreService personalityScoreService;
     private final ChildPersonalityHistoryService historyService;
     private final BookService bookService;
+    private final MBTIService mbtiService;
 
     @Bean
     public Job processLikeDislikeEventsJob() {
@@ -116,6 +119,9 @@ public class ChangePersonalityBatchConfig {
 
     private void createAndUpdateHistory(ChildProfile childProfile) {
         MBTIScore currentMBTIScore = MBTIScore.fromCumulativeScore(childProfile.getCumulativeMBTIScore());
+        MBTI mbti = mbtiService.getMBTI(mbtiService.checkMBTIType(currentMBTIScore));
+        currentMBTIScore.setMbti(mbti);
+
         ChildPersonalityHistory history = historyService.createHistory(
                 childProfile.getId(),
                 currentMBTIScore,
