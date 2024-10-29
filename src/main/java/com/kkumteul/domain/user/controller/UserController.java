@@ -57,4 +57,12 @@ public class UserController {
         return ApiUtil.success("user deleted successfully");
     }
 
+    // 자녀 검증
+    @GetMapping("/{userId}/childProfiles/{childProfileId}")
+    public ApiSuccess<?> validateChildProfile(@PathVariable(name = "userId") Long userId, @PathVariable(name = "childProfileId") Long childProfileId) {
+        // TODO: 추후 JWT 토큰 구현되면, userId를 가져오는 방식 변경 (PathVariable 사용 X)
+        userService.hasChildProfile(userId, childProfileId);
+        return ApiUtil.success("자녀 프로필 정보가 성공적으로 검증되었습니다.");
+    }
+
 }
