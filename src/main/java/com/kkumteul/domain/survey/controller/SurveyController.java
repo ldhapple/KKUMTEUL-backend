@@ -33,7 +33,7 @@ public class SurveyController {
         return ApiUtil.success(resultDto);
     }
 
-    @DeleteMapping("/result")
+    @DeleteMapping
     public ApiSuccess<?> deleteAndResurvey() {
         Long childProfileId = 1L;
 
