@@ -62,7 +62,7 @@ public class BookServiceTest {
                 .bookImage(new byte[]{})
                 .summary("테스트 도서 요약")
                 .genre(new Genre("소설", null))
-                .age_group("12세 부터")
+                .ageGroup("12세 부터")
                 .page("300")
                 .publisher("테스트 출판사")
                 .bookMBTIS(new ArrayList<>())

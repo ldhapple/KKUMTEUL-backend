@@ -47,7 +47,7 @@ class BookControllerTest {
                 .bookImage(new byte[]{})
                 .summary("테스트 도서 요약")
                 .genre(new Genre("소설", null))
-                .age_group("12세 부터")
+                .ageGroup("12세 부터")
                 .page("300")
                 .publisher("테스트 출판사")
                 .bookMBTIS(new ArrayList<>())
@@ -107,7 +107,7 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.response.genreName").value(mockBookDetailResponseDto.getGenreName()))
                 .andExpect(jsonPath("$.response.topicNames[0]").value("주제1"))
                 .andExpect(jsonPath("$.response.topicNames[1]").value("주제2"))
-                .andExpect(jsonPath("$.response.age_group").value(mockBookDetailResponseDto.getAge_group()))
+                .andExpect(jsonPath("$.response.age_group").value(mockBookDetailResponseDto.getAgeGroup()))
                 .andExpect(jsonPath("$.response.bookPage").value(mockBookDetailResponseDto.getBookPage()))
                 .andExpect(jsonPath("$.response.publisher").value(mockBookDetailResponseDto.getPublisher()));
     }

@@ -3,7 +3,8 @@ package com.kkumteul.domain.user.entity;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import jakarta.persistence.*;
-
+import java.util.ArrayList;
+import com.kkumteul.domain.event.entity.JoinEvent;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +32,9 @@ public class User {
     @Lob
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] profileImage;
+
+    @OneToMany(mappedBy = "user")
+    List<JoinEvent> joinEventList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     List<ChildProfile> childProfileList = new ArrayList<>();

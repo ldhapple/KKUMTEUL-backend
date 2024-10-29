@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 
 @Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponseDto {
@@ -26,7 +25,7 @@ public class UserResponseDto {
                 .map(ChildProfileDetailDto::fromEntity)
                 .toList();
 
-        return new UserResponseDto(
+        UserResponseDto userResponseDto =  new UserResponseDto(
                 user.getUsername(),
                 user.getProfileImage(),
                 null,
@@ -35,14 +34,22 @@ public class UserResponseDto {
                 user.getBirthDate(),
                 childProfiles
         );
+
+        if (userResponseDto.getProfileImage() != null) {
+            userResponseDto.setProfileImageBase64(Base64.getEncoder().encodeToString(userResponseDto.getProfileImage()));
+        }
+
+        return userResponseDto;
+
     }
+
 
     public void setProfileImageBase64(String base64) {
         this.profileImageBase64 = base64;
     }
 
     public String getProfileImageBase64() {
-        return Base64.getEncoder().encodeToString(profileImage);
+        return profileImage != null ? Base64.getEncoder().encodeToString(profileImage) : null;
     }
 
 }
