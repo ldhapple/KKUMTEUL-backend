@@ -113,7 +113,7 @@ public class BatchConfig {
 //        log.info("=============Writer 시작==============");
         return results -> {
             for (RecommendationResultDto result : results) {
-                log.info("Saving recommendations for user {}: {}", result.getUserId(), result.getBooks().size());
+//                log.info("Saving recommendations for user {}: {}", result.getUserId(), result.getBooks().size());
                 recommendationService.saveRecommendations(result.getUserId(), result.getBooks());
             }
         };

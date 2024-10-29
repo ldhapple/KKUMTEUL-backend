@@ -33,55 +33,69 @@ public class ContentBasedFilter {
         // 1. 사용자가 좋아요한 도서 가져오기
         List<Book> likedBooks = likeRepository.findLikedBooksByUser(childData.getId());
 
-//        log.info("사용자(target)가 좋아요한 도서: {}", likedBooks.toString());
+//        log.info("사용자(target)가 좋아요한 도서: {}", likedBooks);
 
         // 2. 좋아요한 도서에서 장르 및 주제 추출
-        Set<String> userGenres = new HashSet<>();
-        Set<String> userTopics = new HashSet<>();
+        Set<String> likedGenres = new HashSet<>();
+        Set<String> likedTopics = new HashSet<>();
 
         for (Book likedBook : likedBooks) {
-            userGenres.add(likedBook.getGenre().getName());
+            likedGenres.add(likedBook.getGenre().getName());
 
             for (BookTopic topic : likedBook.getBookTopics()) {
-                userTopics.add(topic.getTopic().getName());
+                likedTopics.add(topic.getTopic().getName());
             }
-//            log.info("사용자(target)가 좋아요 한 도서의 장르: " + userGenres.toString());
-//            log.info("사용자(target)가 좋아요 한 도서의 주제어: " + userTopics.toString());
-
         }
 
-        // 3. 사용자가 직접 선호한 장르와 주제 병합
-        for (GenreDto genre : childData.getGenres()) {
-            userGenres.add(genre.getGenreName());
-        }
-        for (TopicDto topic : childData.getTopics()) {
-            userTopics.add(topic.getTopicName());
-        }
+//        log.info("좋아요한 장르: {} | 좋아요한 주제: {}", likedGenres, likedTopics);
 
-//        log.info("사용자 선호 장르 + 좋아요 장르: {} | 사용자 선호 주제어 + 좋아요 주제어: {}", userGenres, userTopics);
+        // 3. 사용자가 직접 선호한 장르와 주제 추출
+        Set<String> preferredGenres = childData.getGenres().stream()
+                .map(GenreDto::getGenreName)
+                .collect(Collectors.toSet());
+
+        Set<String> preferredTopics = childData.getTopics().stream()
+                .map(TopicDto::getTopicName)
+                .collect(Collectors.toSet());
+
+//        log.info("사용자 선호 장르: {} | 사용자 선호 주제: {}", preferredGenres, preferredTopics);
 
         // 4. 각 도서에 대해 장르 및 주제어 유사도 계산
         for (BookDataDto book : booksData) {
             String bookGenre = book.getGenreDto().getGenreName();
+            List<String> bookTopics = book.getTopics().stream()
+                    .map(TopicDto::getTopicName)
+                    .collect(Collectors.toList());
 
-            List<String> bookTopics = new ArrayList<>();
-            for (TopicDto topic : book.getTopics()) {
-                bookTopics.add(topic.getTopicName());
-            }
+            // 5. 좋아요한 장르와 주제에 대한 유사도 계산
+            double likedGenreSimilarity = similarityCalculator.cosineSimilarity(
+                    new ArrayList<>(likedGenres), List.of(bookGenre));
+            double likedTopicSimilarity = similarityCalculator.cosineSimilarity(
+                    new ArrayList<>(likedTopics), bookTopics);
 
-            // 장르 및 주제어 유사도 계산
-            double genreSimilarity = similarityCalculator.cosineSimilarity(
-                    new ArrayList<>(userGenres), List.of(bookGenre));
-            double topicSimilarity = similarityCalculator.cosineSimilarity(
-                    new ArrayList<>(userTopics), bookTopics);
+            // 6. 사용자가 직접 선호한 장르와 주제에 대한 유사도 계산
+            double preferredGenreSimilarity = similarityCalculator.cosineSimilarity(
+                    new ArrayList<>(preferredGenres), List.of(bookGenre));
+            double preferredTopicSimilarity = similarityCalculator.cosineSimilarity(
+                    new ArrayList<>(preferredTopics), bookTopics);
 
-            // 최종 점수 계산 (장르: 40%, 주제어: 60%)
-            double totalScore = (genreSimilarity * 0.4) + (topicSimilarity * 0.6);
+            // 7. 각 유사도에 가중치 부여 (좋아요: 30%, 직접 선호: 70%)
+            double genreSimilarity = (likedGenreSimilarity * 0.3) + (preferredGenreSimilarity * 0.7);
+            double topicSimilarity = (likedTopicSimilarity * 0.3) + (preferredTopicSimilarity * 0.7);
 
-//            log.info("도서: {} | 장르 유사도: {} | 주제 유사도: {} | 최종 점수: {}",
-//                    book.getTitle(), genreSimilarity, topicSimilarity, totalScore);
+            // 8. 사용자와 도서의 MBTI 유사도 계산
+            double mbtiSimilarity = similarityCalculator.calculateMbtiSimilarity(
+                    childData.getMbti().name(), book.getMbti().get(0).name());
 
-            // 점수가 0 이상인 도서만 결과에 추가
+            // 9. 최종 점수 계산 (장르: 30%, 주제: 40%, MBTI: 30%)
+            double totalScore = (genreSimilarity * 0.3) +
+                    (topicSimilarity * 0.4) +
+                    (mbtiSimilarity * 0.3);
+
+//            log.info("도서: {} | 장르 유사도: {} | 주제 유사도: {} | MBTI 유사도: {} | 최종 점수: {}",
+//                    book.getTitle(), genreSimilarity, topicSimilarity, mbtiSimilarity, totalScore);
+
+            // 10. 점수가 0 이상인 도서만 결과에 추가
             if (totalScore > 0) {
                 contentScores.put(book, totalScore);
             }
@@ -89,4 +103,5 @@ public class ContentBasedFilter {
 
         return contentScores;
     }
+
 }

@@ -1,7 +1,9 @@
 package com.kkumteul.domain.recommendation.filter;
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
+import com.kkumteul.domain.mbti.entity.MBTIName;
 import com.kkumteul.domain.recommendation.dto.ChildDataDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -12,9 +14,10 @@ import java.util.List;
 import java.util.Set;
 
 @Component
+@Slf4j
 public class SimilarityCalculator {
 
-    // 전체 유사도 계산 메서드
+    // 전체 유사도 계산 메서드(협업 필터링)
     public double calculateSimilarity(ChildDataDto target, ChildDataDto other) {
         double similarity = 0.0;
 
@@ -37,7 +40,9 @@ public class SimilarityCalculator {
         return similarity;  // 최종 유사도 반환
     }
 
-    // MBTI 점수 유사도 계산 메서드
+
+
+    // MBTI 점수 유사도 계산 메서드(협업 필터링)
     private double calculateMbtiSimilarity(ChildDataDto target, ChildDataDto other) {
         double totalWeight = 0.0;
 
@@ -45,19 +50,20 @@ public class SimilarityCalculator {
         totalWeight += calculateDimensionWeight(target.getIScore(), other.getIScore());
 
         // S/N 비교
-        totalWeight += calculateDimensionWeight(target.getSScore(), other.getSScore());
+        totalWeight += 2 * calculateDimensionWeight(target.getSScore(), other.getSScore());
 
         // T/F 비교
-        totalWeight += calculateDimensionWeight(target.getTScore(), other.getTScore());
+        totalWeight += 2 * calculateDimensionWeight(target.getTScore(), other.getTScore());
 
         // J/P 비교
         totalWeight += calculateDimensionWeight(target.getJScore(), other.getJScore());
 
+        double maxWeight = 6.0;
         // 최대 0.6 가중치를 부여
-        return totalWeight / 4 * 0.6;
+        return (totalWeight / maxWeight) * 0.6; // 정규화 (0 ~ 0.6)
     }
 
-    // 점수 차이가 작을 수록 더 많은 유사도 점수를 가짐
+    // 점수 차이가 작을 수록 더 많은 유사도 점수를 가짐(협업 필터링)
     private double calculateDimensionWeight(double targetScore, double otherScore) {
         double difference = Math.abs(targetScore - otherScore);  // 오차 계산
         return 1 - (difference / 100.0);  // 오차를 기반으로 가중치 계산
@@ -103,6 +109,40 @@ public class SimilarityCalculator {
             sum += value * value;
         }
         return Math.sqrt(sum);
+    }
+
+    // 사용자의 MBTI와 도서의 MBTI가 얼마나 일치하는지 계산하는 함수(콘텐츠 기반)
+    public double calculateMbtiSimilarity(String userMbti, String bookMbti) {
+        if (userMbti == null || bookMbti == null || userMbti.length() != 4 || bookMbti.length() != 4) {
+//            log.info("유효하지 않는 mbti 데이터 | user : {} | book : {} " + userMbti.length(), bookMbti.length());
+            return 0.0; // 유효하지 않은 경우 0점 반환
+        }
+
+        double totalWeight = 0.0;
+        double maxWeight = 4.0; // 각 자리의 최대 가중치 합 (1 + 1 + 1.5 + 0.5)
+
+        // 1번째 글자 (I/E): 기본 가중치 0.5
+        if (userMbti.charAt(0) == bookMbti.charAt(0)) {
+            totalWeight += 0.5;
+        }
+
+        // 2번째 글자 (N/S): 가중치 1.5
+        if (userMbti.charAt(1) == bookMbti.charAt(1)) {
+            totalWeight += 1.5;
+        }
+
+        // 3번째 글자 (T/F): 가중치 1.5
+        if (userMbti.charAt(2) == bookMbti.charAt(2)) {
+            totalWeight += 1.5;
+        }
+
+        // 4번째 글자 (J/P): 가중치 0.5
+        if (userMbti.charAt(3) == bookMbti.charAt(3)) {
+            totalWeight += 0.5;
+        }
+
+        // 총 가중치에 따른 점수 반환 (최대 1.0)
+        return totalWeight / maxWeight;
     }
 
     // 생년월일을 나이로 변환하는 메서드

@@ -41,10 +41,14 @@ public class Book {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Genre genre;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @BatchSize(size = 10)
     private List<BookTopic> bookTopics = new ArrayList<>();
 
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Fetch(FetchMode.SUBSELECT)
+    @BatchSize(size = 10)
+    private List<BookMBTI> bookMBTIS = new ArrayList<>();
 
     @Builder
     public Book(String title, String author, String publisher, String price, String page, String summary,

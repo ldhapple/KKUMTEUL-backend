@@ -3,6 +3,7 @@ package com.kkumteul.domain.book.repository;
 import com.kkumteul.domain.book.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,13 +20,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             """)
     Page<Book> findAllBookInfo(final Pageable pageable);
 
-    @Query("""
-        SELECT DISTINCT b
-        FROM Book b
-        LEFT JOIN FETCH b.genre g
-        LEFT JOIN FETCH b.bookTopics bt
-        LEFT JOIN FETCH bt.topic t
-    """)
+    @EntityGraph(attributePaths = {"genre", "bookTopics.topic"})
+    @Query("SELECT b FROM Book b")
     List<Book> findAllBooksWithTopicsAndGenre();
 
     @Query("""

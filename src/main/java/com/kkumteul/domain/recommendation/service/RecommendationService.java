@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kkumteul.domain.book.entity.Book;
+import com.kkumteul.domain.book.entity.BookMBTI;
 import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.book.repository.BookLikeRepository;
 import com.kkumteul.domain.book.repository.BookRepository;
@@ -12,6 +13,8 @@ import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
 import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.history.entity.FavoriteGenre;
 import com.kkumteul.domain.history.entity.FavoriteTopic;
+import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.entity.MBTIName;
 import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
 import com.kkumteul.domain.recommendation.entity.Recommendation;
 import com.kkumteul.domain.recommendation.repository.RecommendationRepository;
@@ -195,7 +198,7 @@ public class RecommendationService {
             // 최종 점수가 0 이상일 경우 - 콘텐츠 기반, 협업 필터링에서 한번도 가중치를 못받았으면 리스트 포함 x
             if(finalScore > 0) {
                 finalScores.put(book, finalScore);
-//                log.info("책: {} | 콘텐츠 점수: {} | 협업 점수: {} | 최종 점수: {}", book.getTitle(), contentScore, collaborativeScore, finalScore);
+//                System.out.println(String.format("책: %s | 콘텐츠 점수: %f | 협업 점수: %f | 최종 점수: %f", book.getTitle(), contentScore, collaborativeScore, finalScore));
 
             }
 
@@ -214,7 +217,7 @@ public class RecommendationService {
         topBookDtos.sort((dto1, dto2) -> Double.compare(finalScores.get(dto2), finalScores.get(dto1)));
 
         // 3. 상위 50개 추출 (최대 50개만 가져오도록 조정)
-        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(5, topBookDtos.size()));
+        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(50, topBookDtos.size()));
 
         // 4. 50개 중 랜덤으로 5개 선택
         Collections.shuffle(top50Books); // 무작위로 섞기
@@ -306,6 +309,12 @@ public class RecommendationService {
                 topicDtos.add(topicDto);
             }
 
+            List<MBTIName> mbtiNameList = new ArrayList<>();
+            for(BookMBTI bookMBTI : book.getBookMBTIS())
+            {
+                mbtiNameList.add(bookMBTI.getMbti().getMbti());
+            }
+
             // BookDataDto
             BookDataDto bookDataDto = BookDataDto.builder()
                     .bookId(book.getId())
@@ -313,6 +322,7 @@ public class RecommendationService {
                     .author(book.getAuthor())
                     .genreDto(new GenreDto(book.getGenre().getId(), book.getGenre().getName()))
                     .topics(topicDtos)
+                    .mbti(mbtiNameList)
                     .build();
 
             bookDataDtos.add(bookDataDto);

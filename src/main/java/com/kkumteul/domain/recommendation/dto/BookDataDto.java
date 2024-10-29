@@ -1,5 +1,7 @@
 package com.kkumteul.domain.recommendation.dto;
 
+import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.entity.MBTIName;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -16,15 +18,17 @@ public class BookDataDto {
    private String author;
    private List<TopicDto> topics;
    private GenreDto genreDto;
+   private List<MBTIName> mbti;
    private double score; // 필터링 점수
 
     @Builder
-    public BookDataDto(Long bookId, String title, String author, GenreDto genreDto, List<TopicDto> topics) {
+    public BookDataDto(Long bookId, String title, String author, GenreDto genreDto, List<TopicDto> topics, List<MBTIName> mbti) {
         this.bookId = bookId;
         this.title = title;
         this.author = author;
         this.genreDto = genreDto;
         this.topics = topics;
+        this.mbti = mbti;
     }
 
     // 점수 누적

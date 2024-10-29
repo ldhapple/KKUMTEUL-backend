@@ -24,10 +24,10 @@ public class BatchScheduler {
     private final JobLauncher jobLauncher;
 
     // 1분마다 배치 작업 실행
-//    @Scheduled(cron = "0 */1 * * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
 
     // 추천 도서 배치 작업 매일 자정에 실행
-    @Scheduled(cron = "0 0 0 * * ?")
+//    @Scheduled(cron = "0 0 0 * * ?")
     public synchronized void runRecommendationJob() {
         try {
 //            // 현재 시간이 자정인지 확인
