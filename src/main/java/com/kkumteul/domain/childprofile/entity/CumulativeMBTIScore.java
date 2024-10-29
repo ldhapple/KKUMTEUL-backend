@@ -2,6 +2,7 @@ package com.kkumteul.domain.childprofile.entity;
 
 import com.kkumteul.domain.history.entity.MBTIScore;
 import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.entity.MBTIName;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -76,6 +77,48 @@ public class CumulativeMBTIScore {
         this.pScore += mbtiScore.getPScore();
 
         return this;
+    }
+
+    public void updateScores(MBTI mbti, double changeScore) {
+        MBTIName mbtiString = mbti.getMbti();
+
+        char[] mbtiChars = mbtiString.name().toCharArray();
+
+        for (char mbtiChar : mbtiChars) {
+            switch (mbtiChar) {
+                case 'I':
+                    this.iScore += changeScore;
+                    break;
+
+                case 'E':
+                    this.eScore += changeScore;
+                    break;
+
+                case 'S':
+                    this.sScore += changeScore;
+                    break;
+
+                case 'N':
+                    this.nScore += changeScore;
+                    break;
+
+                case 'T':
+                    this.tScore += changeScore;
+                    break;
+
+                case 'F':
+                    this.fScore += changeScore;
+                    break;
+
+                case 'J':
+                    this.jScore += changeScore;
+                    break;
+
+                case 'P':
+                    this.pScore += changeScore;
+                    break;
+            }
+        }
     }
 
     public void resetScores() {

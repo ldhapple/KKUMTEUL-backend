@@ -1,6 +1,7 @@
 package com.kkumteul.domain.childprofile.service;
 
 import com.kkumteul.domain.book.entity.Book;
+import com.kkumteul.domain.book.entity.BookMBTI;
 import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.entity.CumulativeMBTIScore;
@@ -10,6 +11,7 @@ import com.kkumteul.domain.childprofile.repository.CumulativeMBTIScoreRepository
 import com.kkumteul.domain.childprofile.repository.GenreScoreRepository;
 import com.kkumteul.domain.childprofile.repository.TopicScoreRepository;
 import com.kkumteul.domain.history.entity.MBTIScore;
+import com.kkumteul.domain.mbti.entity.MBTI;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
 import com.kkumteul.exception.EntityNotFoundException;
@@ -95,6 +97,18 @@ public class PersonalityScoreService {
     }
 
     @Transactional
+    public void updateCumulativeMBTIScore(Long childProfileId, List<BookMBTI> bookMBTIS, double changeScore) {
+        log.info("Update CumulativeMBTIScore ChildProfile ID: {}", childProfileId);
+        CumulativeMBTIScore cumulativeScore = cumulativeMBTIScoreRepository.findByChildProfileId(childProfileId)
+                .orElseThrow(() -> new IllegalArgumentException("점수가 존재하지 않습니다."));
+
+        for (BookMBTI bookMBTI : bookMBTIS) {
+            MBTI mbti = bookMBTI.getMbti();
+            cumulativeScore.updateScores(mbti, changeScore);
+        }
+    }
+
+    @Transactional
     public void updateGenreAndTopicScores(ChildProfile childProfile, Book book, double changedScore) {
         Genre genre = book.getGenre();
         List<BookTopic> bookTopics = book.getBookTopics();
@@ -112,4 +126,6 @@ public class PersonalityScoreService {
 
         log.info("Update Genre and Topic scores - ChildProfile ID: {}", childProfile.getId());
     }
+
+
 }
