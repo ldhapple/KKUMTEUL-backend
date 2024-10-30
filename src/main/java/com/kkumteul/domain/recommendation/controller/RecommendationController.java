@@ -26,7 +26,7 @@ public class RecommendationController {
     public ApiSuccess<?> getRecommendedBooks(@PathVariable(name = "childProfileId") Long childProfileId) {
         //추후 JWT 토큰 구현되면, profileId를 가져오는 방식 변경 (PathVariable 사용 X)
 
-        List<RecommendBookDto> recommendedBooks = recommendationService.getRecommendationsWithCache(childProfileId); // Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
+        List<RecommendBookDto> recommendedBooks = recommendationService.getRecommendedBooks(childProfileId); // Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
         List<RecommendBookDto> popularBooks = recommendationService.getPopularRecommendations(); // 좋아요 순 인기도서 5
 
         recommendationService.updateLastActivity(childProfileId);
