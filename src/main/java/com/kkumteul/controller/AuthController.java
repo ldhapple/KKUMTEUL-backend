@@ -61,8 +61,10 @@ public class AuthController {
         try {
             if (jwtTokenProvider.validateRefreshToken(refreshToken)) {
                 String userId = jwtTokenProvider.getUserIdFromToken(refreshToken, jwtTokenProvider.getRefreshSigningKey());
-                String newAccessToken = jwtTokenProvider.createAccessToken(userId, "ROLE_USER");
-                return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
+                if (userService.isRefreshTokenValid(userId, refreshToken)) {
+                    String newAccessToken = jwtTokenProvider.createAccessToken(userId, "ROLE_USER");
+                    return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
+                }
             }
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Refresh token expired. Please log in again."));
@@ -72,7 +74,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<String> logout(@RequestBody Map<String, String> tokenRequest) {
+        String username = tokenRequest.get("username");
+        String key = "refreshToken:" + username;
+        userService.updateRefreshToken(username, null); // Redis에서 refresh token 삭제
         return ResponseEntity.ok("Logout successful. Please remove your token on client side.");
     }
 }
