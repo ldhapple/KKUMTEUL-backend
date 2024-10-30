@@ -153,20 +153,9 @@ public class RecommendationService {
         }
     }
 
-    // 사용자 활동 기록 업데이트
-//    public void updateLastActivity(Long childProfileId) {
-//        asyncService.updateLastActivity(childProfileId);  // 비동기 메서드 호출
-//    }
-    @Transactional
     public void updateLastActivity(Long childProfileId) {
-        ChildProfile childProfile = childProfileRepository.findById(childProfileId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        childProfile.updateLastActivity();
-
-        childProfileRepository.save(childProfile);
+        asyncService.updateLastActivity(childProfileId);  // 비동기 메서드 호출
     }
-
 
     // 최근 7일 내 활동한 childProfile id 리턴
     public List<Long> getActiveUserIds() {

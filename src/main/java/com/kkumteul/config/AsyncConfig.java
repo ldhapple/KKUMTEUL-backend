@@ -18,6 +18,8 @@ public class AsyncConfig {
         executor.setQueueCapacity(10);  // 대기 큐 크기
         executor.setThreadNamePrefix("AsyncExecutor-");  // 스레드 이름 접두사
         executor.initialize();
+        System.out.println("AsyncExecutor initialized with pool size: " + executor.getCorePoolSize());
+
         return executor;
     }
 }
