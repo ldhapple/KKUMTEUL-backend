@@ -1,8 +1,7 @@
-package com.kkumteul.config;
+package com.kkumteul.config.job;
 
 import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.history.repository.ChildPersonalityHistoryRepository;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.sql.DataSource;
@@ -10,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
