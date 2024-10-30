@@ -63,18 +63,35 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
-    @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
-    public List<RecommendBookDto> getRecommendationsWithCache(Long childProfileId) {
-        return getRecommendedBooks(childProfileId); // 캐시가 없으면 DB 조회
-    }
+//    @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
+//    public List<RecommendBookDto> getRecommendationsWithCache(Long childProfileId) {
+//        return getRecommendedBooks(childProfileId); // 캐시가 없으면 DB 조회
+//    }
 
     // 추천 도서 db 조회
+    @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
     public List<RecommendBookDto> getRecommendedBooks(Long childProfileId) {
         log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
         List<Book> recommendBooks = recommendationRepository.findBookByChildProfileId(childProfileId)
                 .orElseThrow(() -> new RecommendationBookNotFoundException(childProfileId));
 
         log.info("found recommendedBooks: {}", recommendBooks.size());
+
+        if(recommendBooks.size() == 0){
+            // 추천 도서 테이블에 없는 경우
+            ChildDataDto childDataDto = getChildInfo(childProfileId)
+                    .orElse(null); // 히스토리 없을 경우 null
+
+            recommendBooks = getDefaultRecommendations(childDataDto);
+            Collections.shuffle(recommendBooks);
+
+            // 5권 저장
+            recommendBooks = recommendBooks.subList(0, Math.min(5, recommendBooks.size()));
+
+            // db에 저장
+            saveRecommendations(childProfileId, recommendBooks);
+        }
+
         return recommendBooks.stream()
                 .map(RecommendBookDto::fromEntity)
                 .toList();
@@ -110,7 +127,7 @@ public class RecommendationService {
             List<Book> bookList = getDefaultRecommendations(null);
             Collections.shuffle(bookList);
 
-            bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
+            bookList = bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
 
             // db에 저장
             saveRecommendations(childProfile.getId(), bookList);
@@ -192,63 +209,6 @@ public class RecommendationService {
         return recommendedBooks;
     }
 
-
-    // dto를 엔티티로
-    private List<Book> convertToBookEntities(List<BookDataDto> bookDataDtos) {
-        List<Book> books = new ArrayList<>();
-
-        for (BookDataDto dto : bookDataDtos) {
-            Book book = bookRepository.findById(dto.getBookId())
-                    .orElseThrow(() -> new IllegalArgumentException("도서를 찾을 수 없습니다: " + dto.getBookId()));
-            books.add(book);
-        }
-
-        return books;
-    }
-
-
-    // 자녀 정보 한꺼번에 가져오기(한명)
-    private Optional<ChildDataDto> getChildInfo(Long profileId){
-        // 자녀 추천 로직 관련 정보 한꺼번에 가져오기
-        Pageable pageable = PageRequest.of(0, 1); // 상위 1개만 가져오기
-
-        Page<ChildPersonalityHistory> historyList = historyRepository.findChildData(profileId, pageable);
-        if(historyList.isEmpty()){
-            return Optional.empty();
-        }
-
-        ChildPersonalityHistory history = historyList.getContent().get(0);
-
-        List<TopicDto> topics = new ArrayList<>();
-        for (FavoriteTopic ht : history.getFavoriteTopics()) {
-            topics.add(new TopicDto(ht.getTopic().getId(), ht.getTopic().getName()));
-        }
-
-        List<GenreDto> genres = new ArrayList<>();
-        for (FavoriteGenre hg : history.getFavoriteGenres()) {
-            genres.add(new GenreDto(hg.getGenre().getId(), hg.getGenre().getName()));
-        }
-
-        ChildDataDto childDataDto = ChildDataDto.builder()
-                .id(history.getChildProfile().getId())
-                .gender(history.getChildProfile().getGender())
-                .birthDate(history.getChildProfile().getBirthDate())
-                .mbti(history.getMbtiScore().getMbti().getMbti())
-                .topics(topics)
-                .genres(genres)
-                .IScore(history.getMbtiScore().getIScore())
-                .EScore(history.getMbtiScore().getEScore())
-                .SScore(history.getMbtiScore().getSScore())
-                .NScore(history.getMbtiScore().getNScore())
-                .FScore(history.getMbtiScore().getFScore())
-                .TScore(history.getMbtiScore().getTScore())
-                .JScore(history.getMbtiScore().getJScore())
-                .PScore(history.getMbtiScore().getPScore())
-                .build();
-
-        return Optional.of(childDataDto);
-    }
-
     // 도서 정보 한꺼번에 가져오기 위해 ( + 데이터 dto로 매핑 )
     public List<BookDataDto> getAllBookInfo(List<Book> books) {
         List<BookDataDto> bookDataDtos = new ArrayList<>();
@@ -314,38 +274,6 @@ public class RecommendationService {
         return childDataAll;
     }
 
-
-    // 협업 필터링 된 도서 좋아요 목록 조회
-    private Set<BookDataDto> getBooksList(Set<Long> childIds, Pageable pageable){
-
-        // 유사한 사용자들이 좋아요 누른 책 반환
-        Page<Book> likedBooks = likeRepository.findBookLikeByUser(childIds, pageable);
-
-        return likedBooks.stream()
-                .map(book -> BookDataDto.builder()
-                        .bookId(book.getId())
-                        .title(book.getTitle())
-                        .author(book.getAuthor())
-                        .genreDto(
-                                GenreDto.builder()
-                                        .genreId(book.getGenre().getId())
-                                        .genreName(book.getGenre().getName())
-                                        .build()
-                        )
-                        .topics(
-                                book.getBookTopics().stream()
-                                        .map(bookTopic -> TopicDto.builder()
-                                                .topicId(bookTopic.getTopic().getId())
-                                                .topicName(bookTopic.getTopic().getName())
-                                                .build()
-                                        )
-                                        .collect(Collectors.toList())
-                        )
-                        .build()
-                )
-                .collect(Collectors.toSet()); // 중복 제거
-    }
-
     // 유사한 사용자가 좋아요 한 도서에 유사도 점수 추가
     public Map<Long, Double> getCollaborativeScores(List<ChildDataDto> similarProfiles, Map<Long, Double> initialScores, Long userId) {
         Pageable pageable = PageRequest.of(0, 20);
@@ -377,31 +305,6 @@ public class RecommendationService {
         }
 
         return normalizeScores(updatedScores);
-    }
-
-
-    // 모든 점수를 [0, 1]로 정규화
-    private Map<Long, Double> normalizeScores(Map<Long, Double> scores) {
-        double maxScore = scores.values().stream().max(Double::compare).orElse(1.0);
-
-        return scores.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> e.getValue() / maxScore
-                ));
-    }
-
-    // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
-    private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
-        int age = getAge(childDataDto.getBirthDate());
-
-        Pageable pageable = PageRequest.of(0, 50);
-        return bookRepository.findBookListByAgeGroup(age, pageable);
-    }
-
-    // 생년월일을 나이로 변환하는 메서드
-    private int getAge(LocalDate birthDate) {
-        return Period.between(birthDate, LocalDate.now()).getYears();
     }
 
     // 사용자별 맞춤 추천 도서 저장
@@ -442,8 +345,6 @@ public class RecommendationService {
     }
 
 
-
-
     // 최근 7일 내 활동한 childProfile id 리턴
     public List<Long> getActiveUserIds() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(7);
@@ -460,5 +361,118 @@ public class RecommendationService {
 
         childProfileRepository.save(childProfile);
     }
+
+    // dto를 엔티티로
+    private List<Book> convertToBookEntities(List<BookDataDto> bookDataDtos) {
+        List<Book> books = new ArrayList<>();
+
+        for (BookDataDto dto : bookDataDtos) {
+            Book book = bookRepository.findById(dto.getBookId())
+                    .orElseThrow(() -> new IllegalArgumentException("도서를 찾을 수 없습니다: " + dto.getBookId()));
+            books.add(book);
+        }
+
+        return books;
+    }
+
+    // 협업 필터링 된 도서 좋아요 목록 조회
+    private Set<BookDataDto> getBooksList(Set<Long> childIds, Pageable pageable){
+
+        // 유사한 사용자들이 좋아요 누른 책 반환
+        Page<Book> likedBooks = likeRepository.findBookLikeByUser(childIds, pageable);
+
+        return likedBooks.stream()
+                .map(book -> BookDataDto.builder()
+                        .bookId(book.getId())
+                        .title(book.getTitle())
+                        .author(book.getAuthor())
+                        .genreDto(
+                                GenreDto.builder()
+                                        .genreId(book.getGenre().getId())
+                                        .genreName(book.getGenre().getName())
+                                        .build()
+                        )
+                        .topics(
+                                book.getBookTopics().stream()
+                                        .map(bookTopic -> TopicDto.builder()
+                                                .topicId(bookTopic.getTopic().getId())
+                                                .topicName(bookTopic.getTopic().getName())
+                                                .build()
+                                        )
+                                        .collect(Collectors.toList())
+                        )
+                        .build()
+                )
+                .collect(Collectors.toSet()); // 중복 제거
+    }
+
+
+    // 자녀 정보 한꺼번에 가져오기(한명)
+    private Optional<ChildDataDto> getChildInfo(Long profileId){
+        // 자녀 추천 로직 관련 정보 한꺼번에 가져오기
+        Pageable pageable = PageRequest.of(0, 1); // 상위 1개만 가져오기
+
+        Page<ChildPersonalityHistory> historyList = historyRepository.findChildData(profileId, pageable);
+        if(historyList.isEmpty()){
+            return Optional.empty();
+        }
+
+        ChildPersonalityHistory history = historyList.getContent().get(0);
+
+        List<TopicDto> topics = new ArrayList<>();
+        for (FavoriteTopic ht : history.getFavoriteTopics()) {
+            topics.add(new TopicDto(ht.getTopic().getId(), ht.getTopic().getName()));
+        }
+
+        List<GenreDto> genres = new ArrayList<>();
+        for (FavoriteGenre hg : history.getFavoriteGenres()) {
+            genres.add(new GenreDto(hg.getGenre().getId(), hg.getGenre().getName()));
+        }
+
+        ChildDataDto childDataDto = ChildDataDto.builder()
+                .id(history.getChildProfile().getId())
+                .gender(history.getChildProfile().getGender())
+                .birthDate(history.getChildProfile().getBirthDate())
+                .mbti(history.getMbtiScore().getMbti().getMbti())
+                .topics(topics)
+                .genres(genres)
+                .IScore(history.getMbtiScore().getIScore())
+                .EScore(history.getMbtiScore().getEScore())
+                .SScore(history.getMbtiScore().getSScore())
+                .NScore(history.getMbtiScore().getNScore())
+                .FScore(history.getMbtiScore().getFScore())
+                .TScore(history.getMbtiScore().getTScore())
+                .JScore(history.getMbtiScore().getJScore())
+                .PScore(history.getMbtiScore().getPScore())
+                .build();
+
+        return Optional.of(childDataDto);
+    }
+
+    // 모든 점수를 [0, 1]로 정규화
+    private Map<Long, Double> normalizeScores(Map<Long, Double> scores) {
+        double maxScore = scores.values().stream().max(Double::compare).orElse(1.0);
+
+        return scores.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue() / maxScore
+                ));
+    }
+
+    // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
+    private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
+        int age = getAge(childDataDto.getBirthDate());
+
+        Pageable pageable = PageRequest.of(0, 50);
+        return bookRepository.findBookListByAgeGroup(age, pageable);
+    }
+
+    // 생년월일을 나이로 변환하는 메서드
+    private int getAge(LocalDate birthDate) {
+        return Period.between(birthDate, LocalDate.now()).getYears();
+    }
+
+
 }
 
