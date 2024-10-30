@@ -63,29 +63,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    protected ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(ExpiredJwtException.class)
-    protected ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Expired JWT token");
-    }
-
-    @ExceptionHandler(MalformedJwtException.class)
-    protected ResponseEntity<String> handleMalformedJwtException(MalformedJwtException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
-    }
-
-    // SecurityException으로 변경
-    @ExceptionHandler(SecurityException.class)
-    protected ResponseEntity<String> handleSecurityException(SecurityException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT signature");
-    }
-
-    @ExceptionHandler(Exception.class)
-    protected ResponseEntity<String> handleOtherExceptions(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+    @ExceptionHandler(TokenExpiredException.class)
+    protected ResponseEntity<?> handleExpiredJwtException(TokenExpiredException e) {
+        log.error(e.getMessage(), e);
+        ApiError<String> error = ApiUtil.error(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(error);
     }
 }

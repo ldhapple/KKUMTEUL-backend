@@ -1,5 +1,6 @@
 package com.kkumteul.domain.user.controller;
 
+import com.kkumteul.domain.user.dto.RegisterDto;
 import com.kkumteul.domain.user.dto.UserResponseDto;
 import com.kkumteul.domain.user.dto.UserUpdateRequestDto;
 import com.kkumteul.domain.user.service.UserService;
@@ -67,27 +68,23 @@ public class UserController {
         return ApiUtil.success("자녀 프로필 정보가 성공적으로 검증되었습니다.");
     }
 
-    @GetMapping("/protected-resource")
-    public ResponseEntity<String> getProtectedResource(Authentication authentication) {
-        String username = authentication.getName();
-        return ResponseEntity.ok("Hello, " + username + "! This is a protected resource.");
+    @PostMapping("/register")
+    public ApiSuccess<?> register(@RequestBody RegisterDto registerDto) {
+        userService.register(registerDto);
+
+        return ApiUtil.success("회원가입이 완료되었습니다.");
     }
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<String> getAdminDashboard(Authentication authentication) {
-        String username = authentication.getName();
-        return ResponseEntity.ok("Hello Admin, " + username + "! This is the admin dashboard.");
+    @GetMapping("/duplicate/username/{username}")
+    public ApiSuccess<?> checkDuplicateUsername(@PathVariable String username) {
+        boolean isDuplicate = userService.duplicateUsername(username);
+
+        return ApiUtil.success(isDuplicate);
     }
 
-    @GetMapping("/check-username")
-    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
-        boolean exists = userService.duplicateUsername(username);
-        return ResponseEntity.ok(exists); // 존재하면 true, 존재하지 않으면 false 반환
-    }
-
-    @GetMapping("/check-nickname")
-    public ResponseEntity<Boolean> checkNickname(@RequestParam String nickName) {
-        boolean exists = userService.duplicateNickname(nickName);
-        return ResponseEntity.ok(exists); // 존재하면 true, 존재하지 않으면 false 반환
+    @GetMapping("/duplicate/nickname/{nickname}")
+    public ApiSuccess<?> checkDuplicateNickname(@PathVariable String nickname) {
+        boolean isDuplicate = userService.duplicateNickname(nickname);
+        return ApiUtil.success(isDuplicate);
     }
 }

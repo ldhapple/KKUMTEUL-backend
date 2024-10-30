@@ -1,4 +1,4 @@
-package com.kkumteul.domain.recommendation.service;
+package com.kkumteul.config.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,15 +10,13 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Configuration
 @Slf4j
-public class BatchScheduler {
+public class RecommendationBatchScheduler {
 
     private final Job recommendationJob;
     private final JobLauncher jobLauncher;
@@ -30,14 +28,6 @@ public class BatchScheduler {
     @Scheduled(cron = "0 0 0 * * ?")
     public synchronized void runRecommendationJob() {
         try {
-//            // 현재 시간이 자정인지 확인
-//            LocalDateTime now = LocalDateTime.now();
-//            if (now.getHour() != 0) {
-//                // 자정이 아니면 작업을 건너뜀
-//                log.info("현재 자정이 아니므로 스케줄러 작업을 건너뜁니다.");
-//                return;
-//            }
-
 //            log.info("===== 배치 스케줄러 시작 =====");
 
             JobParameters params = new JobParametersBuilder()
