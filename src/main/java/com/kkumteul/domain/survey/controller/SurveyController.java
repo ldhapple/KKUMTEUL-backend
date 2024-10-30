@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,20 +24,15 @@ public class SurveyController {
 
     @PostMapping
     public ApiSuccess<?> submitSurvey(
-            @RequestBody SurveyResultRequestDto surveyResultRequestDto,
-            HttpSession session) {
-        //childProfileId 가져오는 방식 구현 필요.
-        Long childProfileId = 1L;
+            @RequestBody SurveyResultRequestDto surveyResultRequestDto) {
 
-        SurveyResultDto resultDto = surveyFacade.submitSurvey(surveyResultRequestDto, childProfileId);
+        SurveyResultDto resultDto = surveyFacade.submitSurvey(surveyResultRequestDto);
 
         return ApiUtil.success(resultDto);
     }
 
     @DeleteMapping
-    public ApiSuccess<?> deleteAndResurvey() {
-        Long childProfileId = 1L;
-
+    public ApiSuccess<?> deleteAndResurvey(@RequestParam("childProfileId") Long childProfileId) {
         surveyFacade.reSurvey(childProfileId);
 
         return ApiUtil.success("기존 진단 결과가 성공적으로 삭제되었습니다.");

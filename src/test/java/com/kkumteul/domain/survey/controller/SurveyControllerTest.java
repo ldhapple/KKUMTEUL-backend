@@ -69,7 +69,7 @@ class SurveyControllerTest {
                 .favoriteTopics(List.of(new FavoriteDto("식물", new byte[0]), new FavoriteDto("나무", new byte[0])))
                 .build();
 
-        given(surveyFacade.submitSurvey(any(SurveyResultRequestDto.class), any(Long.class))).willReturn(mockResultDto);
+        given(surveyFacade.submitSurvey(any(SurveyResultRequestDto.class))).willReturn(mockResultDto);
 
         mockMvc.perform(post("/api/survey")
                         .contentType(MediaType.APPLICATION_JSON)
