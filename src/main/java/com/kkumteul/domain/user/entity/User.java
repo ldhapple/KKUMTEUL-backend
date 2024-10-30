@@ -45,7 +45,7 @@ public class User implements UserDetails {
     private String phoneNumber;
 
     @Column(nullable = true)
-    private LocalDate birthDate;
+    private Date birthDate;
 
     @Lob
     @Column(columnDefinition = "MEDIUMBLOB", nullable = true)
@@ -65,7 +65,7 @@ public class User implements UserDetails {
     List<ChildProfile> childProfileList = new ArrayList<>();
 
     @Builder
-    public User(String username, String password, String nickName, String phoneNumber, LocalDate birthDate,
+    public User(String username, String password, String nickName, String phoneNumber, Date birthDate,
                 byte[] profileImage, Role role, String refreshToken) {
         this.username = username;
         this.password = password;
@@ -101,7 +101,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-}
 
     public void update(UserUpdateRequestDto userUpdateRequestDto) {
         if (userUpdateRequestDto.getNickName() != null) {
@@ -117,8 +116,9 @@ public class User implements UserDetails {
 
     // profileImage를 byte[]로 변환하여 저장하는 메소드
     public void updateProfileImage(byte[] multipartFile) {
-        if(multipartFile != null) this.profileImage = multipartFile;
+        if (multipartFile != null) {
+            this.profileImage = multipartFile;
+        }
 
     }
-
 }

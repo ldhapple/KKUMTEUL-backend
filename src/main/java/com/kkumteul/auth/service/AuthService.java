@@ -1,4 +1,4 @@
-package com.kkumteul.service;
+package com.kkumteul.auth.service;
 
 import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.domain.user.entity.Role;
@@ -14,7 +14,7 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

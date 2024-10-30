@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,8 +36,9 @@ public class UserService {
     }
 
     // 2. 유저 정보 수정
-    public void updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage) throws IOException {
-        log.info("user: {}" , userUpdateRequestDto);
+    public void updateUser(Long userId, UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImage)
+            throws IOException {
+        log.info("user: {}", userUpdateRequestDto);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
@@ -62,7 +62,8 @@ public class UserService {
     }
 
     public void hasChildProfile(Long userId, Long childProfileId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
         boolean exists = user.getChildProfileList().stream()
                 .anyMatch(childProfile -> Objects.equals(childProfile.getId(), childProfileId));
 
@@ -71,5 +72,12 @@ public class UserService {
         }
     }
 
+    public boolean duplicateUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    public boolean duplicateNickname(String nickName) {
+        return userRepository.existsByNickName(nickName);
+    }
 }
 

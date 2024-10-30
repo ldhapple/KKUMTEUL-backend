@@ -1,9 +1,9 @@
-package com.kkumteul.controller;
+package com.kkumteul.auth.controller;
 
+import com.kkumteul.auth.service.AuthService;
 import com.kkumteul.dto.AuthenticationRequest;
 import com.kkumteul.dto.AuthenticationResponse;
 import com.kkumteul.security.JwtTokenProvider;
-import com.kkumteul.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 
 import java.util.Map;
 
@@ -22,17 +21,17 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserService userService;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, UserService userService) {
+    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.userService = userService;
+        this.authService = authService;
     }
 
     @PostMapping("/signup")
     public ResponseEntity<String> register(@RequestBody AuthenticationRequest request) {
-        userService.registerUser(
+        authService.registerUser(
                 request.getUsername(), request.getPassword(), request.getUsername(), request.getPhoneNumber());
         return ResponseEntity.ok("User registered successfully with username: " + request.getUsername());
     }
@@ -47,7 +46,7 @@ public class AuthController {
             String accessToken = jwtTokenProvider.createAccessToken(userId, "ROLE_USER");
             String refreshToken = jwtTokenProvider.createRefreshToken(userId);
 
-            userService.updateRefreshToken(userId, refreshToken);
+            authService.updateRefreshToken(userId, refreshToken);
 
             return ResponseEntity.ok(new AuthenticationResponse(accessToken, refreshToken));
         } catch (AuthenticationException e) {
@@ -61,7 +60,7 @@ public class AuthController {
         try {
             if (jwtTokenProvider.validateRefreshToken(refreshToken)) {
                 String userId = jwtTokenProvider.getUserIdFromToken(refreshToken, jwtTokenProvider.getRefreshSigningKey());
-                if (userService.isRefreshTokenValid(userId, refreshToken)) {
+                if (authService.isRefreshTokenValid(userId, refreshToken)) {
                     String newAccessToken = jwtTokenProvider.createAccessToken(userId, "ROLE_USER");
                     return ResponseEntity.ok(new AuthenticationResponse(newAccessToken, refreshToken));
                 }
@@ -77,7 +76,7 @@ public class AuthController {
     public ResponseEntity<String> logout(@RequestBody Map<String, String> tokenRequest) {
         String username = tokenRequest.get("username");
         String key = "refreshToken:" + username;
-        userService.updateRefreshToken(username, null); // Redis에서 refresh token 삭제
+        authService.updateRefreshToken(username, null); // Redis에서 refresh token 삭제
         return ResponseEntity.ok("Logout successful. Please remove your token on client side.");
     }
 }
