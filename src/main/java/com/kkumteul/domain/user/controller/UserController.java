@@ -6,6 +6,8 @@ import com.kkumteul.domain.user.service.UserService;
 import com.kkumteul.util.ApiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,4 +67,27 @@ public class UserController {
         return ApiUtil.success("자녀 프로필 정보가 성공적으로 검증되었습니다.");
     }
 
+    @GetMapping("/protected-resource")
+    public ResponseEntity<String> getProtectedResource(Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok("Hello, " + username + "! This is a protected resource.");
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<String> getAdminDashboard(Authentication authentication) {
+        String username = authentication.getName();
+        return ResponseEntity.ok("Hello Admin, " + username + "! This is the admin dashboard.");
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
+        boolean exists = userService.duplicateUsername(username);
+        return ResponseEntity.ok(exists); // 존재하면 true, 존재하지 않으면 false 반환
+    }
+
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Boolean> checkNickname(@RequestParam String nickName) {
+        boolean exists = userService.duplicateNickname(nickName);
+        return ResponseEntity.ok(exists); // 존재하면 true, 존재하지 않으면 false 반환
+    }
 }
