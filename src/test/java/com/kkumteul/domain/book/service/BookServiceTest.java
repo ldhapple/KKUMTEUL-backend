@@ -14,6 +14,7 @@ import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
+import com.kkumteul.util.kafka.KafkaUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BookServiceTest {
+    @Mock
+    private KafkaUtil kafkaUtil;
+
     @Mock
     private BookRepository bookRepository;
 
@@ -136,5 +140,4 @@ public class BookServiceTest {
         verify(bookLikeRepository).save(bookLikeCaptor.capture());
         assertThat(bookLikeCaptor.getValue().getLikeType()).isEqualTo(LikeType.LIKE);
     }
-
 }

@@ -8,6 +8,9 @@ import com.kkumteul.exception.RecommendationBookNotFoundException;
 import com.kkumteul.exception.UserNotFoundException;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiError;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SecurityException;
 import jakarta.persistence.EntityNotFoundException;
 import com.kkumteul.exception.RecommendationBookNotFoundException;
 import com.kkumteul.util.ApiUtil;
@@ -15,6 +18,7 @@ import com.kkumteul.util.ApiUtil.ApiError;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -57,5 +61,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error(e.getMessage(), e);
         ApiError<String> error = ApiUtil.error(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    protected ResponseEntity<?> handleExpiredJwtException(TokenExpiredException e) {
+        log.error(e.getMessage(), e);
+        ApiError<String> error = ApiUtil.error(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(error);
     }
 }

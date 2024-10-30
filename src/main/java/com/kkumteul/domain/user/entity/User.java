@@ -32,20 +32,17 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true)
+    private String name;
+
     private String nickName;
 
-    @Column(nullable = true)
     private String phoneNumber;
 
-    @Column(nullable = true)
-    private LocalDate birthDate;
+    private Date birthDate;
 
     @Lob
     @Column(columnDefinition = "MEDIUMBLOB", nullable = true)
@@ -55,9 +52,6 @@ public class User implements UserDetails {
     @Column(length = 20, nullable = true)
     private Role role;
 
-    @Setter
-    private String refreshToken;
-
     @OneToMany(mappedBy = "user")
     List<JoinEvent> joinEventList = new ArrayList<>();
 
@@ -65,8 +59,8 @@ public class User implements UserDetails {
     List<ChildProfile> childProfileList = new ArrayList<>();
 
     @Builder
-    public User(String username, String password, String nickName, String phoneNumber, LocalDate birthDate,
-                byte[] profileImage, Role role, String refreshToken) {
+    public User(String username, String password, String nickName, String phoneNumber, Date birthDate,
+                byte[] profileImage, Role role, String name) {
         this.username = username;
         this.password = password;
         this.nickName = nickName;
@@ -74,7 +68,7 @@ public class User implements UserDetails {
         this.birthDate = birthDate;
         this.profileImage = profileImage;
         this.role = role;
-        this.refreshToken = refreshToken;
+        this.name = name;
     }
 
     @Override
@@ -101,7 +95,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-}
 
     public void update(UserUpdateRequestDto userUpdateRequestDto) {
         if (userUpdateRequestDto.getNickName() != null) {
@@ -117,8 +110,9 @@ public class User implements UserDetails {
 
     // profileImage를 byte[]로 변환하여 저장하는 메소드
     public void updateProfileImage(byte[] multipartFile) {
-        if(multipartFile != null) this.profileImage = multipartFile;
+        if (multipartFile != null) {
+            this.profileImage = multipartFile;
+        }
 
     }
-
 }
