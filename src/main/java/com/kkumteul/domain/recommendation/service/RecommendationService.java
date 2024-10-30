@@ -63,12 +63,6 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
-//    @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
-//    public List<RecommendBookDto> getRecommendationsWithCache(Long childProfileId) {
-//        return getRecommendedBooks(childProfileId); // 캐시가 없으면 DB 조회
-//    }
-
-    // 추천 도서 db 조회
     @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
     public List<RecommendBookDto> getRecommendedBooks(Long childProfileId) {
         log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
