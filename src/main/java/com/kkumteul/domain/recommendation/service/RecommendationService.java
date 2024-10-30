@@ -63,10 +63,16 @@ public class RecommendationService {
     private final ContentBasedFilter contentBasedFilter;
     private final CollaborativeFilter collaborativeFilter;
     private final RecommendationRepository recommendationRepository;
+    private final AsyncService asyncService;
 
-    //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
+    // 성능 비교 테스트 코드 때문에 합치면 안됨
     @Transactional
     @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
+    public List<RecommendBookDto> getRecommendationsWithCache(Long childProfileId) {
+        return getRecommendedBooks(childProfileId); // 캐시가 없으면 DB 조회
+    }
+
+    //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
     public List<RecommendBookDto> getRecommendedBooks(Long childProfileId) {
         log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
         List<Book> recommendBooks = recommendationRepository.findBookByChildProfileId(childProfileId)
@@ -148,16 +154,19 @@ public class RecommendationService {
     }
 
     // 사용자 활동 기록 업데이트
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Async
+//    public void updateLastActivity(Long childProfileId) {
+//        asyncService.updateLastActivity(childProfileId);  // 비동기 메서드 호출
+//    }
+    @Transactional
     public void updateLastActivity(Long childProfileId) {
         ChildProfile childProfile = childProfileRepository.findById(childProfileId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         childProfile.updateLastActivity();
 
         childProfileRepository.save(childProfile);
     }
+
 
     // 최근 7일 내 활동한 childProfile id 리턴
     public List<Long> getActiveUserIds() {
