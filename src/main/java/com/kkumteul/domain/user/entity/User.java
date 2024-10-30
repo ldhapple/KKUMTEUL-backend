@@ -32,19 +32,16 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true)
+    private String name;
+
     private String nickName;
 
-    @Column(nullable = true)
     private String phoneNumber;
 
-    @Column(nullable = true)
     private Date birthDate;
 
     @Lob
@@ -55,9 +52,6 @@ public class User implements UserDetails {
     @Column(length = 20, nullable = true)
     private Role role;
 
-    @Setter
-    private String refreshToken;
-
     @OneToMany(mappedBy = "user")
     List<JoinEvent> joinEventList = new ArrayList<>();
 
@@ -66,7 +60,7 @@ public class User implements UserDetails {
 
     @Builder
     public User(String username, String password, String nickName, String phoneNumber, Date birthDate,
-                byte[] profileImage, Role role, String refreshToken) {
+                byte[] profileImage, Role role, String name) {
         this.username = username;
         this.password = password;
         this.nickName = nickName;
@@ -74,7 +68,7 @@ public class User implements UserDetails {
         this.birthDate = birthDate;
         this.profileImage = profileImage;
         this.role = role;
-        this.refreshToken = refreshToken;
+        this.name = name;
     }
 
     @Override
