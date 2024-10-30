@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class BookLikeRepositoryTest {
 
     @Autowired
@@ -28,14 +30,13 @@ public class BookLikeRepositoryTest {
     @Autowired
     private EntityManager em;
 
-    private User user;
     private ChildProfile childProfile;
     private Book book;
 
     @BeforeEach
     void setUp() {
         // Mock User 생성
-        user = User.builder()
+        User user = User.builder()
                 .username("user")
                 .password("1234")
                 .build();
@@ -69,6 +70,8 @@ public class BookLikeRepositoryTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
         em.persist(bookLike);
+
+        em.flush();
     }
 
     @Test
@@ -79,8 +82,10 @@ public class BookLikeRepositoryTest {
 
         // then
         assertThat(bookLikes).isNotEmpty();
+        assertThat(bookLikes.size()).isEqualTo(1);
         assertThat(bookLikes.get(0).getBook()).isEqualTo(book);
     }
+
 
     @Test
     @DisplayName("책 좋아요 조회: 아동 프로필 ID와 도서 ID로 특정 좋아요 정보를 반환한다.")
