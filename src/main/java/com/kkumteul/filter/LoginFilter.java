@@ -68,7 +68,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         String accessToken = jwtUtil.createAccessToken(username, role, 60 * 60 * 1000L);
-        String refreshToken = jwtUtil.createRefreshToken(username, 60 * 60 * 10000L);
+        String refreshToken = jwtUtil.createRefreshToken(username, role, 60 * 60 * 10000L);
 
         Cookie cookie = cookieUtil.createCookie("refreshToken", refreshToken);
 

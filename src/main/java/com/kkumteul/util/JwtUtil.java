@@ -47,9 +47,10 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createRefreshToken(String username, Long expirationMs) {
+    public String createRefreshToken(String username, String role, Long expirationMs) {
         return Jwts.builder()
                 .claim("username", username)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(secretKey)
