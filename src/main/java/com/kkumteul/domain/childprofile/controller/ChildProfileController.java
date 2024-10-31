@@ -1,5 +1,6 @@
 package com.kkumteul.domain.childprofile.controller;
 
+import com.kkumteul.auth.dto.CustomUserDetails;
 import com.kkumteul.domain.childprofile.dto.ChildProfileInsertRequestDto;
 import com.kkumteul.domain.childprofile.dto.ChildProfileResponseDto;
 import com.kkumteul.domain.childprofile.service.ChildProfileService;
@@ -7,6 +8,7 @@ import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.kkumteul.domain.childprofile.dto.ChildProfileDto;
 import com.kkumteul.domain.childprofile.service.ChildProfileService;
@@ -44,9 +46,9 @@ public class ChildProfileController {
     }
 
     @GetMapping
-    public ApiSuccess<?> getChildProfiles() {
+    public ApiSuccess<?> getChildProfiles(@AuthenticationPrincipal CustomUserDetails user) {
         // 인증 인가 구현 시 @AuthenticationPrincipal 사용해서 UserID 가져오기.
-        Long userId = 1L;
+        Long userId = user.getId();
 
         List<ChildProfileDto> childProfiles = childProfileService.getChildProfileList(userId);
 
