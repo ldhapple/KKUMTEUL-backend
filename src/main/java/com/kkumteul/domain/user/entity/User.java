@@ -101,9 +101,6 @@ public class User implements UserDetails {
         if (userUpdateRequestDto.getNickName() != null) {
             this.nickName = userUpdateRequestDto.getNickName();
         }
-        if (userUpdateRequestDto.getPassword() != null) {
-            this.password = userUpdateRequestDto.getPassword();
-        }
         if (userUpdateRequestDto.getPhoneNumber() != null) {
             this.phoneNumber = userUpdateRequestDto.getPhoneNumber();
         }
@@ -114,6 +111,10 @@ public class User implements UserDetails {
         if (multipartFile != null) {
             this.profileImage = multipartFile;
         }
+    }
 
+    // 비밀번호 암호화하여 저장하는 메소드
+    public void setEncryptedPassword(String encryptedPassword) {
+        this.password = encryptedPassword;
     }
 }
