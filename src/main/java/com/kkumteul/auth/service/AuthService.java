@@ -19,10 +19,11 @@ public class AuthService {
             throw new TokenExpiredException();
         }
 
+        Long userId = jwtUtil.getUserId(refreshToken);
         String username = jwtUtil.getUsername(refreshToken);
         String role = jwtUtil.getRole(refreshToken);
 
-        String newAccessToken = jwtUtil.createAccessToken(username, role, 60 * 60 * 10L);
+        String newAccessToken = jwtUtil.createAccessToken(userId, username, role, 60 * 60 * 1000L);
 
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("accessToken", newAccessToken);
