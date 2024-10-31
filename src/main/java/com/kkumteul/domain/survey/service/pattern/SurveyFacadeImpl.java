@@ -36,8 +36,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
 
     @Override
     @Transactional
-    public SurveyResultDto submitSurvey(SurveyResultRequestDto requestDto) {
-        Long childProfileId = requestDto.getChildProfileId();;
+    public SurveyResultDto submitSurvey(SurveyResultRequestDto requestDto, Long childProfileId) {
         log.info("Submit survey Input childProfileId: {}", childProfileId);
 
         historyService.deleteDiagnosisHistory(childProfileId);
