@@ -11,8 +11,9 @@ import com.kkumteul.util.ApiUtil.ApiSuccess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @RestController
@@ -62,8 +63,14 @@ public class BookController {
     public ApiSuccess<?> getLikeStatus(
             @RequestParam Long bookId,
             @RequestParam Long childProfileId) {
-        boolean isLiked = bookService.checkLikeStatus(bookId, childProfileId);
-        return ApiUtil.success(new GetLikeStatusResponse(isLiked));
+        Map<String, Boolean> likeStatus = bookService.checkLikeStatus(bookId, childProfileId);
+
+        GetLikeStatusResponse response = new GetLikeStatusResponse(
+                likeStatus.get("isLiked"),
+                likeStatus.get("isDisliked")
+        );
+
+        return ApiUtil.success(response);
     }
 
 }

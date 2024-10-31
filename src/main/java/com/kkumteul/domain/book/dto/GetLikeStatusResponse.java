@@ -7,4 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GetLikeStatusResponse {
     private boolean isLiked;
+    private boolean isDisliked;  // 추가된 필드
 }

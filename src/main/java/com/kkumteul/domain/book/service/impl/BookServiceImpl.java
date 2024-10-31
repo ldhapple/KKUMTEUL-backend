@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -126,7 +128,17 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public boolean checkLikeStatus(Long bookId, Long childProfileId) {
-        return bookLikeRepository.existsByBookIdAndChildProfileId(bookId, childProfileId);
+    public Map<String, Boolean> checkLikeStatus(Long bookId, Long childProfileId) {
+        Map<String, Boolean> likeStatus = new HashMap<>();
+
+        // 좋아요 상태 확인
+        boolean isLiked = bookLikeRepository.existsByBookIdAndChildProfileIdAndLikeType(bookId, childProfileId, LikeType.LIKE);
+        likeStatus.put("isLiked", isLiked);
+
+        // 싫어요 상태 확인
+        boolean isDisliked = bookLikeRepository.existsByBookIdAndChildProfileIdAndLikeType(bookId, childProfileId, LikeType.DISLIKE);
+        likeStatus.put("isDisliked", isDisliked);
+
+        return likeStatus;
     }
 }
