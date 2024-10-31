@@ -189,14 +189,14 @@ public class ChildPersonalityHistoryService {
 
         double averageScore = genreScores.stream()
                 .mapToDouble(GenreScore::getScore)
-                .filter(score -> score >= 0)
+                .filter(score -> score > 0)
                 .average()
                 .orElse(0.0);
 
         log.debug("Average GenreScore: {}", averageScore);
 
         return genreScores.stream()
-                .filter(gs -> gs.getScore() > averageScore)
+                .filter(gs -> gs.getScore() >= averageScore)
                 .map(GenreScore::getGenre)
                 .toList();
     }
@@ -206,14 +206,14 @@ public class ChildPersonalityHistoryService {
 
         double averageScore = topicScores.stream()
                 .mapToDouble(TopicScore::getScore)
-                .filter(score -> score >= 0)
+                .filter(score -> score > 0)
                 .average()
                 .orElse(0.0);
 
         log.debug("Average TopicScore: {}", averageScore);
 
         return topicScores.stream()
-                .filter(ts -> ts.getScore() > averageScore)
+                .filter(ts -> ts.getScore() >= averageScore)
                 .map(TopicScore::getTopic)
                 .toList();
     }

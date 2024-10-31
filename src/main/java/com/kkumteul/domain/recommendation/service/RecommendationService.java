@@ -29,7 +29,9 @@ import com.kkumteul.domain.recommendation.filter.ContentBasedFilter;
 import java.time.*;
 import java.util.Optional;
 
-import jakarta.transaction.Transactional;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -61,26 +63,44 @@ public class RecommendationService {
     private final ContentBasedFilter contentBasedFilter;
     private final CollaborativeFilter collaborativeFilter;
     private final RecommendationRepository recommendationRepository;
+    private final AsyncService asyncService;
 
-    //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
+    // 성능 비교 테스트 코드 때문에 합치면 안됨
+    @Transactional
     @Cacheable(value = "recommendations", key = "#childProfileId", unless = "#result == null")
     public List<RecommendBookDto> getRecommendationsWithCache(Long childProfileId) {
         return getRecommendedBooks(childProfileId); // 캐시가 없으면 DB 조회
     }
 
-    // 추천 도서 db 조회
+    //추천 도서 조회 - Redis에서 먼저 조회하고 없으면 DB에서 가져와 Redis에 저장
     public List<RecommendBookDto> getRecommendedBooks(Long childProfileId) {
         log.info("getRecommendedBooks - Input childProfileId: {}", childProfileId);
         List<Book> recommendBooks = recommendationRepository.findBookByChildProfileId(childProfileId)
                 .orElseThrow(() -> new RecommendationBookNotFoundException(childProfileId));
 
         log.info("found recommendedBooks: {}", recommendBooks.size());
+
+        if(recommendBooks.size() == 0){
+            // 추천 도서 테이블에 없는 경우
+            Optional<ChildDataDto> childDataDto = getChildInfo(childProfileId);
+
+            recommendBooks = getDefaultRecommendations(getAge(childDataDto.get().getBirthDate()));
+            Collections.shuffle(recommendBooks);
+
+            // 5권 저장
+            recommendBooks = recommendBooks.subList(0, Math.min(5, recommendBooks.size()));
+
+            // db에 저장
+            saveRecommendations(childProfileId, recommendBooks);
+        }
+
         return recommendBooks.stream()
                 .map(RecommendBookDto::fromEntity)
                 .toList();
     }
 
     // 좋아요 순 인기 도서 추천
+    @Transactional(readOnly = true)
     public List<RecommendBookDto> getPopularRecommendations() {
         // 1. 좋아요 수 기준 상위 5개 도서 조회
         Pageable pageable = PageRequest.of(0, 5); // 상위 5개 도서만 가져오기
@@ -95,8 +115,55 @@ public class RecommendationService {
         return recommendBookDtos;
     }
 
+    // 사용자별 맞춤 추천 도서 저장
+    @Transactional
+    public void saveRecommendations(Long userId, List<Book> recommendations) {
+        // 1. 자녀 프로필 조회
+        ChildProfile childProfile = childProfileRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+
+        // 2. 배치 저장을 위한 chunk 크기 정의
+        int batchSize = 50;  // 한번에 50개씩 저장
+        List<Recommendation> recommendationEntities = new ArrayList<>();
+
+        recommendationRepository.deleteByChildProfileId(childProfile.getId());
+
+        // 3. 추천 도서 리스트를 반복하며 Recommendation 엔티티 생성
+        for (int i = 0; i < recommendations.size(); i++) {
+            Book book = recommendations.get(i);
+
+            Recommendation recommendation = Recommendation.builder()
+                    .book(book)
+                    .childProfile(childProfile)
+                    .build();
+
+            recommendationEntities.add(recommendation);
+
+            // 4. 배치 저장: 일정 batchSize마다 저장 및 초기화
+            if (recommendationEntities.size() == batchSize) {
+                recommendationRepository.saveAll(recommendationEntities);
+                recommendationEntities.clear();  // 영속성 컨텍스트 초기화
+            }
+        }
+
+        // 5. 남아있는 데이터 저장
+        if (!recommendationEntities.isEmpty()) {
+            recommendationRepository.saveAll(recommendationEntities);
+        }
+    }
+
+    public void updateLastActivity(Long childProfileId) {
+        asyncService.updateLastActivity(childProfileId);  // 비동기 메서드 호출
+    }
+
+    // 최근 7일 내 활동한 childProfile id 리턴
+    public List<Long> getActiveUserIds() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(7);
+        return childProfileRepository.findActiveUserIdsLast7Days(threshold);
+    }
 
     // 사용자 맞춤 추천 로직
+    @Transactional(readOnly = true)
     public List<Book> getRecommendations(Long userId, List<BookDataDto> allBooks, List<ChildDataDto> childDataList) {
 
         // 1. 자녀 프로필 정보 조회
@@ -107,10 +174,10 @@ public class RecommendationService {
         Optional<ChildDataDto> childDataDto = getChildInfo(childProfile.getId());
         if(childDataDto.isEmpty()){
             // 신규 사용자거나 자녀 히스토리가 없는 경우
-            List<Book> bookList = getDefaultRecommendations(null);
+            List<Book> bookList = getDefaultRecommendations(10);
             Collections.shuffle(bookList);
 
-            bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
+            bookList = bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
 
             // db에 저장
             saveRecommendations(childProfile.getId(), bookList);
@@ -164,8 +231,108 @@ public class RecommendationService {
         return finalRecommendedBooks(finalScores, childDataDto.get());
     }
 
+    // 도서 정보 한꺼번에 가져오기 위해 ( + 데이터 dto로 매핑 )
+    @Transactional(readOnly = true)
+    public List<BookDataDto> getAllBookInfo(List<Book> books) {
+        List<BookDataDto> bookDataDtos = new ArrayList<>();
+
+        // 2. 도서 목록 순회하며 BookDataDto 생성
+        for (Book book : books) {
+
+            // 주제어 리스트 생성
+            List<TopicDto> topicDtos = new ArrayList<>();
+
+            for (BookTopic bookTopic : book.getBookTopics()) {
+                Topic topic = bookTopic.getTopic();
+                TopicDto topicDto = new TopicDto(topic.getId(), topic.getName());
+                topicDtos.add(topicDto);
+            }
+
+            List<MBTIName> mbtiNameList = new ArrayList<>();
+            for(BookMBTI bookMBTI : book.getBookMBTIS())
+            {
+                mbtiNameList.add(bookMBTI.getMbti().getMbti());
+            }
+
+            // BookDataDto
+            BookDataDto bookDataDto = BookDataDto.builder()
+                    .bookId(book.getId())
+                    .title(book.getTitle())
+                    .author(book.getAuthor())
+                    .genreDto(new GenreDto(book.getGenre().getId(), book.getGenre().getName()))
+                    .topics(topicDtos)
+                    .mbti(mbtiNameList)
+                    .build();
+
+            bookDataDtos.add(bookDataDto);
+        }
+
+        return bookDataDtos;
+    }
+
+    // 모든 자녀 정보(성별, 생년월일, mbti) - 협업 필터링에 사용됨
+    @Transactional(readOnly = true)
+    public List<ChildDataDto> getChildrenInfo() {
+        List<ChildPersonalityHistory> histories = historyRepository.findAllChildrenData();
+
+        List<ChildDataDto> childDataAll = new ArrayList<>();
+
+        for (ChildPersonalityHistory history : histories) {
+            ChildDataDto dto = ChildDataDto.builder()
+                    .id(history.getChildProfile().getId())
+                    .gender(history.getChildProfile().getGender())
+                    .birthDate(history.getChildProfile().getBirthDate())
+                    .mbti(history.getMbtiScore().getMbti().getMbti())
+                    .IScore(history.getMbtiScore().getIScore())
+                    .EScore(history.getMbtiScore().getEScore())
+                    .SScore(history.getMbtiScore().getSScore())
+                    .NScore(history.getMbtiScore().getNScore())
+                    .FScore(history.getMbtiScore().getFScore())
+                    .TScore(history.getMbtiScore().getTScore())
+                    .JScore(history.getMbtiScore().getJScore())
+                    .PScore(history.getMbtiScore().getPScore())
+                    .build();
+            childDataAll.add(dto);
+        }
+
+        return childDataAll;
+    }
+
+    // 유사한 사용자가 좋아요 한 도서에 유사도 점수 추가
+    public Map<Long, Double> getCollaborativeScores(List<ChildDataDto> similarProfiles, Map<Long, Double> initialScores, Long userId) {
+        Pageable pageable = PageRequest.of(0, 20);
+        Map<Long, Double> updatedScores = new HashMap<>(initialScores);
+
+//        log.info("===========유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적=========");
+
+        // 1. 유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적
+        for (ChildDataDto profile : similarProfiles) {
+            double similarityScore = profile.getScore(); // 프로필의 유사도 점수 가져오기
+
+            // 유사한 사용자가 좋아한 도서 목록 조회
+            Set<BookDataDto> likedBooks = getBooksList(Set.of(profile.getId()), pageable);
+
+//            log.info("유사 프로필 ID: {} | 유사도 점수: {}", profile.getId(), similarityScore);
+
+            // 도서별로 점수를 누적
+            for (BookDataDto book : likedBooks) {
+                long bookId = book.getBookId();
+                double previousScore = updatedScores.getOrDefault(bookId, 0.0); // 기존 점수 가져오기
+
+                // 가중 평균 계산 (기존 점수가 0이라도 유사도 반영) 유사도에 따라 비율 조정
+                double weight = similarityScore / (similarityScore + 1); // 가중치 계산
+                double newScore = previousScore * (1 - weight) + similarityScore * weight;
+
+                updatedScores.put(bookId, newScore);
+//                log.info("도서 ID: {} | 이전 점수: {} | 새 점수: {}", bookId, previousScore, newScore);
+            }
+        }
+
+        return normalizeScores(updatedScores);
+    }
+
     // 최종 추천
-    public List<Book> finalRecommendedBooks(Map<BookDataDto, Double> finalScores, ChildDataDto childDataDto) {
+    private List<Book> finalRecommendedBooks(Map<BookDataDto, Double> finalScores, ChildDataDto childDataDto) {
         // 1. 상위 50개 추천 도서(BookDataDto)를 점수 기준으로 추출
         List<BookDataDto> topBookDtos = new ArrayList<>(finalScores.keySet());
 
@@ -184,14 +351,13 @@ public class RecommendationService {
 
         // 6. Fallback: 추천 도서가 5개 미만일 경우 기본 추천 목록으로 채우기
         if (recommendedBooks.size() < 5) {
-            List<Book> defaultRecommendations = getDefaultRecommendations(childDataDto); // 기본 추천 목록
+            List<Book> defaultRecommendations = getDefaultRecommendations(getAge(childDataDto.getBirthDate())); // 기본 추천 목록
             int remaining = 5 - recommendedBooks.size();
             recommendedBooks.addAll(defaultRecommendations.subList(0, Math.min(remaining, defaultRecommendations.size())));
         }
 
         return recommendedBooks;
     }
-
 
     // dto를 엔티티로
     private List<Book> convertToBookEntities(List<BookDataDto> bookDataDtos) {
@@ -204,6 +370,37 @@ public class RecommendationService {
         }
 
         return books;
+    }
+
+    // 협업 필터링 된 도서 좋아요 목록 조회
+    private Set<BookDataDto> getBooksList(Set<Long> childIds, Pageable pageable){
+
+        // 유사한 사용자들이 좋아요 누른 책 반환
+        Page<Book> likedBooks = likeRepository.findBookLikeByUser(childIds, pageable);
+
+        return likedBooks.stream()
+                .map(book -> BookDataDto.builder()
+                        .bookId(book.getId())
+                        .title(book.getTitle())
+                        .author(book.getAuthor())
+                        .genreDto(
+                                GenreDto.builder()
+                                        .genreId(book.getGenre().getId())
+                                        .genreName(book.getGenre().getName())
+                                        .build()
+                        )
+                        .topics(
+                                book.getBookTopics().stream()
+                                        .map(bookTopic -> TopicDto.builder()
+                                                .topicId(bookTopic.getTopic().getId())
+                                                .topicName(bookTopic.getTopic().getName())
+                                                .build()
+                                        )
+                                        .collect(Collectors.toList())
+                        )
+                        .build()
+                )
+                .collect(Collectors.toSet()); // 중복 제거
     }
 
 
@@ -249,137 +446,6 @@ public class RecommendationService {
         return Optional.of(childDataDto);
     }
 
-    // 도서 정보 한꺼번에 가져오기 위해 ( + 데이터 dto로 매핑 )
-    public List<BookDataDto> getAllBookInfo(List<Book> books) {
-        List<BookDataDto> bookDataDtos = new ArrayList<>();
-
-        // 2. 도서 목록 순회하며 BookDataDto 생성
-        for (Book book : books) {
-
-            // 주제어 리스트 생성
-            List<TopicDto> topicDtos = new ArrayList<>();
-
-            for (BookTopic bookTopic : book.getBookTopics()) {
-                Topic topic = bookTopic.getTopic();
-                TopicDto topicDto = new TopicDto(topic.getId(), topic.getName());
-                topicDtos.add(topicDto);
-            }
-
-            List<MBTIName> mbtiNameList = new ArrayList<>();
-            for(BookMBTI bookMBTI : book.getBookMBTIS())
-            {
-                mbtiNameList.add(bookMBTI.getMbti().getMbti());
-            }
-
-            // BookDataDto
-            BookDataDto bookDataDto = BookDataDto.builder()
-                    .bookId(book.getId())
-                    .title(book.getTitle())
-                    .author(book.getAuthor())
-                    .genreDto(new GenreDto(book.getGenre().getId(), book.getGenre().getName()))
-                    .topics(topicDtos)
-                    .mbti(mbtiNameList)
-                    .build();
-
-            bookDataDtos.add(bookDataDto);
-        }
-
-        return bookDataDtos;
-    }
-
-    // 모든 자녀 정보(성별, 생년월일, mbti) - 협업 필터링에 사용됨
-    public List<ChildDataDto> getChildrenInfo() {
-        List<ChildPersonalityHistory> histories = historyRepository.findAllChildrenData();
-
-        List<ChildDataDto> childDataAll = new ArrayList<>();
-
-        for (ChildPersonalityHistory history : histories) {
-            ChildDataDto dto = ChildDataDto.builder()
-                    .id(history.getChildProfile().getId())
-                    .gender(history.getChildProfile().getGender())
-                    .birthDate(history.getChildProfile().getBirthDate())
-                    .mbti(history.getMbtiScore().getMbti().getMbti())
-                    .IScore(history.getMbtiScore().getIScore())
-                    .EScore(history.getMbtiScore().getEScore())
-                    .SScore(history.getMbtiScore().getSScore())
-                    .NScore(history.getMbtiScore().getNScore())
-                    .FScore(history.getMbtiScore().getFScore())
-                    .TScore(history.getMbtiScore().getTScore())
-                    .JScore(history.getMbtiScore().getJScore())
-                    .PScore(history.getMbtiScore().getPScore())
-                    .build();
-            childDataAll.add(dto);
-        }
-
-        return childDataAll;
-    }
-
-
-    // 협업 필터링 된 도서 좋아요 목록 조회
-    private Set<BookDataDto> getBooksList(Set<Long> childIds, Pageable pageable){
-
-        // 유사한 사용자들이 좋아요 누른 책 반환
-        Page<Book> likedBooks = likeRepository.findBookLikeByUser(childIds, pageable);
-
-        return likedBooks.stream()
-                .map(book -> BookDataDto.builder()
-                        .bookId(book.getId())
-                        .title(book.getTitle())
-                        .author(book.getAuthor())
-                        .genreDto(
-                                GenreDto.builder()
-                                        .genreId(book.getGenre().getId())
-                                        .genreName(book.getGenre().getName())
-                                        .build()
-                        )
-                        .topics(
-                                book.getBookTopics().stream()
-                                        .map(bookTopic -> TopicDto.builder()
-                                                .topicId(bookTopic.getTopic().getId())
-                                                .topicName(bookTopic.getTopic().getName())
-                                                .build()
-                                        )
-                                        .collect(Collectors.toList())
-                        )
-                        .build()
-                )
-                .collect(Collectors.toSet()); // 중복 제거
-    }
-
-    // 유사한 사용자가 좋아요 한 도서에 유사도 점수 추가
-    public Map<Long, Double> getCollaborativeScores(List<ChildDataDto> similarProfiles, Map<Long, Double> initialScores, Long userId) {
-        Pageable pageable = PageRequest.of(0, 20);
-        Map<Long, Double> updatedScores = new HashMap<>(initialScores);
-
-//        log.info("===========유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적=========");
-
-        // 1. 유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적
-        for (ChildDataDto profile : similarProfiles) {
-            double similarityScore = profile.getScore(); // 프로필의 유사도 점수 가져오기
-
-            // 유사한 사용자가 좋아한 도서 목록 조회
-            Set<BookDataDto> likedBooks = getBooksList(Set.of(profile.getId()), pageable);
-
-//            log.info("유사 프로필 ID: {} | 유사도 점수: {}", profile.getId(), similarityScore);
-
-            // 도서별로 점수를 누적
-            for (BookDataDto book : likedBooks) {
-                long bookId = book.getBookId();
-                double previousScore = updatedScores.getOrDefault(bookId, 0.0); // 기존 점수 가져오기
-
-                // 가중 평균 계산 (기존 점수가 0이라도 유사도 반영) 유사도에 따라 비율 조정
-                double weight = similarityScore / (similarityScore + 1); // 가중치 계산
-                double newScore = previousScore * (1 - weight) + similarityScore * weight;
-
-                updatedScores.put(bookId, newScore);
-//                log.info("도서 ID: {} | 이전 점수: {} | 새 점수: {}", bookId, previousScore, newScore);
-            }
-        }
-
-        return normalizeScores(updatedScores);
-    }
-
-
     // 모든 점수를 [0, 1]로 정규화
     private Map<Long, Double> normalizeScores(Map<Long, Double> scores) {
         double maxScore = scores.values().stream().max(Double::compare).orElse(1.0);
@@ -392,8 +458,7 @@ public class RecommendationService {
     }
 
     // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
-    private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
-        int age = getAge(childDataDto.getBirthDate());
+    public List<Book> getDefaultRecommendations(int age){
 
         Pageable pageable = PageRequest.of(0, 50);
         return bookRepository.findBookListByAgeGroup(age, pageable);
@@ -404,61 +469,6 @@ public class RecommendationService {
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
 
-    // 사용자별 맞춤 추천 도서 저장
-    @Transactional
-    public void saveRecommendations(Long userId, List<Book> recommendations) {
-        // 1. 자녀 프로필 조회
-        ChildProfile childProfile = childProfileRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
 
-        // 2. 배치 저장을 위한 chunk 크기 정의
-        int batchSize = 50;  // 한번에 50개씩 저장
-        List<Recommendation> recommendationEntities = new ArrayList<>();
-
-        recommendationRepository.deleteByChildProfileId(childProfile.getId());
-
-        // 3. 추천 도서 리스트를 반복하며 Recommendation 엔티티 생성
-        for (int i = 0; i < recommendations.size(); i++) {
-            Book book = recommendations.get(i);
-
-            Recommendation recommendation = Recommendation.builder()
-                    .book(book)
-                    .childProfile(childProfile)
-                    .build();
-
-            recommendationEntities.add(recommendation);
-
-            // 4. 배치 저장: 일정 batchSize마다 저장 및 초기화
-            if (recommendationEntities.size() == batchSize) {
-                recommendationRepository.saveAll(recommendationEntities);
-                recommendationEntities.clear();  // 영속성 컨텍스트 초기화
-            }
-        }
-
-        // 5. 남아있는 데이터 저장
-        if (!recommendationEntities.isEmpty()) {
-            recommendationRepository.saveAll(recommendationEntities);
-        }
-    }
-
-
-
-
-    // 최근 7일 내 활동한 childProfile id 리턴
-    public List<Long> getActiveUserIds() {
-        LocalDateTime threshold = LocalDateTime.now().minusDays(7);
-        return childProfileRepository.findActiveUserIdsLast7Days(threshold);
-    }
-
-    // 사용자 활동 기록 업데이트
-    @Transactional
-    public void updateLastActivity(Long childProfileId) {
-        ChildProfile childProfile = childProfileRepository.findById(childProfileId)
-                .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        childProfile.updateLastActivity();
-
-        childProfileRepository.save(childProfile);
-    }
 }
 

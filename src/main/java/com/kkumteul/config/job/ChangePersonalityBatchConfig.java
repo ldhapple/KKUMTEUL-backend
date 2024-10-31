@@ -1,6 +1,6 @@
-package com.kkumteul.config;
+package com.kkumteul.config.job;
 
-import static com.kkumteul.util.redis.RedisKey.*;
+import static com.kkumteul.util.redis.RedisKey.BOOK_LIKE_EVENT_LIST;
 
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookMBTI;
@@ -16,9 +16,7 @@ import com.kkumteul.domain.history.entity.MBTIScore;
 import com.kkumteul.domain.history.service.ChildPersonalityHistoryService;
 import com.kkumteul.domain.mbti.entity.MBTI;
 import com.kkumteul.domain.mbti.service.MBTIService;
-import com.kkumteul.util.redis.RedisKey;
 import com.kkumteul.util.redis.RedisUtil;
-import jakarta.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
