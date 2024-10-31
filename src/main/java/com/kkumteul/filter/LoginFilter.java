@@ -59,6 +59,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication authResult) throws IOException, ServletException {
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
 
+        Long userId = customUserDetails.getId();
         String username = customUserDetails.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
@@ -67,8 +68,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createAccessToken(username, role, 60 * 60 * 1000L);
-        String refreshToken = jwtUtil.createRefreshToken(username, role, 60 * 60 * 10000L);
+        String accessToken = jwtUtil.createAccessToken(userId, username, role, 60 * 60 * 1000L);
+        String refreshToken = jwtUtil.createRefreshToken(userId, username, role, 60 * 60 * 10000L);
 
         Cookie cookie = cookieUtil.createCookie("refreshToken", refreshToken);
 
