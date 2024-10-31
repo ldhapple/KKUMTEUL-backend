@@ -46,5 +46,7 @@ public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
             @Param("childProfileId") Long childProfileId,
             @Param("bookId") Long bookId
     );
+
+    boolean existsByBookIdAndChildProfileId(Long bookId, Long childProfileId);
 }
 
