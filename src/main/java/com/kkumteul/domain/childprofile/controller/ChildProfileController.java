@@ -68,13 +68,14 @@ public class ChildProfileController {
     // 자녀 등록
     @PostMapping("")
     public ApiSuccess<?> insertChildProfile(
+            @AuthenticationPrincipal CustomUserDetails user,
             @RequestPart(value = "childName", required = false) String childName,
             @RequestPart(value = "childBirthDate", required = false) String childBirthDate,
             @RequestPart(value = "childGender", required = false) String childGender,
             @RequestPart(value = "childProfileImage", required = false) MultipartFile childProfileImage
     ) throws IOException, ParseException {
 
-        Long userId = 1L; // 더미
+        Long userId = user.getId();
 
         ChildProfileInsertRequestDto childProfileInsertRequestDto = new ChildProfileInsertRequestDto(childName, childGender, childBirthDate);
         childProfileService.insertChildProfile(userId, childProfileImage, childProfileInsertRequestDto);
