@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class SurveyResultRequestDto {
-    private Long childProfileId;
+
     private List<MBTISurveyAnswerDto> answers;
     private List<Long> favoriteGenres;
     private List<Long> favoriteTopics;
