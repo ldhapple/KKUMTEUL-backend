@@ -1,6 +1,7 @@
 package com.kkumteul.domain.event.controller;
 
 
+import com.kkumteul.auth.dto.CustomUserDetails;
 import com.kkumteul.domain.event.dto.EventDto;
 import com.kkumteul.domain.event.dto.EventRequestDto;
 import com.kkumteul.domain.event.dto.EventResultResponseDto;
@@ -9,6 +10,8 @@ import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +22,9 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
 
-    @PostMapping("{userId}")
-    public ApiSuccess<?> joinEvent(@PathVariable(name = "userId") Long userId, @RequestBody EventRequestDto eventRequestDto) {
-        // TODO: userId JWT 방식으로 변경
-//        Long userId = 1L;
+    @PostMapping()
+    public ApiSuccess<?> joinEvent(@AuthenticationPrincipal CustomUserDetails user, @RequestBody EventRequestDto eventRequestDto) {
+        Long userId = user.getId();
         eventService.insertJoinEvent(userId, eventRequestDto);
         return ApiUtil.success("joined event successfully");
     }
