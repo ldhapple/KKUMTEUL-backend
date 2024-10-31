@@ -20,4 +20,5 @@ public interface BookService {
 
     // 좋아요, 싫어요 처리
     void bookLike(Long bookId, Long childProfileId, LikeType likeType);
+    boolean checkLikeStatus(Long bookId, Long childProfileId);
 }

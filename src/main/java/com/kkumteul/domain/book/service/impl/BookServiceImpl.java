@@ -124,4 +124,9 @@ public class BookServiceImpl implements BookService {
             log.info("Kafka message sent - childProfileId: {}, bookId: {}, likeType: {}", childProfileId, bookId, likeType);
         }
     }
+
+    @Override
+    public boolean checkLikeStatus(Long bookId, Long childProfileId) {
+        return bookLikeRepository.existsByBookIdAndChildProfileId(bookId, childProfileId);
+    }
 }
