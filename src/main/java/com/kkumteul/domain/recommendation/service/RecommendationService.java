@@ -82,9 +82,10 @@ public class RecommendationService {
 
         if(recommendBooks.size() == 0){
             // 추천 도서 테이블에 없는 경우
-            Optional<ChildDataDto> childDataDto = getChildInfo(childProfileId);
+            ChildDataDto childDataDto = getChildInfo(childProfileId)
+                    .orElse(null); // 히스토리 없을 경우 null
 
-            recommendBooks = getDefaultRecommendations(getAge(childDataDto.get().getBirthDate()));
+            recommendBooks = getDefaultRecommendations(childDataDto);
             Collections.shuffle(recommendBooks);
 
             // 5권 저장
@@ -174,7 +175,7 @@ public class RecommendationService {
         Optional<ChildDataDto> childDataDto = getChildInfo(childProfile.getId());
         if(childDataDto.isEmpty()){
             // 신규 사용자거나 자녀 히스토리가 없는 경우
-            List<Book> bookList = getDefaultRecommendations(10); // 대충 10살대 추천책
+            List<Book> bookList = getDefaultRecommendations(null);
             Collections.shuffle(bookList);
 
             bookList = bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
@@ -351,7 +352,7 @@ public class RecommendationService {
 
         // 6. Fallback: 추천 도서가 5개 미만일 경우 기본 추천 목록으로 채우기
         if (recommendedBooks.size() < 5) {
-            List<Book> defaultRecommendations = getDefaultRecommendations(getAge(childDataDto.getBirthDate())); // 기본 추천 목록
+            List<Book> defaultRecommendations = getDefaultRecommendations(childDataDto); // 기본 추천 목록
             int remaining = 5 - recommendedBooks.size();
             recommendedBooks.addAll(defaultRecommendations.subList(0, Math.min(remaining, defaultRecommendations.size())));
         }
@@ -458,8 +459,8 @@ public class RecommendationService {
     }
 
     // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
-    public List<Book> getDefaultRecommendations(int age){
-//        int age = getAge(childDataDto.getBirthDate());
+    private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
+        int age = getAge(childDataDto.getBirthDate());
 
         Pageable pageable = PageRequest.of(0, 50);
         return bookRepository.findBookListByAgeGroup(age, pageable);
