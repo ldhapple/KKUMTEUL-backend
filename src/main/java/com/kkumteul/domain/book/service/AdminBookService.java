@@ -123,7 +123,7 @@ public class AdminBookService {
 
         // 4.5. mbti 갱신
         // 기존 mbti 삭제 후, 새로운 BookMBTI로 갱신
-        bookMBTIService.deleteBookMBTIByBookId(bookId);
+        bookMBTIService.deleteByBookId(bookId);
         createBookMBTI(book, adminBookRequestDto.getBookMBTI());
 
         // 4.6. 도서의 기본 데이터 갱신
