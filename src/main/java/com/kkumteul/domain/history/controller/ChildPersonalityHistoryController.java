@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -19,8 +20,7 @@ public class ChildPersonalityHistoryController {
     private final ChildPersonalityHistoryService historyService;
 
     @GetMapping("/{historyId}")
-    public ApiSuccess<?> getHistoryDetail(@PathVariable(name = "historyId") Long historyId) {
-        Long profileId = 1L;
+    public ApiSuccess<?> getHistoryDetail(@PathVariable(name = "historyId") Long historyId, @RequestParam(name = "profileId") Long profileId) {
         ChildPersonalityHistoryDetailDto historyDetail = historyService.getHistoryDetail(profileId, historyId);
 
         return ApiUtil.success(historyDetail);
