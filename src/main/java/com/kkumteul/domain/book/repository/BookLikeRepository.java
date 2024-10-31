@@ -2,6 +2,7 @@ package com.kkumteul.domain.book.repository;
 
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookLike;
+import com.kkumteul.domain.book.entity.LikeType;
 import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +48,6 @@ public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
             @Param("bookId") Long bookId
     );
 
-    boolean existsByBookIdAndChildProfileId(Long bookId, Long childProfileId);
+    boolean existsByBookIdAndChildProfileIdAndLikeType(Long bookId, Long childProfileId, LikeType likeType);
 }
 

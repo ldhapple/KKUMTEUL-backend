@@ -7,6 +7,8 @@ import com.kkumteul.domain.book.entity.LikeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Map;
+
 public interface BookService {
 
     // 전체 도서 목록 조회 & 검색 키워드 추출된 도서 목록 조회
@@ -20,5 +22,5 @@ public interface BookService {
 
     // 좋아요, 싫어요 처리
     void bookLike(Long bookId, Long childProfileId, LikeType likeType);
-    boolean checkLikeStatus(Long bookId, Long childProfileId);
+    Map<String, Boolean> checkLikeStatus(Long bookId, Long childProfileId);
 }
