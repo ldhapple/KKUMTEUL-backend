@@ -1,6 +1,7 @@
 package com.kkumteul.domain.event.controller;
 
 
+import com.kkumteul.domain.event.dto.EventDto;
 import com.kkumteul.domain.event.dto.EventRequestDto;
 import com.kkumteul.domain.event.dto.EventResultResponseDto;
 import com.kkumteul.domain.event.service.EventService;
@@ -39,6 +40,13 @@ public class EventController {
 
         eventService.saveWinnersToDatabase();
         return ApiUtil.success("joined event successfully");
+    }
+
+    @GetMapping("")
+    public ApiSuccess<?> currentEvent() {
+        EventDto eventDto = eventService.currentEvent();
+        return ApiUtil.success(eventDto);
+
     }
 
 }

@@ -59,8 +59,9 @@ public class User implements UserDetails {
     List<ChildProfile> childProfileList = new ArrayList<>();
 
     @Builder
-    public User(String username, String password, String nickName, String phoneNumber, Date birthDate,
+    public User(Long id, String username, String password, String nickName, String phoneNumber, Date birthDate,
                 byte[] profileImage, Role role, String name) {
+        this.id = id;
         this.username = username;
         this.password = password;
         this.nickName = nickName;

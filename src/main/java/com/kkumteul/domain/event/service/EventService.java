@@ -1,5 +1,6 @@
 package com.kkumteul.domain.event.service;
 
+import com.kkumteul.domain.event.dto.EventDto;
 import com.kkumteul.domain.event.dto.EventRequestDto;
 import com.kkumteul.domain.event.entity.Event;
 import com.kkumteul.domain.event.entity.JoinEvent;
@@ -125,5 +126,13 @@ public class EventService {
 
             joinEventRepository.save(joinEvent);
         }
+    }
+
+    public EventDto currentEvent() {
+        LocalDateTime now = LocalDateTime.now();
+        Event event = eventRepository.findFirstByStartDateBeforeAndExpiredDateAfter(now, now);
+        if(event == null) throw new RuntimeException("현재 진행중인 이벤트가 없습니다.");
+
+        return EventDto.fromEntity(event);
     }
 }

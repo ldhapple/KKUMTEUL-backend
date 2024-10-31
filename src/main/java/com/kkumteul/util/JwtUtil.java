@@ -31,14 +31,21 @@ public class JwtUtil {
                 .get("role", String.class);
     }
 
+    public Long getUserId(String token) {
+        return Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token).getPayload()
+                .get("userId", Long.class);
+    }
+
     public Boolean isExpired(String token) {
         return Jwts.parser().verifyWith(secretKey).build()
                 .parseSignedClaims(token).getPayload()
                 .getExpiration().before(new Date());
     }
 
-    public String createAccessToken(String username, String role, Long expiredMs) {
+    public String createAccessToken(Long userId, String username, String role, Long expiredMs) {
         return Jwts.builder()
+                .claim("userId", userId)
                 .claim("username", username)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -47,9 +54,11 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createRefreshToken(String username, Long expirationMs) {
+    public String createRefreshToken(Long userId, String username, String role, Long expirationMs) {
         return Jwts.builder()
+                .claim("userId", userId)
                 .claim("username", username)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(secretKey)
