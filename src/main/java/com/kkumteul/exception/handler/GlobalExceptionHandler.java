@@ -69,4 +69,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError<String> error = ApiUtil.error(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(error);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        log.error(e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
 }
