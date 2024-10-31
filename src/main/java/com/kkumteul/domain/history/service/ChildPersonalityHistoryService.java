@@ -189,7 +189,7 @@ public class ChildPersonalityHistoryService {
 
         double averageScore = genreScores.stream()
                 .mapToDouble(GenreScore::getScore)
-                .filter(score -> score > 0)
+                .filter(score -> score >= 0)
                 .average()
                 .orElse(0.0);
 
@@ -206,7 +206,7 @@ public class ChildPersonalityHistoryService {
 
         double averageScore = topicScores.stream()
                 .mapToDouble(TopicScore::getScore)
-                .filter(score -> score > 0)
+                .filter(score -> score >= 0)
                 .average()
                 .orElse(0.0);
 
