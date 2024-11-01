@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -75,6 +76,7 @@ public class BookLikeRepositoryTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("책 목록 조회: 아동 프로필 ID로 좋아요한 책 목록을 반환한다.")
     void testFindBookLikesWithBookByChildProfileId() {
         // when
@@ -88,6 +90,7 @@ public class BookLikeRepositoryTest {
 
 
     @Test
+    @WithMockUser
     @DisplayName("책 좋아요 조회: 아동 프로필 ID와 도서 ID로 특정 좋아요 정보를 반환한다.")
     void testFindByChildProfileAndBook() {
         // when
@@ -100,6 +103,7 @@ public class BookLikeRepositoryTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("책 좋아요 조회: 존재하지 않는 도서 ID로 좋아요를 조회하면 결과가 없음을 반환한다.")
     void testFindByChildProfileAndBook_NonExistentBookLike() {
         // when
