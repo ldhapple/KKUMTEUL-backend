@@ -56,7 +56,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/api/users/register",
                                 "/api/users/duplicate/**", "/api/auth/**", "/api/recommendation/books",
-                                "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**").permitAll()
+                                "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
+                                "/api/common/codes/**").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
         //세션 설정
