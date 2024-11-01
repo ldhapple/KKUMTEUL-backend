@@ -2,6 +2,7 @@ package com.kkumteul.domain.history.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -14,6 +15,8 @@ import com.kkumteul.domain.mbti.entity.MBTI;
 import com.kkumteul.domain.mbti.entity.MBTIName;
 import com.kkumteul.domain.survey.dto.FavoriteDto;
 import com.kkumteul.domain.survey.dto.MbtiDto;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ChildPersonalityHistoryController.class)
@@ -34,9 +38,11 @@ class ChildPersonalityHistoryControllerTest {
     private ChildPersonalityHistoryService historyService;
 
     @Test
+    @WithMockUser(username = "user", roles = {"USER"})
     @DisplayName("히스토리 상세 조회 테스트")
     public void getHistoryDetailSuccess() throws Exception {
         Long historyId = 1L;
+        Long profileId = 1L;
 
         MBTI mbti = MBTI.builder()
                 .mbti(MBTIName.ENTJ)
@@ -71,13 +77,19 @@ class ChildPersonalityHistoryControllerTest {
                 MBTIPercentageDto.calculatePercentage(mbtiScore),
                 new MbtiDto("INFJ", "Title", "Description", null),
                 favoriteGenresDto,
-                favoriteTopicsDto
+                favoriteTopicsDto,
+                null,
+                "lee",
+                new Date(2014, 05, 15),
+                LocalDateTime.now()
         );
 
-        given(historyService.getHistoryDetail(historyId)).willReturn(historyDetailDto);
+        given(historyService.getHistoryDetail(profileId, historyId)).willReturn(historyDetailDto);
 
         mockMvc.perform(get("/api/history/{historyId}", historyId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .param("profileId", profileId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.mbtiResult.mbtiName").value("INFJ"))
                 .andExpect(jsonPath("$.response.favoriteGenres[0].name").value("그림책"))
