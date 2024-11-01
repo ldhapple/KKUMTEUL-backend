@@ -30,9 +30,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
         SELECT DISTINCT b
         FROM Book b
-        LEFT JOIN FETCH b.genre g
-        LEFT JOIN FETCH b.bookTopics bt
-        LEFT JOIN FETCH bt.topic t
         WHERE CAST(SUBSTRING(b.ageGroup, 1, LOCATE('세', b.ageGroup)-1) AS integer) < :age
         ORDER BY :age - CAST(SUBSTRING(b.ageGroup, 1, LOCATE('세', b.ageGroup)-1) AS integer) ASC
     """)
