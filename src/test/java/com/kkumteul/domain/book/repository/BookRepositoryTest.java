@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +88,7 @@ class BookRepositoryTest {
 
 
     @Test
+    @WithMockUser
     @DisplayName("전체 도서 반환: 요청 시 책 목록 Page 당 12개씩 반환한다.")
     void testFindAllBookInfo() {
         // Given
@@ -103,6 +105,7 @@ class BookRepositoryTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("키워드로 도서 검색: 주어진 키워드에 해당하는 도서 목록을 반환한다.")
     void testFindBookListByKeyword() {
         String keyword = "테스트";

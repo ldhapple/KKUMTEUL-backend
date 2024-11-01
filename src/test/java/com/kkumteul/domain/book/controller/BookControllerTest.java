@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
@@ -72,6 +73,7 @@ class BookControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("전체 도서 반환: 요청 시 책 목록 Page 당 12개씩 반환한다.")
     void testGetBookList() throws Exception {
         mockMvc.perform(get("/api/books?page=0&size=12")
@@ -82,6 +84,7 @@ class BookControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("키워드로 도서 목록 조회: 키워드가 포함된 책 목록을 반환한다.")
     void testGetBookListWithKeyword() throws Exception {
         mockMvc.perform(get("/api/books?keyword=테스트&page=0&size=12")
@@ -92,6 +95,7 @@ class BookControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("도서 상세 조회 성공")
     void getBookDetail_Success() throws Exception {
         // API 호출
