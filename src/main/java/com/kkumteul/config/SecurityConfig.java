@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final JwtNotAuthenticatedHandler jwtNotAuthenticatedHandler;
+    private final RedisUtil redisUtil;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -43,7 +44,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         LoginFilter customLoginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil,
-                cookieUtil);
+                cookieUtil, redisUtil);
 
         //disable
         http

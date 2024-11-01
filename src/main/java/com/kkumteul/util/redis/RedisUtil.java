@@ -1,6 +1,7 @@
 package com.kkumteul.util.redis;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,5 +39,17 @@ public class RedisUtil {
     public void deleteList(String listKey) {
         redisTemplate.delete(listKey);
         log.info("Delete Redis list: {}", listKey);
+    }
+
+    public void saveRefreshToken(String userId, String refreshToken, long duration) {
+        redisTemplate.opsForValue().set(userId, refreshToken, duration, TimeUnit.MILLISECONDS);
+    }
+
+    public Object getRefreshToken(String userId) {
+        return redisTemplate.opsForValue().get(userId);
+    }
+
+    public void deleteRefreshToken(String userId) {
+        redisTemplate.delete(userId);
     }
 }
