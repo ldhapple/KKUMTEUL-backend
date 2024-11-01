@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponseDto {
-    private String username;
+    private String name;
     private byte[] profileImage;
     private String profileImageBase64;
     private String nickName;
@@ -26,7 +26,7 @@ public class UserResponseDto {
                 .toList();
 
         UserResponseDto userResponseDto =  new UserResponseDto(
-                user.getUsername(),
+                user.getName(),
                 user.getProfileImage(),
                 null,
                 user.getNickName(),
