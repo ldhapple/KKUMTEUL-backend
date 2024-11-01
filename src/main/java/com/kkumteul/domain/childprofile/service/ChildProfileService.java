@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -168,12 +169,23 @@ public class ChildProfileService {
         // 필수값 유효성 검사
         validateRequiredFields(childProfileInsertRequestDto);
 
-        ChildProfile childProfile = ChildProfileInsertRequestDto.toEntity(childProfileInsertRequestDto, user);
+        Gender gender = Gender.valueOf(childProfileInsertRequestDto.getChildGender().toUpperCase());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+        Date parsedDate = formatter.parse(childProfileInsertRequestDto.getChildBirthDate());
 
+        // 이미지 처리
+        byte[] imageBytes = null;
         if (childProfileImage != null && !childProfileImage.isEmpty()) {
-            byte[] imageBytes = childProfileImage.getBytes();
-            childProfile.insertChildProfileImage(imageBytes);
+            imageBytes = childProfileImage.getBytes();
         }
+
+        ChildProfile childProfile = createChildProfile(
+                childProfileInsertRequestDto.getChildName(),
+                gender,
+                parsedDate,
+                imageBytes,
+                user
+        );
 
         childProfileRepository.save(childProfile);
 
