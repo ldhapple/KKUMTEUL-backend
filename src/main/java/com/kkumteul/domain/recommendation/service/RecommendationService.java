@@ -333,18 +333,18 @@ public class RecommendationService {
 
     // 최종 추천
     private List<Book> finalRecommendedBooks(Map<BookDataDto, Double> finalScores, ChildDataDto childDataDto) {
-        // 1. 상위 50개 추천 도서(BookDataDto)를 점수 기준으로 추출
+        // 1. 상위 20개 추천 도서(BookDataDto)를 점수 기준으로 추출
         List<BookDataDto> topBookDtos = new ArrayList<>(finalScores.keySet());
 
         // 2. 점수 내림차순 정렬
         topBookDtos.sort((dto1, dto2) -> Double.compare(finalScores.get(dto2), finalScores.get(dto1)));
 
-        // 3. 상위 50개 추출 (최대 50개만 가져오도록 조정)
-        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(50, topBookDtos.size()));
+        // 3. 상위 20개 추출 (최대 20개만 가져오도록 조정)
+        List<BookDataDto> top20Books = topBookDtos.subList(0, Math.min(20, topBookDtos.size()));
 
-        // 4. 50개 중 랜덤으로 5개 선택
-        Collections.shuffle(top50Books); // 무작위로 섞기
-        List<BookDataDto> selectedBookDtos = top50Books.subList(0, Math.min(5, top50Books.size()));
+        // 4. 20개 중 랜덤으로 5개 선택
+        Collections.shuffle(top20Books); // 무작위로 섞기
+        List<BookDataDto> selectedBookDtos = top20Books.subList(0, Math.min(5, top20Books.size()));
 
         // 5. DTO를 엔티티로 변환
         List<Book> recommendedBooks = convertToBookEntities(selectedBookDtos);
@@ -460,7 +460,7 @@ public class RecommendationService {
     // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
     public List<Book> getDefaultRecommendations(int age){
 
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 20);
         return bookRepository.findBookListByAgeGroup(age, pageable);
     }
 
