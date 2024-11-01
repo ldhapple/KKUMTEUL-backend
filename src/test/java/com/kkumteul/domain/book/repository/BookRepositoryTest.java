@@ -1,6 +1,5 @@
 package com.kkumteul.domain.book.repository;
 
-import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookTopic;
@@ -8,7 +7,6 @@ import com.kkumteul.domain.book.service.BookService;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
