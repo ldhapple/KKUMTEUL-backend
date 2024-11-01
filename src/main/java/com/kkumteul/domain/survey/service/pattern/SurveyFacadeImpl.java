@@ -41,7 +41,7 @@ public class SurveyFacadeImpl implements SurveyFacade {
 
         log.info("Submit survey Input childProfileId: {}", childProfileId);
 
-        historyService.deleteDiagnosisHistory(childProfileId);
+//        historyService.deleteDiagnosisHistory(childProfileId);
 
         ChildProfile childProfile = childProfileService.getChildProfile(childProfileId);
         /*

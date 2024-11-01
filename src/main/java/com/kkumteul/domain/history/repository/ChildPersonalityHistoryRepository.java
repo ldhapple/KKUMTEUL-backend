@@ -37,11 +37,11 @@ public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPe
             "mbtiScore.mbti"
     })
     @Query("""
-        SELECT ch 
-        FROM ChildPersonalityHistory ch
-        WHERE ch.childProfile.id = :profileId AND ch.isDeleted = false
-        ORDER BY ch.createdAt DESC
-    """)
+                SELECT ch 
+                FROM ChildPersonalityHistory ch
+                WHERE ch.childProfile.id = :profileId AND ch.isDeleted = false
+                ORDER BY ch.createdAt DESC
+            """)
     Page<ChildPersonalityHistory> findChildData(@Param("profileId") Long profileId, Pageable pageable);
 
     @EntityGraph(attributePaths = {
@@ -49,27 +49,29 @@ public interface ChildPersonalityHistoryRepository extends JpaRepository<ChildPe
             "mbtiScore.mbti" // MBTI 점수와 MBTI 정보 로딩
     })
     @Query("""
-        SELECT ch 
-        FROM ChildPersonalityHistory ch
-        WHERE ch.isDeleted = false 
-          AND ch.createdAt = (
-            SELECT MAX(ch2.createdAt) 
-            FROM ChildPersonalityHistory ch2 
-            WHERE ch2.childProfile.id = ch.childProfile.id
-          )
-        ORDER BY ch.createdAt DESC
-    """)
+                SELECT ch 
+                FROM ChildPersonalityHistory ch
+                WHERE ch.isDeleted = false 
+                  AND ch.createdAt = (
+                    SELECT MAX(ch2.createdAt) 
+                    FROM ChildPersonalityHistory ch2 
+                    WHERE ch2.childProfile.id = ch.childProfile.id
+                  )
+                ORDER BY ch.createdAt DESC
+            """)
     List<ChildPersonalityHistory> findAllChildrenData();
 
     ChildPersonalityHistory findTopByChildProfileIdOrderByCreatedAtDesc(Long childProfileId);
 
     @Query("SELECT h FROM ChildPersonalityHistory h WHERE h.childProfile.id = :childProfileId AND h.historyCreatedType = :historyCreatedType")
-    Optional<ChildPersonalityHistory> findHistoryByChildProfileIdAndHistoryCreatedType(Long childProfileId, HistoryCreatedType historyCreatedType);
+    Optional<ChildPersonalityHistory> findHistoryByChildProfileIdAndHistoryCreatedType(Long childProfileId,
+                                                                                       HistoryCreatedType historyCreatedType);
 
     @Query("SELECT h FROM ChildPersonalityHistory h JOIN FETCH h.mbtiScore WHERE h.id = :historyId")
     Optional<ChildPersonalityHistory> findByIdWithMbtiScore(Long historyId);
-  
-    @Query("SELECT h FROM ChildPersonalityHistory  h JOIN FETCH h.mbtiScore ms JOIN FETCH ms.mbti m WHERE h.childProfile.id = :childProfileId AND h.isDeleted = false")
+
+    @Query("SELECT h FROM ChildPersonalityHistory  h JOIN FETCH h.mbtiScore ms JOIN FETCH ms.mbti m WHERE h.childProfile.id = :childProfileId AND h.isDeleted = false "
+            + "ORDER BY h.createdAt DESC")
     List<ChildPersonalityHistory> findHistoryWithMBTIByChildProfileId(@Param("childProfileId") Long childProfileId);
 
     @Query("SELECT h FROM ChildPersonalityHistory h WHERE h.isDeleted = true AND h.deletedAt < :dateTime")
