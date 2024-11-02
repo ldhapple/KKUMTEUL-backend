@@ -38,8 +38,8 @@ public class EventController {
     public ApiSuccess<?> joinEvent(@AuthenticationPrincipal CustomUserDetails user) {
         // TODO: userId JWT 방식으로 변경
         Long userId = user.getId();
-        eventService.insertJoinEvent(userId);
-        return ApiUtil.success("joined event successfully");
+        String applyTicketResult = eventService.insertJoinEvent(userId);
+        return ApiUtil.success(applyTicketResult);
     }
 
     // 이름, 전화번호 입력 후 처리 메서드 (JoinEventService 에서 처리)
