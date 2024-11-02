@@ -212,8 +212,8 @@ public class RecommendationService {
             double contentScore = contentScores.getOrDefault(bookId, 0.0);
             double collaborativeScore = collaborativeScores.getOrDefault(bookId, 0.0);
 
-            // 최종 점수 계산: 콘텐츠와 협업 필터링 가중치 반영(콘텐츠 기반 0.55, 협업 필터링 0.45)
-            double finalScore = (contentScore * 0.55) + (collaborativeScore * 0.45);
+            // 최종 점수 계산: 콘텐츠와 협업 필터링 가중치 반영(콘텐츠 기반 0.6, 협업 필터링 0.4)
+            double finalScore = (contentScore * 0.60) + (collaborativeScore * 0.40);
 
             // 최종 점수 설정 및 저장
             book.setScore(finalScore);
