@@ -38,8 +38,6 @@ public class EventService {
     private final RedissonClient redissonClient; // RedissonClient 추가
 
     private static final int QUEUE_LIMIT = 100; // 대기열 크기
-    private static final int ISSUE_BATCH_SIZE = 10; // 한 번에 발급할 쿠폰 수
-
     @Transactional
     public void insertJoinEvent(Long userId, EventRequestDto eventRequestDto) {
         // Redisson 락 추가

@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -83,6 +84,7 @@ public class BookServiceTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("책 목록 조회")
     void getBookList_ShouldReturnBookList() {
         // given
@@ -99,6 +101,7 @@ public class BookServiceTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("책 상세 조회")
     void getBookDetail_ShouldReturnBookDetail() {
         // given
@@ -113,6 +116,7 @@ public class BookServiceTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("책 상세 조회 시 책이 없으면 예외 발생")
     void getBookDetail_BookNotFound_ShouldThrowException() {
         // given
@@ -124,6 +128,7 @@ public class BookServiceTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("좋아요 추가 시 새로운 좋아요 생성")
     void bookLike_ShouldCreateNewLike() {
         // given

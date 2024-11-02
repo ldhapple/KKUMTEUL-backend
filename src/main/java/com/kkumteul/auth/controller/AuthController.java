@@ -21,6 +21,7 @@ public class AuthController {
 
     private final CookieUtil cookieUtil;
     private final AuthService authService;
+    private final RedisUtil redisUtil;
 
     @PostMapping("/refresh")
     public ApiSuccess<?> refreshAccessToken(HttpServletRequest request) {
@@ -33,8 +34,12 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ApiSuccess<?> logout(HttpServletResponse response) {
+    public ApiSuccess<?> logout(HttpServletRequest request, HttpServletResponse response) {
         //클라이언트 측 세션 스토리지에서 Access 토큰 삭제도 필요.
+        String refreshToken = cookieUtil.getCookieValue("refreshToken", request);
+        Long userId = authService.getUserIdFromToken(refreshToken);
+
+        redisUtil.deleteRefreshToken(userId.toString());
 
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setHttpOnly(true);

@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final JwtNotAuthenticatedHandler jwtNotAuthenticatedHandler;
+    private final RedisUtil redisUtil;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -43,7 +44,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         LoginFilter customLoginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil,
-                cookieUtil);
+                cookieUtil, redisUtil);
 
         //disable
         http
@@ -55,9 +56,9 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/api/users/register",
-                                "/api/users/duplicate/**", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout",
-                                "/api/events/**")
-                        .permitAll()
+                                "/api/users/duplicate/**", "/api/auth/**", "/api/recommendation/books",
+                                "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
+                                "/api/common/codes/**").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
         //세션 설정

@@ -41,7 +41,7 @@ public class HuggingFaceService {
         List<Book> books = bookRepository.findAll();
 
         for (Book book : books) {
-            HuggingRequestDto request = new HuggingRequestDto(book.getTitle(), book.getSummary(), book.getId());
+            HuggingRequestDto request = new HuggingRequestDto(book.getTitle(), book.getSummary());
 
             // MBTI 분석 및 책 업데이트
             try {
@@ -62,12 +62,12 @@ public class HuggingFaceService {
             String mbtiType = analyzeText(request);
             if (mbtiType != null && !mbtiType.isEmpty()) {
                 // Book ID를 사용하여 MBTI를 연결
-                Book book = bookRepository.findById(request.getBookId())
-                        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 도서를 찾을 수 없습니다."));
+//                Book book = bookRepository.findById(request.getBookId())
+//                        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 도서를 찾을 수 없습니다."));
 
-                linkMbtiToBook(book, mbtiType);
+//                linkMbtiToBook(book, mbtiType);
 
-                return "도서의 MBTI를 추가했습니다.: " + book.getTitle();
+                return mbtiType;
             } else {
                 return "MBTI 유형을 분석할 수 없습니다.";
             }

@@ -64,6 +64,7 @@ class ChildPersonalityHistoryServiceTest {
     @DisplayName("히스토리 상세 조회 테스트")
     public void getHistoryDetailSuccess() {
         Long historyId = 1L;
+        Long profileId = 1L;
 
         MBTI mbti = MBTI.builder()
                 .mbti(MBTIName.ENTJ)
@@ -85,28 +86,34 @@ class ChildPersonalityHistoryServiceTest {
                 .build();
 
         ChildPersonalityHistory history = mock(ChildPersonalityHistory.class);
+        ChildProfile childProfile = mock(ChildProfile.class);
 
         when(history.getMbtiScore()).thenReturn(mbtiScore);
         when(historyRepository.findByIdWithMbtiScore(historyId)).thenReturn(Optional.of(history));
+        when(childProfileRepository.findById(profileId)).thenReturn(Optional.of(childProfile));
 
-        ChildPersonalityHistoryDetailDto result = historyService.getHistoryDetail(historyId);
+        ChildPersonalityHistoryDetailDto result = historyService.getHistoryDetail(profileId, historyId);
 
         assertThat(result).isNotNull();
         assertThat(result.getMbtiPercentages()).isNotNull();
         assertThat(result.getMbtiResult()).isNotNull();
 
         verify(historyRepository, times(1)).findByIdWithMbtiScore(historyId);
+        verify(childProfileRepository, times(1)).findById(profileId);
     }
 
     @Test
     @DisplayName("히스토리 상세 조회 실패 테스트")
     public void getHistoryDetailFail() {
+        Long profileId = 2L;
         Long historyId = 999L;
+
         when(historyRepository.findByIdWithMbtiScore(historyId)).thenReturn(Optional.empty());
 
-        assertThrows(HistoryNotFoundException.class, () -> historyService.getHistoryDetail(historyId));
+        assertThrows(HistoryNotFoundException.class, () -> historyService.getHistoryDetail(profileId, historyId));
 
         verify(historyRepository, times(1)).findByIdWithMbtiScore(historyId);
+        verify(childProfileRepository, times(0)).findById(profileId);
     }
   
     @DisplayName("진단 히스토리 삭제 테스트")

@@ -2,6 +2,7 @@ package com.kkumteul.domain.book.controller;
 
 import com.kkumteul.domain.book.dto.GetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.GetBookListResponseDto;
+import com.kkumteul.domain.book.dto.GetLikeStatusResponse;
 import com.kkumteul.domain.book.dto.PostBookLikeRequestDto;
 import com.kkumteul.domain.book.entity.LikeType;
 import com.kkumteul.domain.book.service.BookService;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @RestController
@@ -56,5 +59,18 @@ public class BookController {
         return ApiUtil.success(likeType == LikeType.LIKE ? "좋아요 처리를 완료했습니다." : "싫어요 처리를 완료했습니다.");
     }
 
+    @GetMapping("/like")
+    public ApiSuccess<?> getLikeStatus(
+            @RequestParam Long bookId,
+            @RequestParam Long childProfileId) {
+        Map<String, Boolean> likeStatus = bookService.checkLikeStatus(bookId, childProfileId);
+
+        GetLikeStatusResponse response = new GetLikeStatusResponse(
+                likeStatus.get("isLiked"),
+                likeStatus.get("isDisliked")
+        );
+
+        return ApiUtil.success(response);
+    }
 
 }

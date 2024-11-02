@@ -6,12 +6,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class HuggingRequestDto {
-    private Long bookId;
     private String title;
     private String summary;
 
-    public HuggingRequestDto(String title, String summary, Long bookId) {
-        this.bookId = bookId;
+    public HuggingRequestDto(String title, String summary) {
         this.title = title;
         this.summary = summary;
     }

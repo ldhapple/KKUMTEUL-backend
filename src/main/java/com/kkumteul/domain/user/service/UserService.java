@@ -9,6 +9,7 @@ import com.kkumteul.domain.user.entity.User;
 import com.kkumteul.domain.user.repository.UserRepository;
 import com.kkumteul.exception.UserNotFoundException;
 import com.kkumteul.util.DateUtil;
+import io.lettuce.core.ScriptOutputType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,11 +50,18 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("user not found: " + userId));
 
-        // TODO: 비밀번호 암호화하는 로직 추가
+        log.info("userUpdateRequest Info: {}", userUpdateRequestDto);
+        if (userUpdateRequestDto.getPassword() != null && !userUpdateRequestDto.getPassword().isEmpty()) {
+            String encodedPassword = bCryptPasswordEncoder.encode(userUpdateRequestDto.getPassword());
+            log.info("encodedPassword: {}", encodedPassword);
+            user.setEncryptedPassword(encodedPassword);
+        }
+
         if (profileImage != null) {
             byte[] byteProfileImage = profileImage.getBytes();
             user.updateProfileImage(byteProfileImage);
         }
+
         user.update(userUpdateRequestDto);
 
     }

@@ -82,10 +82,9 @@ public class RecommendationService {
 
         if(recommendBooks.size() == 0){
             // 추천 도서 테이블에 없는 경우
-            ChildDataDto childDataDto = getChildInfo(childProfileId)
-                    .orElse(null); // 히스토리 없을 경우 null
+            Optional<ChildDataDto> childDataDto = getChildInfo(childProfileId);
 
-            recommendBooks = getDefaultRecommendations(childDataDto);
+            recommendBooks = getDefaultRecommendations(getAge(childDataDto.get().getBirthDate()));
             Collections.shuffle(recommendBooks);
 
             // 5권 저장
@@ -175,7 +174,7 @@ public class RecommendationService {
         Optional<ChildDataDto> childDataDto = getChildInfo(childProfile.getId());
         if(childDataDto.isEmpty()){
             // 신규 사용자거나 자녀 히스토리가 없는 경우
-            List<Book> bookList = getDefaultRecommendations(null);
+            List<Book> bookList = getDefaultRecommendations(10);
             Collections.shuffle(bookList);
 
             bookList = bookList.subList(0, Math.min(5, bookList.size())); // 5권 저장
@@ -334,25 +333,25 @@ public class RecommendationService {
 
     // 최종 추천
     private List<Book> finalRecommendedBooks(Map<BookDataDto, Double> finalScores, ChildDataDto childDataDto) {
-        // 1. 상위 50개 추천 도서(BookDataDto)를 점수 기준으로 추출
+        // 1. 상위 20개 추천 도서(BookDataDto)를 점수 기준으로 추출
         List<BookDataDto> topBookDtos = new ArrayList<>(finalScores.keySet());
 
         // 2. 점수 내림차순 정렬
         topBookDtos.sort((dto1, dto2) -> Double.compare(finalScores.get(dto2), finalScores.get(dto1)));
 
-        // 3. 상위 50개 추출 (최대 50개만 가져오도록 조정)
-        List<BookDataDto> top50Books = topBookDtos.subList(0, Math.min(50, topBookDtos.size()));
+        // 3. 상위 20개 추출 (최대 20개만 가져오도록 조정)
+        List<BookDataDto> top20Books = topBookDtos.subList(0, Math.min(20, topBookDtos.size()));
 
-        // 4. 50개 중 랜덤으로 5개 선택
-        Collections.shuffle(top50Books); // 무작위로 섞기
-        List<BookDataDto> selectedBookDtos = top50Books.subList(0, Math.min(5, top50Books.size()));
+        // 4. 20개 중 랜덤으로 5개 선택
+        Collections.shuffle(top20Books); // 무작위로 섞기
+        List<BookDataDto> selectedBookDtos = top20Books.subList(0, Math.min(5, top20Books.size()));
 
         // 5. DTO를 엔티티로 변환
         List<Book> recommendedBooks = convertToBookEntities(selectedBookDtos);
 
         // 6. Fallback: 추천 도서가 5개 미만일 경우 기본 추천 목록으로 채우기
         if (recommendedBooks.size() < 5) {
-            List<Book> defaultRecommendations = getDefaultRecommendations(childDataDto); // 기본 추천 목록
+            List<Book> defaultRecommendations = getDefaultRecommendations(getAge(childDataDto.getBirthDate())); // 기본 추천 목록
             int remaining = 5 - recommendedBooks.size();
             recommendedBooks.addAll(defaultRecommendations.subList(0, Math.min(remaining, defaultRecommendations.size())));
         }
@@ -459,10 +458,9 @@ public class RecommendationService {
     }
 
     // 기본 추천 목록 - 사실 가중치 점수 때문에 나이, 성별로 추천 되는 책이 있어서... 여기까지 갈 일은 없겠지만 그냥 책 추천 연령대랑 나이차 가장 적은 순으로(ex. 10세부터면 10~15살)
-    private List<Book> getDefaultRecommendations(ChildDataDto childDataDto){
-        int age = getAge(childDataDto.getBirthDate());
+    public List<Book> getDefaultRecommendations(int age){
 
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 20);
         return bookRepository.findBookListByAgeGroup(age, pageable);
     }
 
