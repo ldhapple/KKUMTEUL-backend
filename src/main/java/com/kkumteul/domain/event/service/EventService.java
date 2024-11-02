@@ -30,10 +30,18 @@ import java.util.Set;
 public class EventService {
 
     private final TicketService ticketService;
+    private final EventRepository eventRepository;
 
     public String insertJoinEvent(Long userId) {
         // 티켓 발급 처리
         return ticketService.issueTicket(userId);
     }
 
+    public EventDto currentEvent() {
+        LocalDateTime now = LocalDateTime.now();
+        Event event = eventRepository.findFirstByStartDateBeforeAndExpiredDateAfter(now, now);
+        if(event == null) throw new RuntimeException("현재 진행중인 이벤트가 없습니다.");
+
+        return EventDto.fromEntity(event);
+    }
 }

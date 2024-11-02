@@ -1,6 +1,7 @@
 package com.kkumteul.domain.event.controller;
 
 
+import com.kkumteul.domain.event.dto.EventDto;
 import com.kkumteul.domain.event.dto.JoinEventRequestDto;
 import com.kkumteul.domain.event.service.EventService;
 import com.kkumteul.domain.event.service.TicketInitializationService;
@@ -57,11 +58,11 @@ public class EventController {
 //        return ApiUtil.success("joined event successfully");
 //    }
 
-//    @GetMapping("")
-//    public ApiSuccess<?> currentEvent() {
-//        EventDto eventDto = eventService.currentEvent();
-//        return ApiUtil.success(eventDto);
-//
-//    }
+    @GetMapping("")
+    public ApiSuccess<?> currentEvent() {
+        EventDto eventDto = eventService.currentEvent();
+        return ApiUtil.success(eventDto);
+
+    }
 
 }
