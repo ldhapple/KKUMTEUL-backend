@@ -3,6 +3,7 @@ package com.kkumteul.domain.event.controller;
 
 import com.kkumteul.auth.dto.CustomUserDetails;
 import com.kkumteul.domain.event.dto.EventDto;
+import com.kkumteul.domain.event.dto.EventResultResponseDto;
 import com.kkumteul.domain.event.dto.JoinEventRequestDto;
 import com.kkumteul.domain.event.service.EventService;
 import com.kkumteul.domain.event.service.JoinEventService;
@@ -77,5 +78,12 @@ public class EventController {
         return ApiUtil.success(eventDto);
 
     }
+
+    @GetMapping("/result")
+    public ApiSuccess<?> getEventResult() {
+        List<EventResultResponseDto> yesterdayEventResults = joinEventService.getYesterdayEventResults();
+        return ApiUtil.success(yesterdayEventResults);
+    }
+
 
 }

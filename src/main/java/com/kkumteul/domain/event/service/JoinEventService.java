@@ -1,7 +1,14 @@
 package com.kkumteul.domain.event.service;
 
+import com.kkumteul.domain.event.dto.EventResultResponseDto;
 import com.kkumteul.domain.event.dto.JoinEventRequestDto;
+import com.kkumteul.domain.event.entity.JoinEvent;
+import com.kkumteul.domain.event.repository.JoinEventRepository;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +30,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JoinEventService {
     private final RedisTemplate<String, String> template;
+    private final JoinEventRepository joinEventRepository;
 
     public String joinEvent(Long userId, JoinEventRequestDto joinEventRequestDto) {
         String winnersSetKey = "winners"; // 이름, 전화번호가 요청되었을때 저장할 set
@@ -67,4 +75,19 @@ public class JoinEventService {
             }
         }
     }
+
+    // 이벤트 당첨자 리스트 반환
+    public List<EventResultResponseDto> getYesterdayEventResults() {
+        LocalDateTime today = LocalDate.now().atStartOfDay();
+        LocalDateTime startOfHour = today.plusHours(12);
+        LocalDateTime endOfHour = today.plusHours(14); //2시
+
+        List<JoinEvent> events = joinEventRepository.findEventsAroundOnePM(startOfHour, endOfHour);
+        return events.stream()
+                .map(EventResultResponseDto::fromEntity)
+                .toList();
+
+    }
+
+
 }
