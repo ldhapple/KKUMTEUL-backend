@@ -58,7 +58,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/api/users/register",
                                 "/api/users/duplicate/**", "/api/auth/**", "/api/recommendation/books",
                                 "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
-                                "/api/common/codes/**").permitAll()
+                                "/api/common/codes/**", "/api/events/**",
+                                "/actuator/**").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
         //세션 설정
