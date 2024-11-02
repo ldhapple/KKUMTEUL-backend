@@ -26,10 +26,10 @@ public class TicketService {
     // 티켓 발급 처리 및 중복 검사
     public String issueTicket(Long userId) {
         if (!eventStartFlagCached.get()) {
-            return "이벤트가 아직 시작되지 않았습니다~!";
+            return "이벤트가 아직 시작되지 않았습니다!";
         }
         if (!ticketRemainFlagCached.get()) {
-            return "남은 티켓이 없습니다~!";
+            return "남은 티켓이 없습니다!";
         }
 
         String luaScript = """
@@ -73,8 +73,8 @@ public class TicketService {
                     if (ticketRemainFlagCached.compareAndSet(true, false)) {
                         template.convertAndSend(ticketRemainTopic.getTopic(), "false");
                     }
-                } else {
-                    template.expire(resultStr, 10, TimeUnit.MINUTES); //TTL 5분 설정
+                } else if (!"이미 이벤트에 참여한 유저입니다!!".equals(resultStr)) {
+                    template.expire(resultStr, 10, TimeUnit.MINUTES); // TTL 10분 설정
                     template.opsForSet().add("active_tickets", resultStr);
                     log.info("티켓이 발급되었습니다. 10분 제한 tickets: {}", resultStr);
                 }
