@@ -213,7 +213,7 @@ public class RecommendationService {
             double collaborativeScore = collaborativeScores.getOrDefault(bookId, 0.0);
 
             // 최종 점수 계산: 콘텐츠와 협업 필터링 가중치 반영(콘텐츠 기반 0.55, 협업 필터링 0.45)
-            double finalScore = (contentScore * 0.60) + (collaborativeScore * 0.40);
+            double finalScore = (contentScore * 0.55) + (collaborativeScore * 0.45);
 
             // 최종 점수 설정 및 저장
             book.setScore(finalScore);
@@ -301,7 +301,7 @@ public class RecommendationService {
     // 유사한 사용자가 좋아요 한 도서에 유사도 점수 추가
     public Map<Long, Double> getCollaborativeScores(List<ChildDataDto> similarProfiles, Map<Long, Double> initialScores, Long userId) {
         Pageable pageable = PageRequest.of(0, 20);
-        Map<Long, Double> updatedScores = new HashMap<>(initialScores);
+        Map<Long, Double> collaborativeScores = new HashMap<>();
 
 //        log.info("===========유사한 프로필들의 좋아요 도서를 조회하고 점수를 누적=========");
 
@@ -317,18 +317,12 @@ public class RecommendationService {
             // 도서별로 점수를 누적
             for (BookDataDto book : likedBooks) {
                 long bookId = book.getBookId();
-                double previousScore = updatedScores.getOrDefault(bookId, 0.0); // 기존 점수 가져오기
-
-                // 가중 평균 계산 (기존 점수가 0이라도 유사도 반영) 유사도에 따라 비율 조정
-                double weight = similarityScore / (similarityScore + 1); // 가중치 계산
-                double newScore = previousScore * (1 - weight) + similarityScore * weight;
-
-                updatedScores.put(bookId, newScore);
+                collaborativeScores.put(bookId, collaborativeScores.getOrDefault(bookId, 0.0) + similarityScore);
 //                log.info("도서 ID: {} | 이전 점수: {} | 새 점수: {}", bookId, previousScore, newScore);
             }
         }
 
-        return normalizeScores(updatedScores);
+        return normalizeScores(collaborativeScores);
     }
 
     // 최종 추천
