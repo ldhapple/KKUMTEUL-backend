@@ -1,4 +1,4 @@
-package com.kkumteul.recommendation.service;
+package com.kkumteul.domain.recommendation.service;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,32 +17,18 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.junit.jupiter.api.BeforeAll;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 
-import java.util.Optional;
 import java.util.List;
 
 import static com.kkumteul.domain.childprofile.entity.Gender.MALE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")  // 테스트용 프로파일 사용
@@ -51,7 +37,7 @@ import static org.mockito.Mockito.*;
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
 @Transactional
-class RecommendationServiceTest {
+class RecommendationCacheTest {
 
     @Autowired
     private RecommendationService recommendationService;
@@ -82,8 +68,8 @@ class RecommendationServiceTest {
         entityManager.joinTransaction();
 
         // 테스트 데이터 설정 및 DB 삽입
-        Book book1 = new Book("Title1", "Book1", "Author1", "Description1", null, null, null, null, null, null, null);
-        Book book2 = new Book("Title2", "Book2", "Author2", "Description2", null, null, null, null, null, null, null);
+        Book book1 = new Book("Title1", "Author", "Publisher", "Price", "Page", "9세부터", "Summary", new byte[]{}, null, null, null);
+        Book book2 = new Book("Title2", "Author", "Publisher", "Price", "Page", "4세부터", "Summary", new byte[]{}, null, null, null);
 
         // Book 엔티티 먼저 저장
         book1 = bookRepository.save(book1);
@@ -145,7 +131,6 @@ class RecommendationServiceTest {
         // 검증: 반환된 리스트의 크기만 확인
         assertEquals(2, dbBooks.size());
     }
-
 
 
 

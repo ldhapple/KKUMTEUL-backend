@@ -1,4 +1,4 @@
-package com.kkumteul.recommendation.service;
+package com.kkumteul.domain.recommendation.service;
 
 import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import com.kkumteul.domain.childprofile.repository.ChildProfileRepository;
@@ -38,8 +38,8 @@ public class RecommendAsyncTest {
     @DisplayName("사용자 활동 기록 비동기")
     public void testUpdateLastActivityAsync() throws InterruptedException {
         // Mock 데이터 설정
-        ChildProfile mockProfile = ChildProfile.builder().id(1001L).build();
-        given(childProfileRepository.findById(1001L)).willReturn(Optional.of(mockProfile));
+        ChildProfile mockProfile = ChildProfile.builder().name("김은주").build();
+        given(childProfileRepository.findById(1L)).willReturn(Optional.of(mockProfile));
 
         // 불필요한 Mock 설정이 없도록 doAnswer로 처리
         doAnswer(invocation -> {
@@ -51,7 +51,7 @@ public class RecommendAsyncTest {
         }).when(asyncService).updateLastActivity(any(Long.class));
 
         // RecommendationService의 비동기 메서드 호출
-        recommendationService.updateLastActivity(1001L);
+        recommendationService.updateLastActivity(1L);
 
         // 비동기 작업 완료 대기
         Thread.sleep(2000);
