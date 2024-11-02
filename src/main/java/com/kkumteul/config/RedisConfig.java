@@ -1,5 +1,7 @@
 package com.kkumteul.config;
 
+import com.kkumteul.domain.event.service.TicketService;
+import com.kkumteul.util.redis.RedisMessageSubscriber;
 import java.time.Duration;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -15,9 +17,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -83,5 +89,37 @@ public class RedisConfig {
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(cacheConfig)
                 .build();
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer(
+            RedisConnectionFactory connectionFactory, MessageListenerAdapter eventStartListenerAdapter,
+            MessageListenerAdapter ticketRemainListenerAdapter, ChannelTopic eventStartTopic, ChannelTopic ticketRemainTopic) {
+
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(eventStartListenerAdapter, eventStartTopic);
+        container.addMessageListener(ticketRemainListenerAdapter, ticketRemainTopic);
+        return container;
+    }
+
+    @Bean
+    public MessageListenerAdapter eventStartListenerAdapter(TicketService ticketService) {
+        return new MessageListenerAdapter(ticketService, "handleEventStartMessage");
+    }
+
+    @Bean
+    public MessageListenerAdapter ticketRemainListenerAdapter(TicketService ticketService) {
+        return new MessageListenerAdapter(ticketService, "handleTicketRemainMessage");
+    }
+
+    @Bean
+    public ChannelTopic eventStartTopic() {
+        return new ChannelTopic("eventStart");
+    }
+
+    @Bean
+    public ChannelTopic ticketRemainTopic() {
+        return new ChannelTopic("ticketRemain");
     }
 }
