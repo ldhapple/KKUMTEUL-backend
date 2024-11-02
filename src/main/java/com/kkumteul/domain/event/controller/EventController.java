@@ -1,15 +1,19 @@
 package com.kkumteul.domain.event.controller;
 
 
+import com.kkumteul.auth.dto.CustomUserDetails;
 import com.kkumteul.domain.event.dto.EventDto;
 import com.kkumteul.domain.event.dto.JoinEventRequestDto;
 import com.kkumteul.domain.event.service.EventService;
+import com.kkumteul.domain.event.service.JoinEventService;
 import com.kkumteul.domain.event.service.TicketInitializationService;
+import com.kkumteul.domain.event.service.TicketService;
 import com.kkumteul.util.ApiUtil;
 import com.kkumteul.util.ApiUtil.ApiSuccess;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,20 +24,29 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
     private final TicketInitializationService ticketInitializationService;
+    private final JoinEventService joinEventService;
 
     @PostMapping("{userId}")
     public ApiSuccess<?> joinEvent(@PathVariable(name = "userId") Long userId) {
         // TODO: userId JWT 방식으로 변경
 //        Long userId = 1L;
+        String applyTicketResult = eventService.insertJoinEvent(userId);
+        return ApiUtil.success(applyTicketResult);
+    }
+
+    @PostMapping("")
+    public ApiSuccess<?> joinEvent(@AuthenticationPrincipal CustomUserDetails user) {
+        // TODO: userId JWT 방식으로 변경
+        Long userId = user.getId();
         eventService.insertJoinEvent(userId);
         return ApiUtil.success("joined event successfully");
     }
 
     // 이름, 전화번호 입력 후 처리 메서드 (JoinEventService 에서 처리)
-    @PostMapping("/register/{userId}")
-    public ApiSuccess<?> registerEvent(@PathVariable(name = "userId") Long userId, @RequestBody JoinEventRequestDto joinEventRequestDto) {
-        ticketInitializationService.initializeTickets();
-        return ApiUtil.success("티켓 초기화 성공");
+    @PostMapping("/register")
+    public ApiSuccess<?> registerEvent(@AuthenticationPrincipal CustomUserDetails user,@RequestBody JoinEventRequestDto joinEventRequestDto) {
+        String result = joinEventService.joinEvent(user.getId(), joinEventRequestDto);
+        return ApiUtil.success(result);
     }
 
     @PostMapping("/init")
