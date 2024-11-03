@@ -6,6 +6,7 @@ import com.kkumteul.domain.book.dto.AdminBookRequestDto;
 import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
 import com.kkumteul.domain.book.service.AdminBookService;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +69,8 @@ public class AdminBookControllerTest {
 
         mockMvc.perform(multipart("/api/admin/books")
                         .file(image)
-                        .file(new MockMultipartFile("book", "", MediaType.APPLICATION_JSON_VALUE, bookJson.getBytes()))
+                        .file(new MockMultipartFile("book", "", MediaType.APPLICATION_JSON_VALUE, bookJson.getBytes(
+                                StandardCharsets.UTF_8)))
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .with(csrf()))
                 .andExpect(status().isOk())
