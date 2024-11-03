@@ -28,6 +28,7 @@ public class TicketInitializationService {
         template.delete("join_user");
         template.delete("winners");
         template.delete("active_tickets");
+        template.delete("duplicate");
 
         template.convertAndSend(eventStartTopic.getTopic(), "true");
         template.convertAndSend(ticketRemainTopic.getTopic(), "true");
