@@ -36,4 +36,11 @@ public class Event {
         this.startDate = startDate;
         this.expiredDate = expiredDate;
     }
+
+    public void update(String name, String description, LocalDateTime startDate, LocalDateTime expiredDate) {
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate;
+        this.expiredDate = expiredDate;
+    }
 }
