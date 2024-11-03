@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
-
 public class MBTIService {
 
     private final MBTIRepository mbtiRepository;
