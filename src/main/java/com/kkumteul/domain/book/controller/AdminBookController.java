@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +27,7 @@ public class AdminBookController {
     private final AdminBookService bookService;
 
     // 1. 도서 등록
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ApiSuccess<?> insertBook(
             @RequestPart(value = "image") MultipartFile image,
@@ -37,6 +39,7 @@ public class AdminBookController {
     }
 
     // 2. 전체 도서 목록 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ApiSuccess<?> getAdminBookList(final Pageable pageable) {
 
@@ -46,6 +49,7 @@ public class AdminBookController {
     }
 
     // 3. 도서 상세 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{bookId}")
     public ApiSuccess<?> getAdminBookDetail(@PathVariable("bookId") final Long bookId) {
 
@@ -55,6 +59,7 @@ public class AdminBookController {
     }
 
     // 4. 도서 수정
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{bookId}")
     public ApiSuccess<?> updateBook(
             @PathVariable("bookId") final Long bookId,
@@ -67,6 +72,7 @@ public class AdminBookController {
     }
 
     // 5. 도서 삭제
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{bookId}")
     public ApiSuccess<?> deleteBook(@PathVariable("bookId") final Long bookId) {
         bookService.deleteBook(bookId);
@@ -75,6 +81,7 @@ public class AdminBookController {
     }
 
     // 6. 도서 검색어 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ApiSuccess<?> getSearchBookList(
             @RequestParam(name = "search", required = false) String keyword, final Pageable pageable) {
@@ -92,6 +99,7 @@ public class AdminBookController {
     }
 
     // 7. 장르, 주제어, MBTI 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/all")
     public ApiSuccess<?> getFilterBookListGenreTopicMBTI(
             @RequestParam(name = "genre", required = false) String genre,
@@ -114,6 +122,7 @@ public class AdminBookController {
     }
 
     // 7-2. 장르 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/genre")
     public ApiSuccess<?> getFilterBookListGenre(
             @RequestParam(name = "genre", required = false) String genre,
@@ -134,6 +143,7 @@ public class AdminBookController {
     }
 
     // 7-3. 주제어(topic) 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/topic")
     public ApiSuccess<?> getFilterBookListTopic(
             @RequestParam(name = "topic", required = false) String topic,
@@ -154,6 +164,7 @@ public class AdminBookController {
     }
 
     // 7-4. mbti 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/mbti")
     public ApiSuccess<?> getFilterBookListMBTI(
             @RequestParam(name = "mbti", required = false) String mbti,
@@ -174,6 +185,7 @@ public class AdminBookController {
     }
 
     // 7-5. 장르, 주제어 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/genreandtopic")
     public ApiSuccess<?> getFilterBookListGenreTopic(
             @RequestParam(name = "genre", required = false) String genre,
@@ -195,6 +207,7 @@ public class AdminBookController {
     }
 
     // 7-6. 장르, MBTI 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/genreandmbti")
     public ApiSuccess<?> getFilterBookListGenreMBTI(
             @RequestParam(name = "genre", required = false) String genre,
@@ -216,6 +229,7 @@ public class AdminBookController {
     }
 
     // 7-7. 주제어, MBTI 필터 결과 조회
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/filter/topicandmbti")
     public ApiSuccess<?> getFilterBookListTopicMBTI(
             @RequestParam(name = "topic", required = false) String topic,
