@@ -1,5 +1,6 @@
 package com.kkumteul.domain.book.controller;
 
+import com.kkumteul.domain.book.dto.AdminBookFilterResponseDto;
 import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
 import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
 import com.kkumteul.domain.book.dto.AdminBookRequestDto;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 import static com.kkumteul.util.ApiUtil.ApiSuccess;
 
@@ -86,5 +89,150 @@ public class AdminBookController {
         }
 
         return ApiUtil.success(booksList);
+    }
+
+    // 7. 장르, 주제어, MBTI 필터 결과 조회
+    @GetMapping("/filter/all")
+    public ApiSuccess<?> getFilterBookListGenreTopicMBTI(
+            @RequestParam(name = "genre", required = false) String genre,
+            @RequestParam(name = "topic", required = false) String topic,
+            @RequestParam(name = "mbti", required = false) String mbti,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (genre == null || genre.isEmpty() && topic == null || topic.isEmpty() && mbti == null || mbti.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksGenreTopicMBTI(genre, topic, mbti, pageable);
+            return ApiUtil.success(booksList);
+
+        }
+    }
+
+    // 7-2. 장르 필터 결과 조회
+    @GetMapping("/filter/genre")
+    public ApiSuccess<?> getFilterBookListGenre(
+            @RequestParam(name = "genre", required = false) String genre,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (genre == null || genre.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksGenre(genre, pageable);
+            return ApiUtil.success(booksList);
+
+        }
+    }
+
+    // 7-3. 주제어(topic) 필터 결과 조회
+    @GetMapping("/filter/topic")
+    public ApiSuccess<?> getFilterBookListTopic(
+            @RequestParam(name = "topic", required = false) String topic,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (topic == null || topic.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksTopic(topic, pageable);
+            return ApiUtil.success(booksList);
+
+        }
+    }
+
+    // 7-4. mbti 필터 결과 조회
+    @GetMapping("/filter/mbti")
+    public ApiSuccess<?> getFilterBookListMBTI(
+            @RequestParam(name = "mbti", required = false) String mbti,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (mbti == null || mbti.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksMBTI(mbti, pageable);
+            return ApiUtil.success(booksList);
+
+        }
+    }
+
+    // 7-5. 장르, 주제어 필터 결과 조회
+    @GetMapping("/filter/genreandtopic")
+    public ApiSuccess<?> getFilterBookListGenreTopic(
+            @RequestParam(name = "genre", required = false) String genre,
+            @RequestParam(name = "topic", required = false) String topic,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (genre == null || genre.isEmpty() && topic == null || topic.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksGenreTopic(genre, topic, pageable);
+            return ApiUtil.success(booksList);
+
+        }
+    }
+
+    // 7-6. 장르, MBTI 필터 결과 조회
+    @GetMapping("/filter/genreandmbti")
+    public ApiSuccess<?> getFilterBookListGenreMBTI(
+            @RequestParam(name = "genre", required = false) String genre,
+            @RequestParam(name = "mbti", required = false) String mbti,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (genre == null || genre.isEmpty() && mbti == null || mbti.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksGenreMBTI(genre, mbti, pageable);
+            return ApiUtil.success(booksList);
+
+        }
+    }
+
+    // 7-7. 주제어, MBTI 필터 결과 조회
+    @GetMapping("/filter/topicandmbti")
+    public ApiSuccess<?> getFilterBookListTopicMBTI(
+            @RequestParam(name = "topic", required = false) String topic,
+            @RequestParam(name = "mbti", required = false) String mbti,
+            final Pageable pageable){
+
+        Page<AdminBookFilterResponseDto> booksList;
+        Page<AdminGetBookListResponseDto> bookListAll;
+        if (topic == null || topic.isEmpty() && mbti == null || mbti.isEmpty()) {
+            // 아무것도 필터링 되지 않은 경우에는 전체 도서 목록 조회
+            bookListAll = bookService.getAdminBookList(pageable);
+            return ApiUtil.success(bookListAll);
+        } else {
+            // 하나라도 필터링이 걸려있을 때는 필터링 동작
+            booksList = bookService.filterBooksTopicMBTI(topic, mbti, pageable);
+            return ApiUtil.success(booksList);
+
+        }
     }
 }

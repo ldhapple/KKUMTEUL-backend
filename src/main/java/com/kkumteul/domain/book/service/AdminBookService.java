@@ -1,14 +1,12 @@
 package com.kkumteul.domain.book.service;
 
-import com.kkumteul.domain.book.dto.AdminBookRequestDto;
-import com.kkumteul.domain.book.dto.BookDto;
-import com.kkumteul.domain.book.dto.AdminGetBookListResponseDto;
-import com.kkumteul.domain.book.dto.AdminGetBookDetailResponseDto;
+import com.kkumteul.domain.book.dto.*;
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookMBTI;
 import com.kkumteul.domain.book.entity.BookTopic;
 import com.kkumteul.domain.book.repository.BookRepository;
 import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.entity.MBTIName;
 import com.kkumteul.domain.mbti.service.MBTIService;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
@@ -158,6 +156,57 @@ public class AdminBookService {
         // Book 엔티티를 BookDto로 변환 후 반환
         return books.map(AdminGetBookListResponseDto::fromEntity);
     }
+
+    // 7. 도서 필터 결과 조회 (장르, 주제어, MBTI) // filterBooksGenreTopicMBTI
+    public Page<AdminBookFilterResponseDto> filterBooksGenreTopicMBTI(String genre, String topic, String mbti, final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksGenreTopicMBTI(genre, topic, MBTIName.valueOf(mbti), pageable);
+
+        return books;
+    }
+    // 8. 도서 필터 결과 조회 (장르)
+    public Page<AdminBookFilterResponseDto> filterBooksGenre(String genre, final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksGenre(genre, pageable);
+
+        return books;
+    }
+    // 9. 도서 필터 결과 조회 (주제어)
+    public Page<AdminBookFilterResponseDto> filterBooksTopic(String topic,final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksTopic(topic, pageable);
+
+        return books;
+    }
+    // 10. 도서 필터 결과 조회 (MBTI)
+    public Page<AdminBookFilterResponseDto> filterBooksMBTI(String mbti, final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksMBTI(MBTIName.valueOf(mbti), pageable);
+
+        return books;
+    }
+    // 11. 도서 필터 결과 조회 (장르, 주제어)
+    public Page<AdminBookFilterResponseDto> filterBooksGenreTopic(String genre, String topic, final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksGenreTopic(genre, topic, pageable);
+
+        return books;
+    }
+    // 12. 도서 필터 결과 조회 (장르, MBTI)
+    public Page<AdminBookFilterResponseDto> filterBooksGenreMBTI(String genre, String mbti, final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksGenreMBTI(genre, MBTIName.valueOf(mbti), pageable);
+
+        return books;
+    }
+    // 13. 도서 필터 결과 조회 (주제어, MBTI)
+    public Page<AdminBookFilterResponseDto> filterBooksTopicMBTI(String topic, String mbti, final Pageable pageable) {
+
+        Page<AdminBookFilterResponseDto> books = bookRepository.filterBooksTopicMBTI(topic, MBTIName.valueOf(mbti), pageable);
+
+        return books;
+    }
+
 
     // 이미지 처리 메서드
     private byte[] processImage(MultipartFile image) {
