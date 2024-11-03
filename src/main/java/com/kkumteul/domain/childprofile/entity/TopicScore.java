@@ -1,5 +1,6 @@
 package com.kkumteul.domain.childprofile.entity;
 
+import com.kkumteul.domain.history.entity.ChildPersonalityHistory;
 import com.kkumteul.domain.personality.entity.Topic;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,9 +34,20 @@ public class TopicScore {
     private double score;
 
     @Builder
-    public TopicScore(Topic topic, ChildProfile childProfile, double score) {
+    public TopicScore(Topic topic, double score) {
         this.topic = topic;
-        this.childProfile = childProfile;
         this.score = score;
+    }
+
+    public void setChildProfile(ChildProfile childProfile) {
+        this.childProfile = childProfile;
+    }
+
+    public void resetScore() {
+        this.score = 0;
+    }
+
+    public void updateScore(double score) {
+        this.score += score;
     }
 }

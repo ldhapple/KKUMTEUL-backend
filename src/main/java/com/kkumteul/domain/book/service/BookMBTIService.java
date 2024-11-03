@@ -18,7 +18,7 @@ public class BookMBTIService {
         return bookMbtiRepository.save(bookMBTI);
     }
 
-    public void deleteBookMBTIByBookId(Long bookId) {
+    public void deleteByBookId(Long bookId) {
         bookMbtiRepository.deleteByBookId(bookId);
     }
 }

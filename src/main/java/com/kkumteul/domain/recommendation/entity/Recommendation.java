@@ -23,8 +23,6 @@ public class Recommendation {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean isLike;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
     private Book book;
@@ -34,8 +32,7 @@ public class Recommendation {
     private ChildProfile childProfile;
 
     @Builder
-    public Recommendation(boolean isLike, Book book, ChildProfile childProfile) {
-        this.isLike = isLike;
+    public Recommendation(Book book, ChildProfile childProfile) {
         this.book = book;
         this.childProfile = childProfile;
     }
