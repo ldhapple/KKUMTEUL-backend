@@ -14,6 +14,10 @@ import com.kkumteul.domain.childprofile.service.PersonalityScoreService;
 import com.kkumteul.domain.history.entity.HistoryCreatedType;
 import com.kkumteul.domain.history.entity.MBTIScore;
 import com.kkumteul.domain.history.service.ChildPersonalityHistoryService;
+import com.kkumteul.domain.mbti.entity.MBTI;
+import com.kkumteul.domain.mbti.entity.MBTIName;
+import com.kkumteul.domain.mbti.repository.MBTIRepository;
+import com.kkumteul.domain.mbti.service.MBTIService;
 import com.kkumteul.util.redis.RedisKey;
 import com.kkumteul.util.redis.RedisUtil;
 import java.util.ArrayList;
@@ -57,6 +61,9 @@ public class ChangePersonalityBatchConfigTest {
     @MockBean
     private BookService bookService;
 
+    @MockBean
+    private MBTIService mbtiService;
+
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
 
@@ -85,23 +92,28 @@ public class ChangePersonalityBatchConfigTest {
             ChildProfile mockChildProfile = mock(ChildProfile.class);
             Book mockBook = mock(Book.class);
             CumulativeMBTIScore mockScore = mock(CumulativeMBTIScore.class);
+            MBTI mockMBTI = mock(MBTI.class);
 
             given(childProfileService.getChildProfileWithMBTIScore(childProfileId)).willReturn(mockChildProfile);
             given(bookService.getBook(bookId)).willReturn(mockBook);
             given(mockChildProfile.getCumulativeMBTIScore()).willReturn(mockScore);
+            given(mbtiService.getMBTI(anyString())).willReturn(mockMBTI);
         }
 
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("ChangePersonalityJob", String.valueOf(System.currentTimeMillis()))
                 .toJobParameters();
 
-        JobExecution jobExecution = jobLauncherTestUtils.getJobLauncher().run(jobLauncherTestUtils.getJob(), jobParameters);
+        JobExecution jobExecution = jobLauncherTestUtils.getJobLauncher()
+                .run(jobLauncherTestUtils.getJob(), jobParameters);
 
         assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
 
         verify(redisUtil, times(1)).deleteList(BOOK_LIKE_EVENT_LIST.getKey());
-        verify(personalityScoreService, atLeastOnce()).updateGenreAndTopicScores(any(ChildProfile.class), any(Book.class), anyDouble());
-        verify(historyService, atLeastOnce()).createHistory(anyLong(), any(MBTIScore.class), any(HistoryCreatedType.class));
+        verify(personalityScoreService, atLeastOnce()).updateGenreAndTopicScores(any(ChildProfile.class),
+                any(Book.class), anyDouble());
+        verify(historyService, atLeastOnce()).createHistory(anyLong(), any(MBTIScore.class),
+                any(HistoryCreatedType.class));
     }
 
     @Test

@@ -27,12 +27,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
+    private final RedisUtil redisUtil;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CookieUtil cookieUtil) {
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CookieUtil cookieUtil, RedisUtil redisUtil) {
         super.setFilterProcessesUrl("/api/auth/login");
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.cookieUtil = cookieUtil;
+        this.redisUtil = redisUtil;
     }
 
     @Override
@@ -59,6 +61,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication authResult) throws IOException, ServletException {
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
 
+        Long userId = customUserDetails.getId();
         String username = customUserDetails.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
@@ -67,8 +70,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createAccessToken(username, role, 60 * 60 * 10L);
-        String refreshToken = jwtUtil.createRefreshToken(username, 60 * 60 * 10000L);
+        String accessToken = jwtUtil.createAccessToken(userId, username, role, 60 * 60 * 1000L);
+        String refreshToken = jwtUtil.createRefreshToken(userId, username, role, 60 * 60 * 10000L);
+
+        redisUtil.saveRefreshToken(userId.toString(), refreshToken, 60 * 60 * 10000L);
 
         Cookie cookie = cookieUtil.createCookie("refreshToken", refreshToken);
 

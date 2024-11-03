@@ -42,7 +42,7 @@ public class GetBookDetailResponseDto {
         bookDetailResponseDto.bookPage = book.getPage();
         bookDetailResponseDto.publisher = book.getPublisher();
         if (!book.getBookMBTIS().isEmpty()) {
-            bookDetailResponseDto.mbtiInfo = book.getBookMBTIS().get(0).getMbti().getTitle();
+            bookDetailResponseDto.mbtiInfo = String.valueOf(book.getBookMBTIS().get(0).getMbti().getMbti());
         } else {
             bookDetailResponseDto.mbtiInfo = null; // 아직 모든 팩에 mapping 이 안 되어 있으므로 MBTI 가 없으면 null
         }

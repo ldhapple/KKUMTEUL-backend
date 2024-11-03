@@ -25,14 +25,13 @@ public class SurveyController {
     @PostMapping
     public ApiSuccess<?> submitSurvey(
             @RequestBody SurveyResultRequestDto surveyResultRequestDto) {
-
         SurveyResultDto resultDto = surveyFacade.submitSurvey(surveyResultRequestDto);
 
         return ApiUtil.success(resultDto);
     }
 
     @DeleteMapping
-    public ApiSuccess<?> deleteAndResurvey(@RequestParam("childProfileId") Long childProfileId) {
+    public ApiSuccess<?> deleteAndResurvey(@RequestParam Long childProfileId) {
         surveyFacade.reSurvey(childProfileId);
 
         return ApiUtil.success("기존 진단 결과가 성공적으로 삭제되었습니다.");

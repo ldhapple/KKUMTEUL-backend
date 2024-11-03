@@ -2,10 +2,9 @@ package com.kkumteul.domain.book.repository;
 
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.book.entity.BookLike;
-import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
+import com.kkumteul.domain.book.entity.LikeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.kkumteul.domain.childprofile.entity.ChildProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +17,7 @@ import java.util.Optional;
 @Repository
 public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
 
-    @Query("SELECT b From BookLike b JOIN FETCH b.book WHERE b.childProfile.id = :childProfileId")
+    @Query("SELECT b From BookLike b JOIN FETCH b.book WHERE b.childProfile.id = :childProfileId AND b.likeType = 'LIKE' ")
     List<BookLike> findBookLikesWithBookByChildProfileId(@Param("childProfileId") Long childProfileId);
 
     @Query("SELECT b FROM BookLike l JOIN l.book b WHERE l.childProfile.id IN :ids AND l.likeType = 'LIKE'")
@@ -46,5 +45,7 @@ public interface BookLikeRepository extends JpaRepository<BookLike, Long> {
             @Param("childProfileId") Long childProfileId,
             @Param("bookId") Long bookId
     );
+
+    boolean existsByBookIdAndChildProfileIdAndLikeType(Long bookId, Long childProfileId, LikeType likeType);
 }
 

@@ -9,6 +9,7 @@ import com.kkumteul.domain.mbti.repository.MBTIRepository;
 import com.kkumteul.domain.survey.dto.MBTISurveyAnswerDto;
 import com.kkumteul.exception.InvalidMBTINameException;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;//
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
-
 public class MBTIService {
 
     private final MBTIRepository mbtiRepository;

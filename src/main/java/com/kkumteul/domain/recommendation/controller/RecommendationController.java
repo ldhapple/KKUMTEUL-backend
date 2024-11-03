@@ -1,7 +1,6 @@
 package com.kkumteul.domain.recommendation.controller;
 
 import com.kkumteul.domain.book.entity.Book;
-import com.kkumteul.domain.recommendation.dto.ChildDataDto;
 import com.kkumteul.domain.recommendation.dto.RecommendBookDto;
 import com.kkumteul.domain.recommendation.service.RecommendationService;
 import com.kkumteul.util.ApiUtil;
@@ -22,9 +21,7 @@ public class RecommendationController {
     // 자녀 아이디 있을 때(로그인 되어있을 때)
     @GetMapping("/books")
     public ApiSuccess<?> getRecommendedBooks(@RequestParam(name = "child", required = false) Long childProfileId) {
-
         List<RecommendBookDto> popularBooks = recommendationService.getPopularRecommendations(); // 좋아요 순 인기도서 5
-
         List<RecommendBookDto> recommendedBooks = new ArrayList<>();
 
         if(childProfileId != null && childProfileId > 0) {
