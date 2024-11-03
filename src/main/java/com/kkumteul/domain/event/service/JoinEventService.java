@@ -2,8 +2,12 @@ package com.kkumteul.domain.event.service;
 
 import com.kkumteul.domain.event.dto.EventResultResponseDto;
 import com.kkumteul.domain.event.dto.JoinEventRequestDto;
+import com.kkumteul.domain.event.entity.Event;
 import com.kkumteul.domain.event.entity.JoinEvent;
+import com.kkumteul.domain.event.repository.EventRepository;
 import com.kkumteul.domain.event.repository.JoinEventRepository;
+import com.kkumteul.domain.user.entity.User;
+import com.kkumteul.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
@@ -31,6 +35,8 @@ import org.springframework.stereotype.Service;
 public class JoinEventService {
     private final RedisTemplate<String, String> template;
     private final JoinEventRepository joinEventRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
 
     public String joinEvent(Long userId, JoinEventRequestDto joinEventRequestDto) {
         String winnersSetKey = "winners"; // 이름, 전화번호가 요청되었을때 저장할 set
@@ -96,5 +102,48 @@ public class JoinEventService {
 
     }
 
+    public void setEventWinners() {
+        String winnersSetKey = "winners";
+        Set<String> winners = template.opsForSet().members(winnersSetKey);
 
+        if (winners == null || winners.isEmpty()) {
+            log.info("당첨자 목록이 비어 있습니다.");
+            return;
+        }
+
+        for (String winnerEntry : winners) {
+            String[] parts = winnerEntry.split(":");
+            if (parts.length != 4) {
+                log.warn("잘못된 형식의 당첨자 데이터: {}", winnerEntry);
+                continue;
+            }
+
+            Long userId = Long.valueOf(parts[0]);
+            String username = parts[1];
+            String phoneNumber = parts[2];
+            Long eventId = Long.valueOf(parts[3]);
+
+            User user = userRepository.findById(userId).orElse(null);
+            Event event = eventRepository.findById(eventId).orElse(null);
+
+            if (user == null || event == null) {
+                log.warn("사용자 또는 이벤트 정보를 찾을 수 없습니다. userId: {}, eventId: {}", userId, eventId);
+                continue;
+            }
+
+            JoinEvent joinEvent = JoinEvent.builder()
+                    .user(user)
+                    .event(event)
+                    .name(username)
+                    .phoneNumber(phoneNumber)
+                    .createdAt(LocalDateTime.now())
+                    .isWin(true)
+                    .build();
+
+            joinEventRepository.save(joinEvent);
+            log.info("JoinEvent 저장 완료 - userId: {}, eventId: {}", userId, eventId);
+        }
+
+        template.delete(winnersSetKey);
+    }
 }
