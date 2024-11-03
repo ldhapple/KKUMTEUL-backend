@@ -47,23 +47,20 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findBookByIdWithGenreAndTopic(@Param("bookId") Long bookId);
 
     @Query(value = """
-        SELECT DISTINCT b
-          FROM Book b
-          JOIN FETCH b.genre bg
-          JOIN FETCH b.bookTopics bt
-          JOIN FETCH bt.topic t
-         WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(bg.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-         ORDER BY
-            CASE
-                WHEN LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) THEN 0
-                WHEN LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')) THEN 1
-                WHEN LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')) THEN 2
-                WHEN LOWER(bg.name) LIKE LOWER(CONCAT('%', :keyword, '%')) THEN 3
-                ELSE 4
-            END, b.id ASC
+        SELECT b FROM Book b
+        JOIN b.genre bg
+        JOIN b.bookTopics bt
+        JOIN bt.topic t
+        WHERE b.title LIKE CONCAT('%', :keyword, '%')
+        OR b.author LIKE CONCAT('%', :keyword, '%')
+        OR t.name LIKE CONCAT('%', :keyword, '%')
+        OR bg.name LIKE CONCAT('%', :keyword, '%')
+        ORDER BY CASE
+        WHEN b.title LIKE CONCAT('%', :keyword, '%') THEN 0
+        WHEN b.author LIKE CONCAT('%', :keyword, '%') THEN 1
+        WHEN t.name LIKE CONCAT('%', :keyword, '%') THEN 2
+        WHEN bg.name LIKE CONCAT('%', :keyword, '%') THEN 3
+        ELSE 4 END, b.id ASC
         """)
     Page<Book> findBookListByKeyword(
             @Param("keyword") final String keyword,
