@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,12 +27,14 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @WebMvcTest(AdminBookController.class)
+@WithMockUser(username = "ROLE_ADMIN")
 public class AdminBookControllerTest {
 
     @Autowired
@@ -66,7 +69,8 @@ public class AdminBookControllerTest {
         mockMvc.perform(multipart("/api/admin/books")
                         .file(image)
                         .file(new MockMultipartFile("book", "", MediaType.APPLICATION_JSON_VALUE, bookJson.getBytes()))
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response").value("book insert successfully"));
     }
@@ -87,7 +91,8 @@ public class AdminBookControllerTest {
         mockMvc.perform(get("/api/admin/books")
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.content[0].title").value("홍길동전"));
     }
@@ -99,7 +104,9 @@ public class AdminBookControllerTest {
 
         when(bookService.getBookDetailById(1L)).thenReturn(bookDetail);
 
-        mockMvc.perform(get("/api/admin/books/1").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/admin/books/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.title").value("Test Book"));
     }
@@ -121,7 +128,8 @@ public class AdminBookControllerTest {
                         .param("search", "길동")
                         .param("page", String.valueOf(pageable.getPageNumber()))
                         .param("size", String.valueOf(pageable.getPageSize()))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.content[0].title").value("홍길동전"));
     }
@@ -133,7 +141,8 @@ public class AdminBookControllerTest {
         doNothing().when(bookService).deleteBook(1L);
 
         mockMvc.perform(delete("/api/admin/books/1")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response").value("book delete successfully"));
     }
@@ -164,7 +173,9 @@ public class AdminBookControllerTest {
                         .with(request -> {
                             request.setMethod("PUT");
                             return request;
-                        }))
+                        })
+                        .with(csrf())
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response").value("book update successfully"));
     }
