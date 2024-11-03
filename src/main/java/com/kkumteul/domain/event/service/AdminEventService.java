@@ -32,9 +32,9 @@ public class AdminEventService {
     }
 
     // updateEvent
-    public void updateEvent(EventDto eventDto) {
+    public void updateEvent(Long eventId, EventDto eventDto) {
 
-        Event event = eventRepository.findById(eventDto.getEventId())
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AdminEventNotFoundException(eventDto.getEventId().toString()));
 
         event.update(eventDto.getEventName(), eventDto.getEventDescription(), eventDto.getStartDate(), eventDto.getExpiredDate());
