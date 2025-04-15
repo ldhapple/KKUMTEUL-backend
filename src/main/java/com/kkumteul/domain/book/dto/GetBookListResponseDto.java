@@ -2,6 +2,10 @@ package com.kkumteul.domain.book.dto;
 
 import com.kkumteul.domain.book.entity.Book;
 import com.kkumteul.domain.personality.entity.Topic;
+import jakarta.persistence.Tuple;
+import java.util.Arrays;
+import java.util.Collections;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import com.kkumteul.domain.book.entity.BookTopic;
@@ -16,6 +20,14 @@ public class GetBookListResponseDto {
     private byte[] bookImage;
     private List<String> topicNames;
 
+    @Builder
+    public GetBookListResponseDto(Long bookId, String bookTitle, byte[] bookImage, List<String> topicNames) {
+        this.bookId = bookId;
+        this.bookTitle = bookTitle;
+        this.bookImage = bookImage;
+        this.topicNames = topicNames;
+    }
+
     public static GetBookListResponseDto from(final Book book) {
         final GetBookListResponseDto bookListResponseDto = new GetBookListResponseDto();
 
@@ -28,6 +40,24 @@ public class GetBookListResponseDto {
                 .toList();
 
         return bookListResponseDto;
+    }
+
+    public static GetBookListResponseDto create(final Tuple tuple, List<String> topicNames) {
+        return GetBookListResponseDto.builder()
+                .bookId(tuple.get("bookId", Long.class))
+                .bookTitle(tuple.get("bookTitle", String.class))
+                .bookImage(tuple.get("bookImage", byte[].class))
+                .topicNames(topicNames)
+                .build();
+    }
+
+    public static GetBookListResponseDto create(final Tuple tuple) {
+        return GetBookListResponseDto.builder()
+                .bookId(tuple.get("bookId", Long.class))
+                .bookTitle(tuple.get("bookTitle", String.class))
+                .bookImage(tuple.get("bookImage", byte[].class))
+                .topicNames(Arrays.asList(tuple.get("topicNames", String.class).split(", ")))
+                .build();
     }
 }
 
