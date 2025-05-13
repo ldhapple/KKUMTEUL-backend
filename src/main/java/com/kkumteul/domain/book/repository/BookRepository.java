@@ -262,7 +262,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<AdminBookFilterResponseDto> filterBooksTopicMBTI(@Param("topic") String topic, @Param("mbti") MBTIName mbti, Pageable pageable);
 
     // -------------------------------------------------------------------------------
-    @Query("SELECT b FROM Book b JOIN FETCH b.genre JOIN FETCH b.bookTopics WHERE b.id = :bookId")
+    @Query("SELECT b FROM Book b LEFT JOIN FETCH b.genre LEFT JOIN FETCH b.bookTopics WHERE b.id = :bookId")
     Optional<Book> findBookByIdWithGenreAndTopic(@Param("bookId") Long bookId);
 
     @Query(value = """
