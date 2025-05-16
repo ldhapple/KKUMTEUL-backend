@@ -28,15 +28,15 @@ public class AdminEventController {
 
     // 2. 이벤트 수정
     @PutMapping("/{eventId}")
-    public ApiUtil.ApiSuccess<?> updatetEvent(@RequestBody EventDto eventDto){
-        adminEventService.updateEvent(eventDto);
+    public ApiUtil.ApiSuccess<?> updatetEvent(@PathVariable("eventId") long eventId, @RequestBody EventDto eventDto){
+        adminEventService.updateEvent(eventId, eventDto);
 
         return ApiUtil.success("event update successfully");
     }
 
     // 3. 이벤트 삭제
     @DeleteMapping("/{eventId}")
-    public ApiUtil.ApiSuccess<?> deleteEvent(@PathVariable long eventId) {
+    public ApiUtil.ApiSuccess<?> deleteEvent(@PathVariable("eventId") long eventId) {
         adminEventService.deleteEvent(eventId);
 
         return ApiUtil.success("event delete successfully");
@@ -44,7 +44,7 @@ public class AdminEventController {
 
     // 4. 이벤트 상세 조회
     @GetMapping("/{eventId}")
-    public ApiUtil.ApiSuccess<?> getEventDetail(@PathVariable long eventId){
+    public ApiUtil.ApiSuccess<?> getEventDetail(@PathVariable("eventId") long eventId){
         EventDto event = adminEventService.getEventDetail(eventId);
 
         return ApiUtil.success(event);

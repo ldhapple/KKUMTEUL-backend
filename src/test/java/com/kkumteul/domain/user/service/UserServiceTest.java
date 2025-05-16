@@ -14,7 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,7 +52,7 @@ class UserServiceTest {
         childProfiles.add(childProfile);
 
         User user = User.builder()
-                .username("user1")
+                .name("user1")
                 .profileImage("image".getBytes())
                 .nickName("nickname1")
                 .phoneNumber("01012345678")
@@ -65,7 +68,7 @@ class UserServiceTest {
         UserResponseDto userResponseDto = userService.getUser(userId);
 
         //then
-        Assertions.assertEquals("user1", userResponseDto.getUsername());
+        Assertions.assertEquals("user1", userResponseDto.getName());
         Assertions.assertEquals(1, userResponseDto.getChildProfileList().size());
 
     }
@@ -77,7 +80,7 @@ class UserServiceTest {
         Long userId = 1L;
 
         User user = User.builder()
-                .username("user1")
+                .name("user1")
                 .profileImage("image".getBytes())
                 .nickName("nickname")
                 .phoneNumber("01012345678")
@@ -91,7 +94,7 @@ class UserServiceTest {
         UserResponseDto userResponseDto = userService.getUser(userId);
 
         //then
-        Assertions.assertEquals("user1", userResponseDto.getUsername());
+        Assertions.assertEquals("user1", userResponseDto.getName());
         Assertions.assertTrue(userResponseDto.getChildProfileList().isEmpty(), "자녀 프로필 리스트가 비어 있어야 함");
 
     }
@@ -117,12 +120,12 @@ class UserServiceTest {
 
     @Test
     @DisplayName("유저 정보 수정 성공 테스트")
-    void updateUser_success() {
+    void updateUser_success() throws IOException {
         //given
         Long userId = 1L;
 
         User user = User.builder()
-                .username("user1")
+                .name("user1")
                 .profileImage("image".getBytes())
                 .password("password")
                 .nickName("nickname")
@@ -131,19 +134,21 @@ class UserServiceTest {
                 .build();
 
         String newNickname = "newNickname";
+        MultipartFile multipartFile = new MockMultipartFile("childProfileImage", "profile.jpg", "image/jpeg", new byte[1024]);
 
-        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(null, newNickname, null, null);
+
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(newNickname, null, null);
 
         //stub
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         //when
-        userService.updateUser(userId, userUpdateRequestDto);
+        userService.updateUser(userId, userUpdateRequestDto, multipartFile);
 
         //then
         Assertions.assertEquals("newNickname", user.getNickName());
         Assertions.assertEquals("password", user.getPassword());
-        Assertions.assertEquals("user1", user.getUsername());
+        Assertions.assertEquals("user1", user.getName());
 
     }
 
@@ -153,14 +158,16 @@ class UserServiceTest {
         //given
         Long userId = 999L;
         String newNickname = "newNickname";
-        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(null, newNickname, null, null);
+        UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(newNickname, null, null);
+        MultipartFile multipartFile = new MockMultipartFile("childProfileImage", "profile.jpg", "image/jpeg", new byte[1024]);
+
 
         //stub
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         //when
         UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
-            userService.updateUser(userId, userUpdateRequestDto);
+            userService.updateUser(userId, userUpdateRequestDto, multipartFile);
         });
 
         //then

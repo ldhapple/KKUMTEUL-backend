@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
-@ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class UserRepositoryTest {
 

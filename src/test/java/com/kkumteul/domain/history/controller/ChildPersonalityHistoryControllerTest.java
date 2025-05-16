@@ -87,7 +87,7 @@ class ChildPersonalityHistoryControllerTest {
         given(historyService.getHistoryDetail(profileId, historyId)).willReturn(historyDetailDto);
 
         mockMvc.perform(get("/api/history/{historyId}", historyId)
-                        .param("profileId", profileId.toString())
+                        .param("childProfileId", profileId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andExpect(status().isOk())

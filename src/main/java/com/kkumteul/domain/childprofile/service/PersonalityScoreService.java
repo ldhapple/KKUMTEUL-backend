@@ -14,12 +14,15 @@ import com.kkumteul.domain.history.entity.MBTIScore;
 import com.kkumteul.domain.mbti.entity.MBTI;
 import com.kkumteul.domain.personality.entity.Genre;
 import com.kkumteul.domain.personality.entity.Topic;
+import com.kkumteul.dto.ScoreUpdateEventDto;
 import com.kkumteul.exception.EntityNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Slf4j
 @Service
@@ -127,5 +130,39 @@ public class PersonalityScoreService {
         log.info("Update Genre and Topic scores - ChildProfile ID: {}", childProfile.getId());
     }
 
+    @Transactional
+    public void bulkUpdateScores(Long childProfileId, ScoreUpdateEventDto aggregatedEvent) {
+        boolean active = TransactionSynchronizationManager.isActualTransactionActive();
+        log.info("Before bulk update, transaction active: {}", active);
 
+        aggregatedEvent.getGenreDeltas().forEach((genreId, delta) -> {
+            log.info("Updating GenreScore for childProfileId: {}, genreId: {}, delta: {}", childProfileId, genreId, delta);
+            try {
+                int updatedRows = genreScoreRepository.bulkUpdateScore(childProfileId, genreId, delta);
+                log.info("Updated {} rows for GenreScore (childProfileId: {}, genreId: {})", updatedRows, childProfileId, genreId);
+            } catch (Exception e) {
+                log.error("Error during bulkUpdateScore for childProfileId: {}, genreId: {}, delta: {}", childProfileId, genreId, delta, e);
+                throw e;
+            }
+        });
+
+        aggregatedEvent.getTopicDeltas().forEach((topicId, delta) -> {
+            log.info("Updating TopicScore for childProfileId: {}, topicId: {}, delta: {}", childProfileId, topicId, delta);
+            try {
+                int updatedRows = topicScoreRepository.bulkUpdateScore(childProfileId, topicId, delta);
+                log.info("Updated {} rows for TopicScore (childProfileId: {}, topicId: {})", updatedRows, childProfileId, topicId);
+            } catch (Exception e) {
+                log.error("Error during bulkUpdateScore for TopicScore for childProfileId: {}, topicId: {}, delta: {}", childProfileId, topicId, delta, e);
+                throw e;
+            }
+        });
+
+        try {
+            int updatedRows = cumulativeMBTIScoreRepository.bulkUpdateScore(childProfileId, aggregatedEvent.getCumulativeDelta());
+            log.info("Updated {} rows for CumulativeMBTIScore (childProfileId: {})", updatedRows, childProfileId);
+        } catch(Exception e) {
+            log.error("Error during bulkUpdateScore for CumulativeMBTIScore for childProfileId: {}, delta: {}", childProfileId, aggregatedEvent.getCumulativeDelta(), e);
+            throw e;
+        }
+    }
 }
