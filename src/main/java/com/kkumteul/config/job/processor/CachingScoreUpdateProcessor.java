@@ -53,6 +53,7 @@ public class CachingScoreUpdateProcessor implements ItemProcessor<String, ScoreU
         event.getGenreDeltas().put(genreId, changedScore);
         event.setTopicDeltas(topicDelta);
         event.setCumulativeDelta(changedScore);
+        event.setOriginalEvent(item);
 
         return event;
     }

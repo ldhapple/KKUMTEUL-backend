@@ -12,22 +12,25 @@ import com.kkumteul.domain.mbti.entity.MBTI;
 import com.kkumteul.domain.mbti.service.MBTIService;
 import com.kkumteul.dto.ScoreUpdateEventDto;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ScoreUpdateEventWriter implements ItemWriter<ScoreUpdateEventDto> {
+public class ScoreUpdateEventWriter implements ItemWriter<ScoreUpdateEventDto>, StepExecutionListener {
 
-    private final PersonalityScoreService personalityScoreService;
-    private final ChildProfileService childProfileService;
-    private final ChildPersonalityHistoryService historyService;
-    private final MBTIService mbtiService;
     private final ChildProfileUpdateService childProfileUpdateService;
+
+    private StepExecution stepExecution;
 
     @Override
     public void write(Chunk<? extends ScoreUpdateEventDto> chunk) throws Exception {
@@ -59,18 +62,34 @@ public class ScoreUpdateEventWriter implements ItemWriter<ScoreUpdateEventDto> {
         }
 
         aggregatedMap.forEach(childProfileUpdateService::updateScoresAndHistory);
+
+        List<String> originalEvents = chunk.getItems().stream()
+                .map(ScoreUpdateEventDto::getOriginalEvent)
+                .toList();
+
+        stepExecution.getExecutionContext().put("batchItems", originalEvents);
     }
 
-    private void createAndUpdateHistory(ChildProfile childProfile) {
-        MBTIScore currentMBTIScore = MBTIScore.fromCumulativeScore(childProfile.getCumulativeMBTIScore());
-
-         MBTI mbti = mbtiService.getMBTI(mbtiService.checkMBTIType(currentMBTIScore));
-         currentMBTIScore.setMbti(mbti);
-
-         ChildPersonalityHistory history = historyService.createHistory(childProfile.getId(), currentMBTIScore, HistoryCreatedType.FEEDBACK);
-
-         historyService.updatePreferredGenresByScore(history, childProfile.getGenreScores());
-         historyService.updatePreferredTopicsByScore(history, childProfile.getTopicScores());
-         log.info("Create History - ChildProfile ID: {}", childProfile.getId());
+    @Override
+    public void beforeStep(StepExecution stepExecution) {
+        this.stepExecution = stepExecution;
     }
+
+    @Override
+    public ExitStatus afterStep(StepExecution stepExecution) {
+        return stepExecution.getExitStatus();
+    }
+
+    //    private void createAndUpdateHistory(ChildProfile childProfile) {
+//        MBTIScore currentMBTIScore = MBTIScore.fromCumulativeScore(childProfile.getCumulativeMBTIScore());
+//
+//         MBTI mbti = mbtiService.getMBTI(mbtiService.checkMBTIType(currentMBTIScore));
+//         currentMBTIScore.setMbti(mbti);
+//
+//         ChildPersonalityHistory history = historyService.createHistory(childProfile.getId(), currentMBTIScore, HistoryCreatedType.FEEDBACK);
+//
+//         historyService.updatePreferredGenresByScore(history, childProfile.getGenreScores());
+//         historyService.updatePreferredTopicsByScore(history, childProfile.getTopicScores());
+//         log.info("Create History - ChildProfile ID: {}", childProfile.getId());
+//    }
 }

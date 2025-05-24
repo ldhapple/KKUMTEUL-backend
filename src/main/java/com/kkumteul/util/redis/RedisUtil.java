@@ -52,4 +52,12 @@ public class RedisUtil {
     public void deleteRefreshToken(String userId) {
         redisTemplate.delete(userId);
     }
+
+    public void removeItemsFromList(String key, List<String> values) {
+        values.forEach(value -> redisTemplate.opsForList().remove(key, 1, value));
+    }
+
+    public void pushList(String key, List<String> values) {
+        redisTemplate.opsForList().rightPushAll(key, values);
+    }
 }

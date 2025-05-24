@@ -15,4 +15,5 @@ public class ScoreUpdateEventDto {
     private Map<Long, Double> genreDeltas = new HashMap<>();
     private Map<Long, Double> topicDeltas = new HashMap<>();
     private double cumulativeDelta;
+    private String originalEvent;
 }

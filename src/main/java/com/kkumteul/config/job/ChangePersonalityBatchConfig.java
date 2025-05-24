@@ -70,8 +70,10 @@ public class ChangePersonalityBatchConfig {
                 .processor(cachingScoreUpdateProcessor())
                 .writer(scoreUpdateEventWriter())
                 .faultTolerant()
-                    .retryLimit(3)
-                    .retry(Exception.class)
+                .retryLimit(3)
+                .retry(Exception.class)
+                .skip(Exception.class)
+                .skipLimit(100)
                 .listener(chunkListener())
                 .build();
     }
@@ -96,7 +98,7 @@ public class ChangePersonalityBatchConfig {
 
     @Bean
     public ItemWriter<ScoreUpdateEventDto> scoreUpdateEventWriter() {
-        return new ScoreUpdateEventWriter(personalityScoreService, childProfileService, historyService, mbtiService, childProfileUpdateService);
+        return new ScoreUpdateEventWriter(childProfileUpdateService);
     }
 
     @Bean
@@ -110,12 +112,28 @@ public class ChangePersonalityBatchConfig {
             @Override
             public void afterChunk(ChunkContext context) {
                 cachingScoreUpdateProcessor().clearCache();
-                log.info("Chunk 처리 완료");
+
+                List<String> items = (List<String>) context.getStepContext()
+                        .getStepExecution().getExecutionContext().get("batchItems");
+
+                if (items != null && !items.isEmpty()) {
+                    redisUtil.removeItemsFromList(BOOK_LIKE_EVENT_LIST.getKey(), items);
+                    log.info("성공한 {}개 항목을 Redis에서 삭제 완료", items.size());
+                }
             }
 
             @Override
             public void afterChunkError(ChunkContext context) {
                 cachingScoreUpdateProcessor().clearCache();
+
+                List<String> items = (List<String>) context.getStepContext()
+                        .getStepExecution().getExecutionContext().get("batchItems");
+
+                if (items != null && !items.isEmpty()) {
+                    redisUtil.pushList("BOOK_LIKE_EVENT_FAILED_LIST", items);
+                    log.warn("실패한 {}개 항목을 실패 Redis 리스트에 저장 완료", items.size());
+                }
+
                 Throwable throwable = (Throwable) context.getAttribute(ChunkListener.ROLLBACK_EXCEPTION_KEY);
                 log.error("Chunk 처리 실패: {}", throwable.getMessage(), throwable);
             }
