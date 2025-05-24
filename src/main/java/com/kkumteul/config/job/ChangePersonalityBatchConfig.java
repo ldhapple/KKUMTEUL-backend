@@ -2,6 +2,7 @@ package com.kkumteul.config.job;
 
 import static com.kkumteul.util.redis.RedisKey.BOOK_LIKE_EVENT_LIST;
 
+import com.kkumteul.config.job.listener.MetricsJobListener;
 import com.kkumteul.config.job.processor.CachingScoreUpdateProcessor;
 import com.kkumteul.config.job.writer.ScoreUpdateEventWriter;
 import com.kkumteul.domain.book.service.BookService;
@@ -53,117 +54,71 @@ public class ChangePersonalityBatchConfig {
     private final MBTIService mbtiService;
     private final ChildProfileUpdateService childProfileUpdateService;
 
-    /** ========================== TASK EXECUTOR ============================= */
-    @Bean
-    public TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);  // 병렬 스레드 개수
-        executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(10);
-        executor.setThreadNamePrefix("partition-thread-");
-        executor.initialize();
-        return executor;
-    }
-
-    /** ========================== JOB CONFIGURATION ============================= */
     @Bean
     public Job processLikeDislikeEventsJob() {
         return new JobBuilder("processLikeDislikeEventsJob", jobRepository)
-                .start(masterStep())
+                .start(processLikeDislikeEventsStep())
+                .listener(new MetricsJobListener())
                 .build();
     }
 
-    /** ========================== MASTER STEP ============================= */
     @Bean
-    public Step masterStep() {
-        return new StepBuilder("masterStep", jobRepository)
-                .partitioner("workerStep", redisEventPartitioner())
-                .partitionHandler(partitionHandler())
-                .build();
-    }
-
-    /** ========================== PARTITION HANDLER ============================= */
-    @Bean
-    public TaskExecutorPartitionHandler partitionHandler() {
-        TaskExecutorPartitionHandler handler = new TaskExecutorPartitionHandler();
-        handler.setStep(workerStep());
-        handler.setTaskExecutor(taskExecutor());
-        handler.setGridSize(4);  // 파티션 수
-        return handler;
-    }
-
-    /** ========================== PARTITIONER ============================= */
-    @Bean
-    public Partitioner redisEventPartitioner() {
-        return gridSize -> {
-            Map<String, ExecutionContext> partitions = new HashMap<>();
-            List<Object> eventObjects = redisUtil.getAllFromList(BOOK_LIKE_EVENT_LIST.getKey());
-            int partitionSize = (int) Math.ceil((double) eventObjects.size() / gridSize);
-
-            for (int i = 0; i < gridSize; i++) {
-                ExecutionContext context = new ExecutionContext();
-                int startIdx = i * partitionSize;
-                int endIdx = Math.min(startIdx + partitionSize, eventObjects.size());
-
-                // 인덱스 정보만 저장 (데이터 대신)
-                context.putInt("startIdx", startIdx);
-                context.putInt("endIdx", endIdx);
-                partitions.put("partition" + i, context);
-            }
-            return partitions;
-        };
-    }
-
-    /** ========================== WORKER STEP ============================= */
-    @Bean
-    public Step workerStep() {
-        return new StepBuilder("workerStep", jobRepository)
+    public Step processLikeDislikeEventsStep() {
+        return new StepBuilder("processLikeDislikeEventsStep", jobRepository)
                 .<String, ScoreUpdateEventDto>chunk(750, transactionManager)
-                .reader(redisPartitionedEventReader(null, null))  // 파티션별 Reader
+                .reader(redisEventReader())
                 .processor(cachingScoreUpdateProcessor())
                 .writer(scoreUpdateEventWriter())
-                .listener(new ChunkListener() {
-                    @Override
-                    public void beforeChunk(ChunkContext context) { }
-
-                    @Override
-                    public void afterChunk(ChunkContext context) {
-                        cachingScoreUpdateProcessor().clearCache();
-                    }
-
-                    @Override
-                    public void afterChunkError(ChunkContext context) {
-                        cachingScoreUpdateProcessor().clearCache();
-                    }
-                })
+                .faultTolerant()
+                    .retryLimit(3)
+                    .retry(Exception.class)
+                .listener(chunkListener())
                 .build();
     }
 
-    /** ========================== ITEM READER ============================= */
     @Bean
     @StepScope
-    public ItemReader<String> redisPartitionedEventReader(
-            @Value("#{stepExecutionContext['startIdx']}") Integer startIdx,
-            @Value("#{stepExecutionContext['endIdx']}") Integer endIdx) {
+    public ItemReader<String> redisEventReader() {
 
         List<Object> allEvents = redisUtil.getAllFromList(BOOK_LIKE_EVENT_LIST.getKey());
-        List<String> events = allEvents.subList(startIdx, endIdx).stream()
+        List<String> events = allEvents.stream()
                 .map(Object::toString)
                 .toList();
 
         return new ListItemReader<>(events);
     }
 
-    /** ========================== PROCESSOR ============================= */
     @Bean
     @StepScope
     public CachingScoreUpdateProcessor cachingScoreUpdateProcessor() {
         return new CachingScoreUpdateProcessor(childProfileService, bookService);
     }
 
-    /** ========================== WRITER ============================= */
     @Bean
     public ItemWriter<ScoreUpdateEventDto> scoreUpdateEventWriter() {
         return new ScoreUpdateEventWriter(personalityScoreService, childProfileService, historyService, mbtiService, childProfileUpdateService);
+    }
+
+    @Bean
+    public ChunkListener chunkListener() {
+        return new ChunkListener() {
+            @Override
+            public void beforeChunk(ChunkContext context) {
+                log.info("Chunk 처리 시작");
+            }
+
+            @Override
+            public void afterChunk(ChunkContext context) {
+                cachingScoreUpdateProcessor().clearCache();
+                log.info("Chunk 처리 완료");
+            }
+
+            @Override
+            public void afterChunkError(ChunkContext context) {
+                cachingScoreUpdateProcessor().clearCache();
+                Throwable throwable = (Throwable) context.getAttribute(ChunkListener.ROLLBACK_EXCEPTION_KEY);
+                log.error("Chunk 처리 실패: {}", throwable.getMessage(), throwable);
+            }
+        };
     }
 }
