@@ -64,8 +64,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 
-	implementation 'org.redisson:redisson-spring-boot-starter:3.16.5'
-
 	testImplementation 'org.springframework.security:spring-security-test'
 
 }
