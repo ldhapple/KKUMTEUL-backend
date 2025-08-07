@@ -3,6 +3,7 @@ package com.kkumteul.config;
 import com.kkumteul.domain.event.service.TicketService;
 import com.kkumteul.util.redis.RedisMessageSubscriber;
 import java.time.Duration;
+import java.util.List;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -18,7 +19,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -32,22 +35,45 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching
 public class RedisConfig {
 
-    @Value(value = "${spring.data.redis.host}")
-    private String host;
+//    @Value(value = "${spring.data.redis.host}")
+//    private String host;
+//
+//    @Value(value = "${spring.data.redis.port}")
+//    private int port;
 
-    @Value(value = "${spring.data.redis.port}")
-    private int port;
+    @Value("${spring.data.redis.cluster.nodes}")
+    private List<String> clusterNodes;
+
+    @Value("${spring.data.redis.cluster.max-redirects:3}")
+    private Integer maxRedirects;
 
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://localhost:6379"); // Redis 주소 설정
+//        config.useSingleServer().setAddress("redis://localhost:6379"); // Redis 주소 설정
+//        return Redisson.create(config);
+
+        config.useClusterServers()
+                .addNodeAddress(clusterNodes.stream()
+                        .map(addr -> "redis://" + addr).toArray(String[]::new))
+                .setCheckSlotsCoverage(false);
+
         return Redisson.create(config);
     }
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(host, port);
+//        return new LettuceConnectionFactory(host, port);
+
+        RedisClusterConfiguration clusterConfig = new RedisClusterConfiguration(clusterNodes);
+        clusterConfig.setMaxRedirects(maxRedirects);
+
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .commandTimeout(Duration.ofSeconds(2))
+                .shutdownTimeout(Duration.ofSeconds(2))
+                .build();
+
+        return new LettuceConnectionFactory(clusterConfig, clientConfig);
     }
 
     @Bean
